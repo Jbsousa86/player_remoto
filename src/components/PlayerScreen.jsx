@@ -153,15 +153,16 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center">
+        <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center p-0 m-0">
             <div
                 style={{
-                    width: needsRotation ? screenSize.h : '100vw',
-                    height: needsRotation ? screenSize.w : '100vh',
+                    width: needsRotation ? `${screenSize.h}px` : '100vw',
+                    height: needsRotation ? `${screenSize.w}px` : '100vh',
                     transform: needsRotation ? 'rotate(90deg)' : 'none',
-                    transformOrigin: 'center'
+                    transformOrigin: 'center',
+                    position: 'absolute'
                 }}
-                className="relative bg-black overflow-hidden"
+                className="bg-black overflow-hidden"
             >
                 <AnimatePresence mode="wait">
                     <motion.div
@@ -177,7 +178,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 {currentItem.fitMode === 'smart' && (
                                     <video
                                         src={currentItem.url}
-                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-50 scale-110"
+                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-80 scale-110"
                                         muted
                                         autoPlay
                                         loop
@@ -225,7 +226,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                     <img
                                         src={currentItem.url}
                                         alt=""
-                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-50 scale-110"
+                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-80 scale-110"
                                     />
                                 )}
                                 <img
