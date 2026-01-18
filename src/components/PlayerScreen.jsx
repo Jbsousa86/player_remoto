@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const videoRef = useRef(null);
 
-    const currentItem = playlist[currentIndex];
+    // Keep track of the item to display. 
+    // On TV, keeping the DOM simple is better. 
+    // We will render the current item.
+    const currentItem = playlist && playlist.length > 0 ? playlist[currentIndex] : null;
 
     const isPortrait = orientation === 'portrait';
 
@@ -34,6 +36,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
 
         preloadMedia();
     }, [playlist]);
+
     // Unified YouTube ID Extractor
     const getYoutubeId = (url) => {
         if (!url) return null;
@@ -125,8 +128,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const next = () => {
         if (!playlist || playlist.length === 0) return;
 
-        // Anti-pulo duplo: evita que onEnded e onTimeUpdate chamem o próximo 
-        // para o MESMO item da playlist ao mesmo tempo.
+        // Anti-pulo duplo
         if (lastAdvancedIndex.current === currentIndex) return;
         lastAdvancedIndex.current = currentIndex;
 
@@ -144,6 +146,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     // Logic: If user wants Portrait but screen is Landscape, we need CSS Rotation
     const needsRotation = isPortrait && screenSize.w > screenSize.h;
 
+    // Loading State
     if (!playlist || playlist.length === 0) {
         return (
             <div className="h-screen w-screen flex flex-col items-center justify-center bg-black gap-4 text-white">
@@ -166,84 +169,86 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                     backgroundColor: '#000'
                 }}
             >
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={`${currentItem.id}-${currentIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
-                        className="absolute inset-0 w-full h-full overflow-hidden"
-                    >
-                        {/* Smart Fill Background (Professional Blur) */}
-                        {currentItem.fitMode === 'smart' && (
-                            <div
-                                className="absolute inset-0 scale-110"
+                {/* 
+                    REMOVED FRAMER MOTION for TV Compatibility 
+                    Using a simple Key-based rendering implies unmount/remount
+                    For transitions, we can add simple CSS classes if needed, 
+                    but for now, direct switching is much safer for "Black Screen" debugging.
+                */}
+                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden animate-fade-in">
+
+                    {/* Smart Fill Background (Simplified for TV - removed backdrop-filter) */}
+                    {currentItem.fitMode === 'smart' && (
+                        <div
+                            className="absolute inset-0 scale-110"
+                            style={{
+                                backgroundImage: `url(${currentItem.url})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                opacity: 0.3,
+                                filter: 'blur(20px)' // Simple blur is better supported than backdrop-filter
+                            }}
+                        />
+                    )}
+
+                    <div className="relative w-full h-full flex items-center justify-center z-10">
+                        {currentItem.type === 'video' ? (
+                            <video
+                                src={currentItem.url}
                                 style={{
-                                    backgroundImage: `url(${currentItem.url})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    filter: 'blur(40px) brightness(0.7)',
-                                    opacity: 0.4
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                }}
+                                className="block"
+                                autoPlay
+                                muted
+                                playsInline
+                                onEnded={next}
+                                onTimeUpdate={(e) => {
+                                    const video = e.target;
+                                    // Safer check for duration
+                                    if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
+                                        // Optional: pre-trigger next slightly before end if needed
+                                    }
+                                }}
+                                onError={(e) => {
+                                    console.error("Video Error", e);
+                                    next();
                                 }}
                             />
+                        ) : currentItem.type === 'youtube' ? (
+                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                                <iframe
+                                    id={`yt-player-${currentIndex}`}
+                                    src={getYoutubeEmbedUrl(currentItem.url)}
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                    allow="autoplay; encrypted-media"
+                                    title="YouTube player"
+                                />
+                            </div>
+                        ) : (
+                            <img
+                                src={currentItem.url}
+                                alt=""
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                }}
+                                className="block"
+                                onError={() => next()}
+                            />
                         )}
+                    </div>
+                </div>
 
-                        <div className="relative w-full h-full flex items-center justify-center z-10">
-                            {currentItem.type === 'video' ? (
-                                <video
-                                    src={currentItem.url}
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                                    }}
-                                    className="block"
-                                    autoPlay
-                                    muted
-                                    playsInline
-                                    onEnded={next}
-                                    onTimeUpdate={(e) => {
-                                        const video = e.target;
-                                        if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
-                                            next();
-                                        }
-                                    }}
-                                    onError={() => next()}
-                                />
-                            ) : currentItem.type === 'youtube' ? (
-                                <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
-                                    <iframe
-                                        id={`yt-player-${currentIndex}`}
-                                        src={getYoutubeEmbedUrl(currentItem.url)}
-                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                                        allow="autoplay; encrypted-media"
-                                        title="YouTube player"
-                                    />
-                                </div>
-                            ) : (
-                                <img
-                                    src={currentItem.url}
-                                    alt=""
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                                    }}
-                                    className="block shadow-2xl"
-                                    onError={() => next()}
-                                />
-                            )}
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Professional HUD Overlay (Glassmorphism) - Hidden by default, shows on hover/touch */}
-                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/20 backdrop-blur-md rounded-2xl border border-white/5 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                {/* Professional HUD Overlay - Simplified Styles */}
+                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/40 rounded-2xl border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                     <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
+                        <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
                         <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
                             <span className="text-[9px] font-bold text-white uppercase tracking-widest">Sincronizado</span>
                         </div>
                     </div>

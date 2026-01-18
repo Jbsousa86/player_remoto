@@ -4,6 +4,7 @@ import PairingScreen from './components/PairingScreen';
 import PlayerScreen from './components/PlayerScreen';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
+import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary
 import { syncService } from './lib/syncService';
 import { Maximize, WifiOff } from 'lucide-react';
 
@@ -203,7 +204,9 @@ function PlayerContainer() {
       {!isPaired ? (
         <PairingScreen onPair={handleManualPair} />
       ) : (
-        <PlayerScreen playlist={playlist} orientation={orientation} />
+        <ErrorBoundary>
+          <PlayerScreen playlist={playlist} orientation={orientation} />
+        </ErrorBoundary>
       )}
     </div>
   );
@@ -217,14 +220,16 @@ function AdminRoute({ children }) {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<PlayerContainer />} />
-        <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
-        <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<PlayerContainer />} />
+          <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+          <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 
