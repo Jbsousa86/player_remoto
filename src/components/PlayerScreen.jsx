@@ -156,25 +156,37 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         );
     }
 
-    // SIMPLIFIED DEBUG LAYOUT
+    // SIMPLIFIED DEBUG LAYOUT (INLINE STYLES ONLY)
     return (
-        <div className="w-screen h-screen bg-blue-900 flex flex-col items-center justify-center text-white overflow-hidden">
-            <h1 className="text-4xl font-bold mb-4 bg-red-600 p-2">TV DEBUG MODE</h1>
+        <div style={{
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'blue',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: 'white',
+            overflow: 'hidden'
+        }}>
+            <h1 style={{ fontSize: '40px', fontWeight: 'bold', backgroundColor: 'red', padding: '10px' }}>
+                TV DEBUG MODE (INLINE)
+            </h1>
 
-            <div className="mb-4 text-center bg-black/50 p-4 rounded text-xl">
+            <div style={{ marginBottom: '20px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '20px', fontSize: '20px' }}>
                 <p>Status: OK</p>
                 <p>Playlist Items: {playlist?.length || 0}</p>
                 <p>Current Index: {currentIndex}</p>
                 <p>Type: {currentItem?.type}</p>
             </div>
 
-            <div className="w-[80%] h-[60%] border-4 border-yellow-400 bg-black relative flex items-center justify-center">
+            <div style={{ width: '80%', height: '60%', border: '4px solid yellow', backgroundColor: 'black', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {!currentItem ? (
                     <p>NO ITEM</p>
                 ) : currentItem.type === 'video' ? (
                     <video
                         src={currentItem.url}
-                        className="max-w-full max-h-full"
+                        style={{ maxWidth: '100%', maxHeight: '100%' }}
                         autoPlay
                         muted
                         playsInline
@@ -188,20 +200,22 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                 ) : currentItem.type === 'youtube' ? (
                     <iframe
                         src={getYoutubeEmbedUrl(currentItem.url)}
-                        className="w-full h-full"
+                        style={{ width: '100%', height: '100%', border: 'none' }}
                         allow="autoplay"
                     />
                 ) : (
                     <img
                         src={currentItem.url}
                         alt="Item"
-                        className="max-w-full max-h-full object-contain"
+                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                         onError={() => next()}
                     />
                 )}
             </div>
 
-            <p className="mt-4 text-xs opacity-50 break-all max-w-[80%]">{currentItem?.url}</p>
+            <p style={{ marginTop: '10px', fontSize: '12px', opacity: 0.8, maxWidth: '80%', wordBreak: 'break-all' }}>
+                {currentItem?.url}
+            </p>
         </div>
     );
 };
