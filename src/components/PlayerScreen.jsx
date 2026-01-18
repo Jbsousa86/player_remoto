@@ -161,75 +161,63 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                     height: needsRotation ? `${screenSize.w}px` : '100vh',
                     transform: needsRotation ? 'rotate(90deg)' : 'none',
                     transformOrigin: 'center',
-                    position: 'absolute'
+                    position: 'absolute',
+                    top: 0,
+                    left: 0
                 }}
                 className="bg-black overflow-hidden"
             >
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={`${currentItem.id}-${currentIndex}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "linear" }}
-                        style={currentItem.fitMode === 'smart' ? {
-                            backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${currentItem.url})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                        } : {}}
-                        className={`absolute inset-0 bg-black ${currentItem.fitMode === 'smart' ? 'backdrop-blur-xl' : ''}`}
-                    >
-                        {currentItem.type === 'video' ? (
-                            <video
-                                src={currentItem.url}
-                                style={{ width: '100%', height: '100%' }}
-                                className={`w-full h-full ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
-                                autoPlay
-                                muted
-                                playsInline
-                                onEnded={next}
-                                onTimeUpdate={(e) => {
-                                    const video = e.target;
-                                    if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
-                                        next();
-                                    }
-                                }}
-                                onError={(e) => {
-                                    console.error("Video error", e);
+                <div className="w-full h-full relative bg-black">
+                    {currentItem.type === 'video' ? (
+                        <video
+                            key={currentItem.id}
+                            src={currentItem.url}
+                            style={{ width: '100%', height: '100%', objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover') }}
+                            className="absolute inset-0"
+                            autoPlay
+                            muted
+                            playsInline
+                            onEnded={next}
+                            onTimeUpdate={(e) => {
+                                const video = e.target;
+                                if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
                                     next();
-                                }}
-                                onLoadedData={(e) => {
-                                    e.target.play().catch(() => { });
-                                }}
+                                }
+                            }}
+                            onError={() => next()}
+                            onLoadedData={(e) => {
+                                e.target.play().catch(() => { });
+                            }}
+                        />
+                    ) : currentItem.type === 'youtube' ? (
+                        <div className={`w-full h-full relative pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                            <iframe
+                                id={`yt-player-${currentIndex}`}
+                                src={getYoutubeEmbedUrl(currentItem.url)}
+                                className="absolute inset-0 w-full h-full border-none"
+                                allow="autoplay; encrypted-media"
+                                title="YouTube player"
                             />
-                        ) : currentItem.type === 'youtube' ? (
-                            <div className={`w-full h-full relative pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
-                                <iframe
-                                    id={`yt-player-${currentIndex}`}
-                                    src={getYoutubeEmbedUrl(currentItem.url)}
-                                    className="absolute inset-0 w-full h-full border-none"
-                                    allow="autoplay; encrypted-media"
-                                    title="YouTube player"
-                                />
-                            </div>
-                        ) : (
-                            <img
-                                style={{ width: '100%', height: '100%' }}
-                                src={currentItem.url}
-                                alt=""
-                                className={`w-full h-full ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
-                                onError={() => next()}
-                            />
-                        )}
-                    </motion.div>
-                </AnimatePresence>
-
-                {/* Dark gradient overlay for a premium look */}
-                <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-10" />
+                        </div>
+                    ) : (
+                        <img
+                            key={currentItem.id}
+                            src={currentItem.url}
+                            alt=""
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                            }}
+                            className="absolute inset-0"
+                            onError={() => next()}
+                        />
+                    )}
+                </div>
 
                 {/* Subtle sync indicator */}
-                <div className="absolute top-6 right-6 z-20 flex items-center gap-2 opacity-20 hover:opacity-100 transition-opacity">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                <div className="absolute top-6 right-6 z-20 flex items-center gap-2 opacity-20 pointer-events-none">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
                     <span className="text-[8px] font-black text-white uppercase tracking-widest">Live Sync</span>
                 </div>
             </div>
