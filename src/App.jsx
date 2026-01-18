@@ -18,11 +18,21 @@ function PlayerContainer() {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
+
+    // Global error handler for debugging on TVs
+    const handleGlobalError = (event) => {
+      console.error('Global Error:', event.error);
+      // You could even alert(event.message) here if needed for extreme debugging
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('error', handleGlobalError);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('error', handleGlobalError);
     };
   }, []);
 
@@ -45,18 +55,23 @@ function PlayerContainer() {
 
   // Handle Pairing & Screen ID
   useEffect(() => {
-    const savedScreenId = localStorage.getItem('totem_screen_id');
-    if (savedScreenId) {
-      setScreenId(savedScreenId);
-      setIsPaired(true);
-      setLoading(false);
-    } else {
+    try {
+      const savedScreenId = localStorage.getItem('totem_screen_id');
+      if (savedScreenId) {
+        setScreenId(savedScreenId);
+        setIsPaired(true);
+      }
+    } catch (e) {
+      console.warn('Storage not available');
+    } finally {
       setLoading(false);
     }
   }, []);
 
   const handleManualPair = (id) => {
-    localStorage.setItem('totem_screen_id', id);
+    try {
+      localStorage.setItem('totem_screen_id', id);
+    } catch (e) { }
     setScreenId(id);
     setIsPaired(true);
   };
@@ -110,18 +125,15 @@ function PlayerContainer() {
     return () => clearInterval(interval);
   }, [isPaired, screenId, isOnline]);
 
-  // Screen Wake Lock (Prevent Sleep)
+  // Screen Wake Lock (Prevent Sleep - with TV safety)
   useEffect(() => {
-    if (!isPaired) return;
+    if (!isPaired || !('wakeLock' in navigator)) return;
 
     let wakeLock = null;
 
     const requestWakeLock = async () => {
       try {
-        if ('wakeLock' in navigator) {
-          wakeLock = await navigator.wakeLock.request('screen');
-          console.log('✨ Wake Lock active: Screen will NOT sleep');
-        }
+        wakeLock = await navigator.wakeLock.request('screen');
       } catch (err) {
         console.warn(`Fail to acquire wake lock: ${err.message}`);
       }

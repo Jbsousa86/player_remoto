@@ -9,26 +9,27 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
 
     const isPortrait = orientation === 'portrait';
 
-    // Preload Logic for Offline Support
+    // Preload Logic for Offline Support (With Safety for Smart TVs)
     useEffect(() => {
-        if (!playlist || playlist.length === 0) return;
+        if (!playlist || playlist.length === 0 || !window.caches) return;
 
         const preloadMedia = async () => {
-            const cache = await caches.open('media-cache');
-            playlist.forEach(async (item) => {
-                const response = await cache.match(item.url);
-                if (!response) {
-                    try {
-                        const fetchResponse = await fetch(item.url);
-                        if (fetchResponse.ok) {
-                            cache.put(item.url, fetchResponse.clone());
-                            console.log(`Preloaded: ${item.url}`);
-                        }
-                    } catch (e) {
-                        console.warn(`Failed to preload: ${item.url}`, e);
+            try {
+                const cache = await caches.open('media-cache');
+                playlist.forEach(async (item) => {
+                    const response = await cache.match(item.url);
+                    if (!response) {
+                        try {
+                            const fetchResponse = await fetch(item.url);
+                            if (fetchResponse.ok) {
+                                cache.put(item.url, fetchResponse.clone());
+                            }
+                        } catch (e) { }
                     }
-                }
-            });
+                });
+            } catch (e) {
+                console.warn("Cache API not supported on this device.");
+            }
         };
 
         preloadMedia();
