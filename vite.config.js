@@ -64,7 +64,8 @@ export default defineConfig({
     })
   ],
   build: {
-    target: 'es2015',
-    cssTarget: 'chrome61'
+    target: ['es2015', 'chrome41'],
+    cssTarget: 'chrome41',
+    minify: 'esbuild',
   }
 })
