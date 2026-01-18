@@ -156,95 +156,52 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         );
     }
 
+    // SIMPLIFIED DEBUG LAYOUT
     return (
-        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0 select-none">
-            <div
-                style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    width: needsRotation ? `${screenSize.h}px` : '100%',
-                    height: needsRotation ? `${screenSize.w}px` : '100%',
-                    transform: `translate(-50%, -50%) ${needsRotation ? 'rotate(90deg)' : ''}`,
-                    backgroundColor: '#000'
-                }}
-            >
-                {/* 
-                   DEBUG MODE: REMOVED ANIMATIONS & ADDED VISUAL LOGS 
-                   If this works, we know it was the animation or style hiding the content.
-                */}
-                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden">
+        <div className="w-screen h-screen bg-blue-900 flex flex-col items-center justify-center text-white overflow-hidden">
+            <h1 className="text-4xl font-bold mb-4 bg-red-600 p-2">TV DEBUG MODE</h1>
 
-                    {/* Debug Info Overlay - Visible on TV */}
-                    <div className="absolute top-0 left-0 bg-red-600 text-white p-2 z-[9999] text-xs font-mono max-w-[50%] break-all opacity-80">
-                        <p><strong>DEBUG MODE</strong></p>
-                        <p>Idx: {currentIndex}</p>
-                        <p>Type: {currentItem.type}</p>
-                        <p>Fit: {currentItem.fitMode}</p>
-                        <p>URL: {currentItem.url}</p>
-                    </div>
-
-                    <div className="relative w-full h-full flex items-center justify-center z-10 bg-gray-900">
-                        {currentItem.type === 'video' ? (
-                            <video
-                                src={currentItem.url}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                                }}
-                                className="block border-2 border-green-500"
-                                autoPlay
-                                muted
-                                playsInline
-                                onEnded={next}
-                                onTimeUpdate={(e) => {
-                                    const video = e.target;
-                                    if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
-                                    }
-                                }}
-                                onError={(e) => {
-                                    console.error("Video Error", e);
-                                    next();
-                                }}
-                            />
-                        ) : currentItem.type === 'youtube' ? (
-                            <div className={`w-full h-full pointer-events-none origin-center border-2 border-blue-500 ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
-                                <iframe
-                                    id={`yt-player-${currentIndex}`}
-                                    src={getYoutubeEmbedUrl(currentItem.url)}
-                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                                    allow="autoplay; encrypted-media"
-                                    title="YouTube player"
-                                />
-                            </div>
-                        ) : (
-                            <img
-                                src={currentItem.url}
-                                alt="Playlist Item"
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                                }}
-                                className="block border-2 border-yellow-500"
-                                onError={() => next()}
-                            />
-                        )}
-                    </div>
-                </div>
-
-                {/* Professional HUD Overlay - Simplified Styles */}
-                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/40 rounded-2xl border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                            <span className="text-[9px] font-bold text-white uppercase tracking-widest">Sincronizado</span>
-                        </div>
-                    </div>
-                </div>
+            <div className="mb-4 text-center bg-black/50 p-4 rounded text-xl">
+                <p>Status: OK</p>
+                <p>Playlist Items: {playlist?.length || 0}</p>
+                <p>Current Index: {currentIndex}</p>
+                <p>Type: {currentItem?.type}</p>
             </div>
+
+            <div className="w-[80%] h-[60%] border-4 border-yellow-400 bg-black relative flex items-center justify-center">
+                {!currentItem ? (
+                    <p>NO ITEM</p>
+                ) : currentItem.type === 'video' ? (
+                    <video
+                        src={currentItem.url}
+                        className="max-w-full max-h-full"
+                        autoPlay
+                        muted
+                        playsInline
+                        controls
+                        onEnded={next}
+                        onError={(e) => {
+                            console.error("Video Error", e);
+                            next();
+                        }}
+                    />
+                ) : currentItem.type === 'youtube' ? (
+                    <iframe
+                        src={getYoutubeEmbedUrl(currentItem.url)}
+                        className="w-full h-full"
+                        allow="autoplay"
+                    />
+                ) : (
+                    <img
+                        src={currentItem.url}
+                        alt="Item"
+                        className="max-w-full max-h-full object-contain"
+                        onError={() => next()}
+                    />
+                )}
+            </div>
+
+            <p className="mt-4 text-xs opacity-50 break-all max-w-[80%]">{currentItem?.url}</p>
         </div>
     );
 };
