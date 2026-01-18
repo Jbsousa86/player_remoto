@@ -170,28 +170,21 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                 }}
             >
                 {/* 
-                    REMOVED FRAMER MOTION for TV Compatibility 
-                    Using a simple Key-based rendering implies unmount/remount
-                    For transitions, we can add simple CSS classes if needed, 
-                    but for now, direct switching is much safer for "Black Screen" debugging.
+                   DEBUG MODE: REMOVED ANIMATIONS & ADDED VISUAL LOGS 
+                   If this works, we know it was the animation or style hiding the content.
                 */}
-                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden animate-fade-in">
+                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden">
 
-                    {/* Smart Fill Background (Simplified for TV - removed backdrop-filter) */}
-                    {currentItem.fitMode === 'smart' && (
-                        <div
-                            className="absolute inset-0 scale-110"
-                            style={{
-                                backgroundImage: `url(${currentItem.url})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                opacity: 0.3,
-                                filter: 'blur(20px)' // Simple blur is better supported than backdrop-filter
-                            }}
-                        />
-                    )}
+                    {/* Debug Info Overlay - Visible on TV */}
+                    <div className="absolute top-0 left-0 bg-red-600 text-white p-2 z-[9999] text-xs font-mono max-w-[50%] break-all opacity-80">
+                        <p><strong>DEBUG MODE</strong></p>
+                        <p>Idx: {currentIndex}</p>
+                        <p>Type: {currentItem.type}</p>
+                        <p>Fit: {currentItem.fitMode}</p>
+                        <p>URL: {currentItem.url}</p>
+                    </div>
 
-                    <div className="relative w-full h-full flex items-center justify-center z-10">
+                    <div className="relative w-full h-full flex items-center justify-center z-10 bg-gray-900">
                         {currentItem.type === 'video' ? (
                             <video
                                 src={currentItem.url}
@@ -200,16 +193,14 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                     height: '100%',
                                     objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
                                 }}
-                                className="block"
+                                className="block border-2 border-green-500"
                                 autoPlay
                                 muted
                                 playsInline
                                 onEnded={next}
                                 onTimeUpdate={(e) => {
                                     const video = e.target;
-                                    // Safer check for duration
                                     if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
-                                        // Optional: pre-trigger next slightly before end if needed
                                     }
                                 }}
                                 onError={(e) => {
@@ -218,7 +209,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 }}
                             />
                         ) : currentItem.type === 'youtube' ? (
-                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                            <div className={`w-full h-full pointer-events-none origin-center border-2 border-blue-500 ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
                                 <iframe
                                     id={`yt-player-${currentIndex}`}
                                     src={getYoutubeEmbedUrl(currentItem.url)}
@@ -230,13 +221,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                         ) : (
                             <img
                                 src={currentItem.url}
-                                alt=""
+                                alt="Playlist Item"
                                 style={{
                                     width: '100%',
                                     height: '100%',
                                     objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
                                 }}
-                                className="block"
+                                className="block border-2 border-yellow-500"
                                 onError={() => next()}
                             />
                         )}
