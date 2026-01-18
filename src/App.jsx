@@ -180,7 +180,7 @@ function PlayerContainer() {
   }
 
   return (
-    <div className="relative h-screen w-screen overflow-hidden group">
+    <div className="fixed inset-0 bg-black overflow-hidden group p-0 m-0">
       <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-center transition-opacity duration-500 opacity-0 group-hover:opacity-100">
         <div className="flex gap-2 text-white">
           {!isOnline && (

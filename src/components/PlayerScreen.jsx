@@ -172,14 +172,15 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1.2, ease: "easeInOut" }}
-                        className="absolute inset-0 flex items-center justify-center bg-black"
+                        className="absolute inset-0 bg-black"
                     >
                         {currentItem.type === 'video' ? (
-                            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                            <div className="relative w-full h-full overflow-hidden">
                                 {currentItem.fitMode === 'smart' && (
                                     <video
                                         src={currentItem.url}
-                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-80 scale-110"
+                                        style={{ width: '100%', height: '100%' }}
+                                        className="absolute inset-0 object-cover blur-xl opacity-80 scale-110"
                                         muted
                                         autoPlay
                                         loop
@@ -189,7 +190,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 <video
                                     key={currentItem.id}
                                     src={currentItem.url}
-                                    className={`relative z-10 w-full h-full ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
+                                    style={{ width: '100%', height: '100%' }}
+                                    className={`relative z-10 ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
                                     autoPlay
                                     muted
                                     playsInline
@@ -210,7 +212,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 />
                             </div>
                         ) : currentItem.type === 'youtube' ? (
-                            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                            <div className="relative w-full h-full overflow-hidden">
                                 <div className={`w-full h-full relative pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
                                     <iframe
                                         id={`yt-player-${currentIndex}`}
@@ -222,19 +224,21 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
+                            <div className="relative w-full h-full overflow-hidden">
                                 {currentItem.fitMode === 'smart' && (
                                     <img
                                         src={currentItem.url}
                                         alt=""
-                                        className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-80 scale-110"
+                                        style={{ width: '100%', height: '100%' }}
+                                        className="absolute inset-0 object-cover blur-xl opacity-80 scale-110"
                                     />
                                 )}
                                 <img
                                     key={currentItem.id}
+                                    style={{ width: '100%', height: '100%' }}
                                     src={currentItem.url}
                                     alt=""
-                                    className={`relative z-10 w-full h-full ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
+                                    className={`relative z-10 ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'object-contain' : 'object-cover'}`}
                                     onError={() => next()}
                                 />
                             </div>
