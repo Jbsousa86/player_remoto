@@ -342,8 +342,9 @@ const AdminPanel = () => {
                                         <select value={newItem.fitMode} onChange={(e) => setNewItem({ ...newItem, fitMode: e.target.value })}
                                             className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
                                         >
-                                            <option value="cover">🚀 Preencher</option>
-                                            <option value="contain">🖼️ Ajustar</option>
+                                            <option value="cover">✂️ Preencher (Cortar)</option>
+                                            <option value="contain">🖼️ Ajustar (Inteira)</option>
+                                            <option value="smart">🚀 Preenchimento Inteligente</option>
                                         </select>
                                     </div>
 
