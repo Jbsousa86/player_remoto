@@ -3,7 +3,7 @@ import { syncService } from '../lib/syncService';
 import { Plus, Trash2, LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const AdminPanel = () => {
+const AdminPanel = ({ isPairing = false }) => {
     const [screens, setScreens] = useState([]);
     const [selectedScreen, setSelectedScreen] = useState(null);
     const [playlist, setPlaylist] = useState([]);
@@ -12,8 +12,20 @@ const AdminPanel = () => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const [isAddingScreen, setIsAddingScreen] = useState(false);
+    const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
+
+    // Handle Quick Pairing from URL
+    useEffect(() => {
+        if (isPairing) {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (code) {
+                setNewScreenData(prev => ({ ...prev, id: code }));
+                setIsAddingScreen(true);
+            }
+        }
+    }, [isPairing]);
 
     // 1. Real-time Screens List
     useEffect(() => {

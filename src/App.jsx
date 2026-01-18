@@ -220,7 +220,8 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<PlayerContainer />} />
-        <Route path="/admin/*" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+        <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+        <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
