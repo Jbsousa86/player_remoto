@@ -173,33 +173,15 @@ function PlayerContainer() {
   };
 
   if (loading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-black">
-        <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
+    return <div style={{ color: 'white' }}>Loading...</div>;
   }
 
+  // SIMPLIFIED CONTAINER - NO ICONS, NO ABSOLUTE BG
   return (
-    <div className="absolute inset-0 bg-black overflow-hidden p-0 m-0">
-      <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-center transition-opacity duration-500 opacity-0 group-hover:opacity-100">
-        <div className="flex gap-2 text-white">
-          {!isOnline && (
-            <div className="bg-red-600 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
-              <WifiOff className="w-3 h-3" /> Offline
-            </div>
-          )}
-          <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white/50 uppercase border border-white/5">
-            SCREEN ID: {screenId}
-          </div>
-        </div>
-        <button
-          onClick={toggleFullscreen}
-          className="p-2 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all border border-white/10"
-        >
-          <Maximize className="w-5 h-5" />
-        </button>
-      </div>
+    <div style={{ width: '100%', height: '100%', backgroundColor: '#222' }}>
+      <p style={{ position: 'fixed', top: 0, right: 0, color: 'lime', zIndex: 99999, fontSize: '20px', backgroundColor: 'black' }}>
+        V: DEBUG-FINAL
+      </p>
 
       {!isPaired ? (
         <PairingScreen onPair={handleManualPair} />
