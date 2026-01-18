@@ -147,14 +147,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const needsRotation = isPortrait && screenSize.w > screenSize.h;
 
     // Loading State
-    if (!playlist || playlist.length === 0) {
-        return (
-            <div className="h-screen w-screen flex flex-col items-center justify-center bg-black gap-4 text-white">
-                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Sincronizando Totem...</p>
-            </div>
-        );
-    }
+    // Loading State was removed to force DEBUG view always.
+    // We will see "Playlist Items: 0" in the blue screen instead.
 
     // SIMPLIFIED DEBUG LAYOUT (INLINE STYLES ONLY)
     return (
