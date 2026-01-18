@@ -154,7 +154,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }
 
     return (
-        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0">
+        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0 select-none">
             <div
                 style={{
                     position: 'absolute',
@@ -166,51 +166,88 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                     backgroundColor: '#000'
                 }}
             >
-                {currentItem.type === 'video' ? (
-                    <video
-                        key={currentItem.id}
-                        src={currentItem.url}
-                        style={{ width: '100%', height: '100%', objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover') }}
-                        autoPlay
-                        muted
-                        playsInline
-                        onEnded={next}
-                        onTimeUpdate={(e) => {
-                            const video = e.target;
-                            if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
-                                next();
-                            }
-                        }}
-                        onError={() => next()}
-                        onLoadedData={(e) => {
-                            e.target.play().catch(() => { });
-                        }}
-                    />
-                ) : currentItem.type === 'youtube' ? (
-                    <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-                        <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
-                            <iframe
-                                id={`yt-player-${currentIndex}`}
-                                src={getYoutubeEmbedUrl(currentItem.url)}
-                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                                allow="autoplay; encrypted-media"
-                                title="YouTube player"
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`${currentItem.id}-${currentIndex}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+                        className="absolute inset-0 w-full h-full overflow-hidden"
+                    >
+                        {/* Smart Fill Background (Professional Blur) */}
+                        {currentItem.fitMode === 'smart' && (
+                            <div
+                                className="absolute inset-0 scale-110"
+                                style={{
+                                    backgroundImage: `url(${currentItem.url})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: 'center',
+                                    filter: 'blur(40px) brightness(0.7)',
+                                    opacity: 0.4
+                                }}
                             />
+                        )}
+
+                        <div className="relative w-full h-full flex items-center justify-center z-10">
+                            {currentItem.type === 'video' ? (
+                                <video
+                                    src={currentItem.url}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                    }}
+                                    className="block"
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    onEnded={next}
+                                    onTimeUpdate={(e) => {
+                                        const video = e.target;
+                                        if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
+                                            next();
+                                        }
+                                    }}
+                                    onError={() => next()}
+                                />
+                            ) : currentItem.type === 'youtube' ? (
+                                <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                                    <iframe
+                                        id={`yt-player-${currentIndex}`}
+                                        src={getYoutubeEmbedUrl(currentItem.url)}
+                                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                        allow="autoplay; encrypted-media"
+                                        title="YouTube player"
+                                    />
+                                </div>
+                            ) : (
+                                <img
+                                    src={currentItem.url}
+                                    alt=""
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                    }}
+                                    className="block shadow-2xl"
+                                    onError={() => next()}
+                                />
+                            )}
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+
+                {/* Professional HUD Overlay (Glassmorphism) - Hidden by default, shows on hover/touch */}
+                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/20 backdrop-blur-md rounded-2xl border border-white/5 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
+                            <span className="text-[9px] font-bold text-white uppercase tracking-widest">Sincronizado</span>
                         </div>
                     </div>
-                ) : (
-                    <img
-                        key={currentItem.id}
-                        src={currentItem.url}
-                        alt=""
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                        }}
-                        onError={() => next()}
-                    />
-                )}
+                </div>
             </div>
         </div>
     );
