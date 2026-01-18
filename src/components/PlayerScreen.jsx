@@ -154,72 +154,63 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }
 
     return (
-        <div className="fixed inset-0 bg-black overflow-hidden flex items-center justify-center p-0 m-0">
+        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0">
             <div
                 style={{
-                    width: needsRotation ? `${screenSize.h}px` : '100vw',
-                    height: needsRotation ? `${screenSize.w}px` : '100vh',
-                    transform: needsRotation ? 'rotate(90deg)' : 'none',
-                    transformOrigin: 'center',
                     position: 'absolute',
-                    top: 0,
-                    left: 0
+                    top: '50%',
+                    left: '50%',
+                    width: needsRotation ? `${screenSize.h}px` : '100%',
+                    height: needsRotation ? `${screenSize.w}px` : '100%',
+                    transform: `translate(-50%, -50%) ${needsRotation ? 'rotate(90deg)' : ''}`,
+                    backgroundColor: '#000'
                 }}
-                className="bg-black overflow-hidden"
             >
-                <div className="w-full h-full relative bg-black">
-                    {currentItem.type === 'video' ? (
-                        <video
-                            key={currentItem.id}
-                            src={currentItem.url}
-                            style={{ width: '100%', height: '100%', objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover') }}
-                            className="absolute inset-0"
-                            autoPlay
-                            muted
-                            playsInline
-                            onEnded={next}
-                            onTimeUpdate={(e) => {
-                                const video = e.target;
-                                if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
-                                    next();
-                                }
-                            }}
-                            onError={() => next()}
-                            onLoadedData={(e) => {
-                                e.target.play().catch(() => { });
-                            }}
-                        />
-                    ) : currentItem.type === 'youtube' ? (
-                        <div className={`w-full h-full relative pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                {currentItem.type === 'video' ? (
+                    <video
+                        key={currentItem.id}
+                        src={currentItem.url}
+                        style={{ width: '100%', height: '100%', objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover') }}
+                        autoPlay
+                        muted
+                        playsInline
+                        onEnded={next}
+                        onTimeUpdate={(e) => {
+                            const video = e.target;
+                            if (video.duration > 0 && video.duration - video.currentTime < 0.3) {
+                                next();
+                            }
+                        }}
+                        onError={() => next()}
+                        onLoadedData={(e) => {
+                            e.target.play().catch(() => { });
+                        }}
+                    />
+                ) : currentItem.type === 'youtube' ? (
+                    <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+                        <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
                             <iframe
                                 id={`yt-player-${currentIndex}`}
                                 src={getYoutubeEmbedUrl(currentItem.url)}
-                                className="absolute inset-0 w-full h-full border-none"
+                                style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
                                 allow="autoplay; encrypted-media"
                                 title="YouTube player"
                             />
                         </div>
-                    ) : (
-                        <img
-                            key={currentItem.id}
-                            src={currentItem.url}
-                            alt=""
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
-                            }}
-                            className="absolute inset-0"
-                            onError={() => next()}
-                        />
-                    )}
-                </div>
-
-                {/* Subtle sync indicator */}
-                <div className="absolute top-6 right-6 z-20 flex items-center gap-2 opacity-20 pointer-events-none">
-                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                    <span className="text-[8px] font-black text-white uppercase tracking-widest">Live Sync</span>
-                </div>
+                    </div>
+                ) : (
+                    <img
+                        key={currentItem.id}
+                        src={currentItem.url}
+                        alt=""
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                        }}
+                        onError={() => next()}
+                    />
+                )}
             </div>
         </div>
     );
