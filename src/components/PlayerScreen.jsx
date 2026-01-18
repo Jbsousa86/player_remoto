@@ -147,69 +147,107 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const needsRotation = isPortrait && screenSize.w > screenSize.h;
 
     // Loading State
-    // Loading State was removed to force DEBUG view always.
-    // We will see "Playlist Items: 0" in the blue screen instead.
+    if (!playlist || playlist.length === 0) {
+        return (
+            <div className="h-screen w-screen flex flex-col items-center justify-center bg-black gap-4 text-white">
+                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Sincronizando Totem...</p>
+            </div>
+        );
+    }
 
-    // SIMPLIFIED DEBUG LAYOUT (INLINE STYLES ONLY)
+    // PRODUCTION RENDER (Restored for Firestick)
     return (
-        <div style={{
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'blue',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white',
-            overflow: 'hidden'
-        }}>
-            <h1 style={{ fontSize: '40px', fontWeight: 'bold', backgroundColor: 'red', padding: '10px' }}>
-                TV DEBUG MODE (INLINE)
-            </h1>
+        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0 select-none">
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    width: needsRotation ? `${screenSize.h}px` : '100%',
+                    height: needsRotation ? `${screenSize.w}px` : '100%',
+                    transform: `translate(-50%, -50%) ${needsRotation ? 'rotate(90deg)' : ''}`,
+                    backgroundColor: '#000'
+                }}
+            >
+                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden animate-fade-in">
 
-            <div style={{ marginBottom: '20px', textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.5)', padding: '20px', fontSize: '20px' }}>
-                <p>Status: OK</p>
-                <p>Playlist Items: {playlist?.length || 0}</p>
-                <p>Current Index: {currentIndex}</p>
-                <p>Type: {currentItem?.type}</p>
+                    {/* Smart Fill Background (Professional Blur) */}
+                    {currentItem.fitMode === 'smart' && (
+                        <div
+                            className="absolute inset-0 scale-110"
+                            style={{
+                                backgroundImage: `url(${currentItem.url})`,
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                opacity: 0.3,
+                                filter: 'blur(20px)'
+                            }}
+                        />
+                    )}
+
+                    <div className="relative w-full h-full flex items-center justify-center z-10">
+                        {currentItem.type === 'video' ? (
+                            <video
+                                src={currentItem.url}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                }}
+                                className="block"
+                                autoPlay
+                                muted
+                                playsInline
+                                onEnded={next}
+                                onTimeUpdate={(e) => {
+                                    const video = e.target;
+                                    if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
+                                        // Optional pre-fetch logic could go here
+                                    }
+                                }}
+                                onError={(e) => {
+                                    console.error("Video Error", e);
+                                    next();
+                                }}
+                            />
+                        ) : currentItem.type === 'youtube' ? (
+                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                                <iframe
+                                    id={`yt-player-${currentIndex}`}
+                                    src={getYoutubeEmbedUrl(currentItem.url)}
+                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                                    allow="autoplay; encrypted-media"
+                                    title="YouTube player"
+                                />
+                            </div>
+                        ) : (
+                            <img
+                                src={currentItem.url}
+                                alt=""
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                }}
+                                className="block"
+                                onError={() => next()}
+                            />
+                        )}
+                    </div>
+                </div>
+
+                {/* Professional HUD Overlay (Status) */}
+                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
+                        <div className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                            <span className="text-[9px] font-bold text-white uppercase tracking-widest">Online</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div style={{ width: '80%', height: '60%', border: '4px solid yellow', backgroundColor: 'black', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {!currentItem ? (
-                    <p>NO ITEM</p>
-                ) : currentItem.type === 'video' ? (
-                    <video
-                        src={currentItem.url}
-                        style={{ maxWidth: '100%', maxHeight: '100%' }}
-                        autoPlay
-                        muted
-                        playsInline
-                        controls
-                        onEnded={next}
-                        onError={(e) => {
-                            console.error("Video Error", e);
-                            next();
-                        }}
-                    />
-                ) : currentItem.type === 'youtube' ? (
-                    <iframe
-                        src={getYoutubeEmbedUrl(currentItem.url)}
-                        style={{ width: '100%', height: '100%', border: 'none' }}
-                        allow="autoplay"
-                    />
-                ) : (
-                    <img
-                        src={currentItem.url}
-                        alt="Item"
-                        style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                        onError={() => next()}
-                    />
-                )}
-            </div>
-
-            <p style={{ marginTop: '10px', fontSize: '12px', opacity: 0.8, maxWidth: '80%', wordBreak: 'break-all' }}>
-                {currentItem?.url}
-            </p>
         </div>
     );
 };
