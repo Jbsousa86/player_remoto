@@ -33,7 +33,8 @@ const AdminLogin = ({ onLogin }) => {
                 className="max-w-md w-full bg-zinc-900/40 border border-zinc-800/50 p-10 rounded-[2.5rem] backdrop-blur-3xl shadow-2xl relative z-10"
             >
                 <div className="flex justify-center mb-10">
-                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                    <div className="w-16 h-16 
+                     from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
                         <Lock className="w-8 h-8 text-white" />
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { VitePWA } from 'vite-plugin-pwa'
+// import { VitePWA } from 'vite-plugin-pwa'
 import tailwindcss from '@tailwindcss/vite'
 import legacy from '@vitejs/plugin-legacy'
 
@@ -12,7 +12,7 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
-    VitePWA({
+    /* VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
@@ -65,11 +65,18 @@ export default defineConfig({
           },
         ],
       },
-    })
+    }) */
   ],
   build: {
     target: ['es2015', 'chrome41'],
     cssTarget: 'chrome41',
     minify: 'esbuild',
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name].css',
+        chunkFileNames: 'assets/[name].js',
+        entryFileNames: 'assets/[name].js',
+      },
+    },
   }
 })
