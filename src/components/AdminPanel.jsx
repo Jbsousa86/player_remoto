@@ -100,12 +100,29 @@ const AdminPanel = ({ isPairing = false }) => {
         return diff < 40000; // Online if updated in last 40s
     };
 
+    const getGoogleDriveId = (url) => {
+        const patterns = [
+            /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+            /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+            /drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/
+        ];
+
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                return match[1];
+            }
+        }
+
+        return null;
+    };
+
     const convertToDirectLink = (url) => {
         // Google Drive conversion
         if (url.includes('drive.google.com')) {
-            const driveIdMatch = url.match(/\/d\/(.+?)\//) || url.match(/id=(.+?)(&|$)/);
-            if (driveIdMatch) {
-                return `https://docs.google.com/uc?export=download&id=${driveIdMatch[1]}`;
+            const fileId = getGoogleDriveId(url);
+            if (fileId) {
+                return `https://docs.google.com/uc?export=download&id=${fileId}`;
             }
         }
         // Dropbox conversion
