@@ -81,7 +81,7 @@ const AdminPanel = ({ isPairing = false }) => {
         try {
             await syncService.deleteScreen(screenId);
             if (selectedScreen?.id === screenId) setSelectedScreen(null);
-        } catch (err) => {
+        } catch (err) {
             alert("Erro ao deletar.");
         }
     };
@@ -192,6 +192,18 @@ const AdminPanel = ({ isPairing = false }) => {
         if (!selectedScreen) return;
         setIsSyncing(true);
         const updatedPlaylist = playlist.filter(item => item.id !== id);
+        await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
+        setIsSyncing(false); // Make sure to turn off syncing indicator
+    };
+
+    const updateItem = async (id, updatedProps) => {
+        if (!selectedScreen) return;
+        
+        const updatedPlaylist = playlist.map(item => 
+            item.id === id ? { ...item, ...updatedProps } : item
+        );
+        
+        // This is a quick background update, so no need for global isSyncing spinner
         await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
     };
 

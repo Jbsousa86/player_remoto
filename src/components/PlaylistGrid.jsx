@@ -14,9 +14,9 @@ const PlaylistGrid = ({ playlist, deleteItem, getYoutubeId }) => {
                             {item.type === 'video' ? (
                                 <video src={item.url} className="w-full h-full object-cover" muted />
                             ) : item.type === 'youtube' ? (
-                                <img src={`https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
+                                <img src={`https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg`} className="w-full h-full object-contain" alt="" />
                             ) : (
-                                <img src={item.url} className="w-full h-full object-cover" alt="" />
+                                <img src={item.url} className="w-full h-full object-contain" alt="" />
                             )}
                             <div className="absolute top-4 left-4 flex gap-2">
                                 <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/10 uppercase tracking-widest">
