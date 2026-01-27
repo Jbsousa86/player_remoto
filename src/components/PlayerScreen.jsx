@@ -95,17 +95,20 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
             const initPlayer = () => {
                 const iframe = document.getElementById(`yt-player-${currentIndex}`);
                 if (iframe && window.YT && window.YT.Player) {
-                    player = new window.YT.Player(iframe, {
-                        events: {
-                            'onStateChange': (event) => {
-                                if (event.data === window.YT.PlayerState.ENDED) {
-                                    next();
-                                }
-                            },
-                            'onError': () => next()
-                        }
-                    });
-                }
+                                    player = new window.YT.Player(iframe, {
+                                        events: {
+                                            'onReady': (event) => {
+                                                // Ensure playback starts
+                                                event.target.playVideo();
+                                            },
+                                            'onStateChange': (event) => {
+                                                if (event.data === window.YT.PlayerState.ENDED) {
+                                                    next();
+                                                }
+                                            },
+                                            'onError': () => next()
+                                        }
+                                    });                }
             };
 
             // Retry initialization if API is not ready yet
