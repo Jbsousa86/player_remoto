@@ -8,7 +8,7 @@ const PlaylistGrid = ({ playlist, deleteItem, getYoutubeId }) => {
             <AnimatePresence mode="popLayout">
                 {playlist.map((item, index) => (
                     <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id}
-                        className="bg-zinc-900/50 border border-zinc-800 rounded-[2rem] overflow-hidden group shadow-xl"
+                        className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden group shadow-xl"
                     >
                         <div className="aspect-video bg-black relative">
                             {item.type === 'video' ? (

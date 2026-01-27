@@ -128,6 +128,34 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }, [currentItem, next]);
 
     /* =========================
+       IMAGE TIMER
+    ========================== */
+    useEffect(() => {
+        if (currentItem?.type !== 'image') return;
+
+        const img = new Image();
+        img.src = currentItem.url;
+
+        const fallback = 5000;
+        const limit =
+            currentItem.duration && currentItem.duration > 0
+                ? currentItem.duration * 1000
+                : fallback;
+
+        let timer;
+        img.onload = () => {
+            timer = setTimeout(next, limit);
+        };
+
+        img.onerror = () => {
+            console.warn('Erro ao carregar imagem, pulando');
+            next();
+        };
+
+        return () => clearTimeout(timer);
+    }, [currentItem, next]);
+
+    /* =========================
        ROTATION LOGIC
     ========================== */
     const [screenSize, setScreenSize] = useState({
@@ -182,7 +210,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 muted
                                 playsInline
                                 onEnded={next}
-                                onError={next}
+                                
                                 style={{
                                     width: '100%',
                                     height: '100%',
@@ -214,7 +242,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                             <img
                                 src={currentItem.url}
                                 alt=""
-                                onError={next}
+                                
                                 style={{
                                     width: '100%',
                                     height: '100%',
