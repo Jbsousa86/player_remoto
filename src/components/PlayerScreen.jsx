@@ -9,157 +9,157 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }, [currentIndex]);
 
     const next = useCallback(() => {
-        if (advancedRef.current || !playlist || playlist.length === 0) return;
+        if (advancedRef.current || !playlist?.length) return;
         advancedRef.current = true;
         setCurrentIndex((prev) => (prev + 1) % playlist.length);
     }, [playlist]);
 
-    // Keep track of the item to display. 
-    // On TV, keeping the DOM simple is better. 
-    // We will render the current item.
-    const currentItem = playlist && playlist.length > 0 ? playlist[currentIndex] : null;
-
+    const currentItem = playlist?.length ? playlist[currentIndex] : null;
     const isPortrait = orientation === 'portrait';
 
-    // Preload Logic for Offline Support (With Safety for Smart TVs)
+    /* =========================
+       PRELOAD (IMAGENS APENAS)
+    ========================== */
     useEffect(() => {
-        if (!playlist || playlist.length === 0 || !window.caches) return;
+        if (!playlist || !window.caches) return;
 
-        const preloadMedia = async () => {
+        const preloadImages = async () => {
             try {
                 const cache = await caches.open('media-cache');
-                playlist.forEach(async (item) => {
-                    const response = await cache.match(item.url);
-                    if (!response) {
+                for (const item of playlist) {
+                    if (item.type !== 'image') continue;
+
+                    const cached = await cache.match(item.url);
+                    if (!cached) {
                         try {
-                            const fetchResponse = await fetch(item.url);
-                            if (fetchResponse.ok) {
-                                cache.put(item.url, fetchResponse.clone());
-                            }
-                        } catch (e) { }
+                            const res = await fetch(item.url, { mode: 'no-cors' });
+                            if (res) await cache.put(item.url, res.clone());
+                        } catch {}
                     }
-                });
-            } catch (e) {
-                console.warn("Cache API not supported on this device.");
+                }
+            } catch {
+                console.warn('Cache API não suportado');
             }
         };
 
-        preloadMedia();
+        preloadImages();
     }, [playlist]);
 
-    // Unified YouTube ID Extractor
+    /* =========================
+       YOUTUBE HELPERS
+    ========================== */
     const getYoutubeId = (url) => {
         if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=)([^#&?]*).*/;
         const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+        return match && match[2].length === 11 ? match[2] : null;
     };
 
     const getYoutubeEmbedUrl = (url) => {
-        const videoId = getYoutubeId(url);
-        if (!videoId) return '';
-        // Link balanceado: autoplay, mudo, sem controles, mas com API ativada
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&rel=0&showinfo=0&iv_load_policy=3&enablejsapi=1&origin=${window.location.origin}`;
+        const id = getYoutubeId(url);
+        if (!id) return '';
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&rel=0&enablejsapi=1`;
     };
 
-    // 0. Load YouTube API once
+    /* =========================
+       LOAD YOUTUBE API ONCE
+    ========================== */
     useEffect(() => {
         if (!window.YT) {
             const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            tag.src = 'https://www.youtube.com/iframe_api';
+            document.body.appendChild(tag);
         }
     }, []);
 
-    // 1. Unified Advance Timer (Images & Safe Fallback for Videos)
+    /* =========================
+       SAFETY TIMER (YOUTUBE ONLY)
+    ========================== */
     useEffect(() => {
-        if (!currentItem) return;
+        if (!currentItem || currentItem.type !== 'youtube') return;
 
-        // IMAGES: 100% controlled by timer
-        if (currentItem.type === 'image') {
-            const timer = setTimeout(() => next(), (currentItem.duration || 10) * 1000);
-            return () => clearTimeout(timer);
-        }
+        const limit =
+            currentItem.duration && currentItem.duration > 0
+                ? currentItem.duration * 1000
+                : 300000; // 5 min fallback
 
-        // VIDEOS/YOUTUBE: Safety timer
-        // If duration is 0 (auto), use a safe maximum (e.g. 5 mins for safety) 
-        // to prevent infinite stall if events fail.
-        const limit = (currentItem.duration && currentItem.duration > 0)
-            ? currentItem.duration * 1000
-            : 300000; // 5 minutes safety for auto videos
-
-        const safetyTimer = setTimeout(() => {
-            console.log("Safety skip triggered");
+        const timer = setTimeout(() => {
+            console.warn('YouTube safety skip');
             next();
         }, limit);
 
-        return () => clearTimeout(safetyTimer);
-    }, [currentIndex, currentItem, next]);
+        return () => clearTimeout(timer);
+    }, [currentItem, next]);
 
-    // 2. YouTube API - Listening to the Iframe
+    /* =========================
+       YOUTUBE PLAYER EVENTS
+    ========================== */
     useEffect(() => {
-        if (currentItem?.type === 'youtube') {
-            let player;
+        if (currentItem?.type !== 'youtube') return;
 
-            const initPlayer = () => {
-                const iframe = document.getElementById(`yt-player-${currentIndex}`);
-                if (iframe && window.YT && window.YT.Player) {
-                                    player = new window.YT.Player(iframe, {
-                                        events: {
-                                            'onReady': (event) => {
-                                                // Ensure playback starts
-                                                event.target.playVideo();
-                                            },
-                                            'onStateChange': (event) => {
-                                                if (event.data === window.YT.PlayerState.ENDED) {
-                                                    next();
-                                                }
-                                            },
-                                            'onError': () => next()
-                                        }
-                                    });                }
-            };
+        let player;
+        const iframeId = `yt-player`;
 
-            // Retry initialization if API is not ready yet
-            const checkAPI = setInterval(() => {
-                if (window.YT && window.YT.Player) {
-                    clearInterval(checkAPI);
-                    initPlayer();
+        const init = () => {
+            if (!window.YT || !window.YT.Player) return;
+
+            player = new window.YT.Player(iframeId, {
+                events: {
+                    onReady: (e) => e.target.playVideo(),
+                    onStateChange: (e) => {
+                        if (e.data === window.YT.PlayerState.ENDED) next();
+                    },
+                    onError: next
                 }
-            }, 500);
+            });
+        };
 
-            return () => {
-                clearInterval(checkAPI);
-                if (player && player.destroy) player.destroy();
-            };
-        }
-    }, [currentIndex, currentItem, next]);
+        const interval = setInterval(() => {
+            if (window.YT?.Player) {
+                clearInterval(interval);
+                init();
+            }
+        }, 300);
 
-    const [screenSize, setScreenSize] = useState({ w: window.innerWidth, h: window.innerHeight });
+        return () => {
+            clearInterval(interval);
+            if (player?.destroy) player.destroy();
+        };
+    }, [currentItem, next]);
+
+    /* =========================
+       ROTATION LOGIC
+    ========================== */
+    const [screenSize, setScreenSize] = useState({
+        w: window.innerWidth,
+        h: window.innerHeight
+    });
 
     useEffect(() => {
-        const handleResize = () => setScreenSize({ w: window.innerWidth, h: window.innerHeight });
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        const resize = () =>
+            setScreenSize({ w: window.innerWidth, h: window.innerHeight });
+        window.addEventListener('resize', resize);
+        return () => window.removeEventListener('resize', resize);
     }, []);
 
-    // Logic: If user wants Portrait but screen is Landscape, we need CSS Rotation
     const needsRotation = isPortrait && screenSize.w > screenSize.h;
 
-    // Loading State
-    if (!playlist || playlist.length === 0) {
+    /* =========================
+       LOADING
+    ========================== */
+    if (!playlist?.length) {
         return (
-            <div className="h-screen w-screen flex flex-col items-center justify-center bg-black gap-4 text-white">
-                <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Sincronizando Totem...</p>
+            <div className="h-screen w-screen flex items-center justify-center bg-black text-white">
+                Sincronizando Totem…
             </div>
         );
     }
 
-    // PRODUCTION RENDER (Restored for Firestick)
+    /* =========================
+       RENDER
+    ========================== */
     return (
-        <div className="absolute inset-0 bg-black overflow-hidden m-0 p-0 select-none">
+        <div className="absolute inset-0 bg-black overflow-hidden">
             <div
                 style={{
                     position: 'absolute',
@@ -167,91 +167,65 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                     left: '50%',
                     width: needsRotation ? `${screenSize.h}px` : '100%',
                     height: needsRotation ? `${screenSize.w}px` : '100%',
-                    transform: `translate(-50%, -50%) ${needsRotation ? 'rotate(90deg)' : ''}`,
+                    transform: `translate(-50%, -50%) ${
+                        needsRotation ? 'rotate(90deg)' : ''
+                    }`,
                     backgroundColor: '#000'
                 }}
             >
-                <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden animate-fade-in">
-
-                    {/* Smart Fill Background (Professional Blur) */}
-                    {currentItem?.fitMode === 'smart' && (
-                        <div
-                            className="absolute inset-0 scale-110"
-                            style={{
-                                backgroundImage: `url(${currentItem.url})`,
-                                backgroundSize: 'cover',
-                                backgroundPosition: 'center',
-                                opacity: 0.3,
-                                filter: 'blur(20px)'
-                            }}
-                        />
-                    )}
-
-                    <div className="relative w-full h-full flex items-center justify-center z-10">
-                        {currentItem.type === 'video' ? (
+                <div className="absolute inset-0 w-full h-full overflow-hidden">
+                    <div className="relative w-full h-full flex items-center justify-center">
+                        {currentItem.type === 'video' && (
                             <video
                                 src={currentItem.url}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit: (currentItem?.fitMode === 'cover' ? 'cover' : 'contain')
-                                }}
-                                className="block"
                                 autoPlay
                                 muted
                                 playsInline
                                 onEnded={next}
-                                onTimeUpdate={(e) => {
-                                    const video = e.target;
-                                    if (video.currentTime > 1 && video.duration > 0 && video.duration - video.currentTime < 1) {
-                                        next();
-                                    }
-                                }}
-                                onError={(e) => {
-                                    console.error("Video Error", e);
-                                    next();
-                                }}
-                            />
-                        ) : currentItem.type === 'youtube' ? (
-                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem?.fitMode === 'contain' || currentItem?.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
-                                <iframe
-                                    id={`yt-player-${currentIndex}`}
-                                    src={getYoutubeEmbedUrl(currentItem.url)}
-                                    style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-                                    allow="autoplay; encrypted-media"
-                                    title="YouTube player"
-                                />
-                            </div>
-                        ) : (
-                            <img
-                                src={currentItem.url}
-                                alt=""
+                                onError={next}
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: (currentItem?.fitMode === 'cover' ? 'cover' : 'contain')
+                                    objectFit:
+                                        currentItem.fitMode === 'cover'
+                                            ? 'cover'
+                                            : 'contain'
                                 }}
-                                className="block"
-                                onError={() => next()}
+                            />
+                        )}
+
+                        {currentItem.type === 'youtube' && (
+                            <iframe
+                                id="yt-player"
+                                src={getYoutubeEmbedUrl(currentItem.url)}
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    border: 'none'
+                                }}
+                                allow="autoplay; encrypted-media"
+                                title="YouTube Player"
+                            />
+                        )}
+
+                        {currentItem.type === 'image' && (
+                            <img
+                                src={currentItem.url}
+                                alt=""
+                                onError={next}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit:
+                                        currentItem.fitMode === 'cover'
+                                            ? 'cover'
+                                            : 'contain'
+                                }}
                             />
                         )}
                     </div>
-                </div>
-
-                {/* Professional HUD Overlay (Status) */}
-                <div className="absolute top-8 right-8 z-50 flex items-center gap-3 px-4 py-2 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10 opacity-0 hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-black text-white/60 uppercase tracking-[0.2em] leading-none mb-1">Status</span>
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-                            <span className="text-[9px] font-bold text-white uppercase tracking-widest">Online</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* DEBUG */}
-                <div className="absolute bottom-4 left-4 z-50 p-3 bg-red-600 text-white font-mono text-xs rounded-lg">
-                    DEBUG: fitMode is "{currentItem?.fitMode || 'undefined'}"
                 </div>
             </div>
         </div>
