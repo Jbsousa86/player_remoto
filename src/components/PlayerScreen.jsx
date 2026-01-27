@@ -173,7 +173,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                 <div key={`${currentItem.id}-${currentIndex}`} className="absolute inset-0 w-full h-full overflow-hidden animate-fade-in">
 
                     {/* Smart Fill Background (Professional Blur) */}
-                    {currentItem.fitMode === 'smart' && (
+                    {currentItem?.fitMode === 'smart' && (
                         <div
                             className="absolute inset-0 scale-110"
                             style={{
@@ -193,7 +193,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: (currentItem.fitMode === 'cover' ? 'cover' : 'contain')
+                                    objectFit: (currentItem?.fitMode === 'cover' ? 'cover' : 'contain')
                                 }}
                                 className="block"
                                 autoPlay
@@ -212,7 +212,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 }}
                             />
                         ) : currentItem.type === 'youtube' ? (
-                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
+                            <div className={`w-full h-full pointer-events-none origin-center ${currentItem?.fitMode === 'contain' || currentItem?.fitMode === 'smart' ? 'scale-100' : (isPortrait ? 'scale-[3.5]' : 'scale-[1.3]')}`}>
                                 <iframe
                                     id={`yt-player-${currentIndex}`}
                                     src={getYoutubeEmbedUrl(currentItem.url)}
@@ -228,7 +228,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: (currentItem.fitMode === 'cover' ? 'cover' : 'contain')
+                                    objectFit: (currentItem?.fitMode === 'cover' ? 'cover' : 'contain')
                                 }}
                                 className="block"
                                 onError={() => next()}
@@ -246,6 +246,11 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                             <span className="text-[9px] font-bold text-white uppercase tracking-widest">Online</span>
                         </div>
                     </div>
+                </div>
+
+                {/* DEBUG */}
+                <div className="absolute bottom-4 left-4 z-50 p-3 bg-red-600 text-white font-mono text-xs rounded-lg">
+                    DEBUG: fitMode is "{currentItem?.fitMode || 'undefined'}"
                 </div>
             </div>
         </div>
