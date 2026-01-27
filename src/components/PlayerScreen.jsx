@@ -1,8 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const videoRef = useRef(null);
+    const advancedRef = useRef(false);
+
+    useEffect(() => {
+        advancedRef.current = false;
+    }, [currentIndex]);
+
+    const next = useCallback(() => {
+        if (advancedRef.current || !playlist || playlist.length === 0) return;
+        advancedRef.current = true;
+        setCurrentIndex((prev) => (prev + 1) % playlist.length);
+    }, [playlist]);
 
     // Keep track of the item to display. 
     // On TV, keeping the DOM simple is better. 
@@ -85,7 +95,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         }, limit);
 
         return () => clearTimeout(safetyTimer);
-    }, [currentIndex, currentItem]);
+    }, [currentIndex, currentItem, next]);
 
     // 2. YouTube API - Listening to the Iframe
     useEffect(() => {
@@ -95,17 +105,20 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
             const initPlayer = () => {
                 const iframe = document.getElementById(`yt-player-${currentIndex}`);
                 if (iframe && window.YT && window.YT.Player) {
-                    player = new window.YT.Player(iframe, {
-                        events: {
-                            'onStateChange': (event) => {
-                                if (event.data === window.YT.PlayerState.ENDED) {
-                                    next();
-                                }
-                            },
-                            'onError': () => next()
-                        }
-                    });
-                }
+                                    player = new window.YT.Player(iframe, {
+                                        events: {
+                                            'onReady': (event) => {
+                                                // Ensure playback starts
+                                                event.target.playVideo();
+                                            },
+                                            'onStateChange': (event) => {
+                                                if (event.data === window.YT.PlayerState.ENDED) {
+                                                    next();
+                                                }
+                                            },
+                                            'onError': () => next()
+                                        }
+                                    });                }
             };
 
             // Retry initialization if API is not ready yet
@@ -121,19 +134,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                 if (player && player.destroy) player.destroy();
             };
         }
-    }, [currentIndex, currentItem]);
-
-    const lastAdvancedIndex = useRef(-1);
-
-    const next = () => {
-        if (!playlist || playlist.length === 0) return;
-
-        // Anti-pulo duplo
-        if (lastAdvancedIndex.current === currentIndex) return;
-        lastAdvancedIndex.current = currentIndex;
-
-        setCurrentIndex((prev) => (prev + 1) % playlist.length);
-    };
+    }, [currentIndex, currentItem, next]);
 
     const [screenSize, setScreenSize] = useState({ w: window.innerWidth, h: window.innerHeight });
 
@@ -202,8 +203,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 onEnded={next}
                                 onTimeUpdate={(e) => {
                                     const video = e.target;
-                                    if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
-                                        // Optional pre-fetch logic could go here
+                                    if (video.currentTime > 1 && video.duration > 0 && video.duration - video.currentTime < 1) {
+                                        next();
                                     }
                                 }}
                                 onError={(e) => {
