@@ -3,6 +3,11 @@ import React, { useState, useEffect, useRef } from 'react';
 const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const videoRef = useRef(null);
+    const advancedRef = useRef(false);
+
+    useEffect(() => {
+        advancedRef.current = false;
+    }, [currentIndex]);
 
     // Keep track of the item to display. 
     // On TV, keeping the DOM simple is better. 
@@ -62,6 +67,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         }
     }, []);
 
+    const next = () => {
+        if (advancedRef.current || !playlist || playlist.length === 0) return;
+        advancedRef.current = true;
+
+        setCurrentIndex((prev) => (prev + 1) % playlist.length);
+    };
+
     // 1. Unified Advance Timer (Images & Safe Fallback for Videos)
     useEffect(() => {
         if (!currentItem) return;
@@ -85,7 +97,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         }, limit);
 
         return () => clearTimeout(safetyTimer);
-    }, [currentIndex, currentItem]);
+    }, [currentIndex, currentItem, next]);
 
     // 2. YouTube API - Listening to the Iframe
     useEffect(() => {
@@ -124,19 +136,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                 if (player && player.destroy) player.destroy();
             };
         }
-    }, [currentIndex, currentItem]);
-
-    const lastAdvancedIndex = useRef(-1);
-
-    const next = () => {
-        if (!playlist || playlist.length === 0) return;
-
-        // Anti-pulo duplo
-        if (lastAdvancedIndex.current === currentIndex) return;
-        lastAdvancedIndex.current = currentIndex;
-
-        setCurrentIndex((prev) => (prev + 1) % playlist.length);
-    };
+    }, [currentIndex, currentItem, next]);
 
     const [screenSize, setScreenSize] = useState({ w: window.innerWidth, h: window.innerHeight });
 
@@ -205,8 +205,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 onEnded={next}
                                 onTimeUpdate={(e) => {
                                     const video = e.target;
-                                    if (video.duration > 0 && video.duration - video.currentTime < 0.5) {
-                                        // Optional pre-fetch logic could go here
+                                    if (video.duration > 0 && video.duration - video.currentTime < 1) {
+                                        next();
                                     }
                                 }}
                                 onError={(e) => {
