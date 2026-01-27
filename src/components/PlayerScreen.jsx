@@ -193,7 +193,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                    objectFit: (currentItem.fitMode === 'cover' ? 'cover' : 'contain')
                                 }}
                                 className="block"
                                 autoPlay
@@ -228,7 +228,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 style={{
                                     width: '100%',
                                     height: '100%',
-                                    objectFit: (currentItem.fitMode === 'contain' || currentItem.fitMode === 'smart' ? 'contain' : 'cover')
+                                    objectFit: (currentItem.fitMode === 'cover' ? 'cover' : 'contain')
                                 }}
                                 className="block"
                                 onError={() => next()}

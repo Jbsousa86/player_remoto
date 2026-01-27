@@ -18,13 +18,13 @@ const ScreenList = ({
 }) => {
     return (
         <aside className={`
-            fixed md:relative top-0 left-0 z-[80]
+            fixed md:relative top-0 left-0 z-80
             w-[85%] md:w-96 h-full border-r border-zinc-800 p-8 flex flex-col gap-8 bg-black/95 md:bg-black/50 backdrop-blur-3xl 
             transition-transform duration-500 ease-out md:translate-x-0
             ${isMobileMenuOpen ? 'translate-x-0 shadow-[20px_0_60px_rgba(0,0,0,0.8)]' : '-translate-x-full md:translate-x-0'}
         `}>
             <div className="hidden md:flex items-center gap-3 px-2">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+                <div className="w-10 h-10 bg-linear-to-br from-orange-400 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/20">
                     <LayoutDashboard className="w-6 h-6 text-white" />
                 </div>
                 <div>
