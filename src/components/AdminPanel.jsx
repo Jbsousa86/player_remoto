@@ -103,6 +103,29 @@ const AdminPanel = ({ isPairing = false }) => {
         return /\.(mp4|webm|ogg|ogv|mov|m4v|mkv|avi)$/i.test(cleanUrl);
     };
 
+    const handleUrlChange = (url) => {
+        const youtubeId = getYoutubeId(url);
+        const isVideo = isVideoUrl(url);
+
+        let detectedType = 'image';
+        let detectedDuration = 10;
+
+        if (youtubeId) {
+            detectedType = 'youtube';
+            detectedDuration = 0;
+        } else if (isVideo) {
+            detectedType = 'video';
+            detectedDuration = 0;
+        }
+
+        setNewItem(prev => ({
+            ...prev,
+            url: url,
+            type: detectedType,
+            duration: detectedDuration
+        }));
+    };
+
     const isScreenOnline = (lastSeen) => {
         if (!lastSeen) return false;
         const now = Date.now();
@@ -314,6 +337,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         <AddItemForm
                             newItem={newItem}
                             setNewItem={setNewItem}
+                            handleUrlChange={handleUrlChange}
                             addItem={addItem}
                             isSyncing={isSyncing}
                         />

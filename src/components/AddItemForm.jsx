@@ -1,13 +1,13 @@
 import React from 'react';
 
-const AddItemForm = ({ newItem, setNewItem, addItem, isSyncing }) => {
+const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing }) => {
     return (
         <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2.5rem] shadow-2xl mb-12">
             <form onSubmit={addItem} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
                     <div className="lg:col-span-12">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia</label>
-                        <input type="text" value={newItem.url} onChange={(e) => setNewItem({ ...newItem, url: e.target.value })}
+                        <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
                             placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
                             className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium" required />
                     </div>
