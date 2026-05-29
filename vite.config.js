@@ -50,16 +50,31 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|mp4|webm)$/,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif)$/,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'media-cache',
+              cacheName: 'images-cache',
               expiration: {
                 maxEntries: 100,
                 maxAgeSeconds: 60 * 60 * 24 * 30,
               },
               cacheableResponse: {
                 statuses: [0, 200],
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:mp4|webm)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'videos-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30,
+              },
+              rangeRequests: true,
+              cacheableResponse: {
+                statuses: [0, 200, 206],
               },
             },
           },

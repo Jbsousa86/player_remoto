@@ -92,6 +92,27 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     }, [currentItem, next]);
 
     /* =========================
+       VIDEO SAFETY TIMER
+    ========================== */
+    useEffect(() => {
+        if (!currentItem || currentItem.type !== 'video') return;
+
+        const limit =
+            currentItem.duration && currentItem.duration > 0
+                ? currentItem.duration * 1000
+                : null;
+
+        if (!limit) return;
+
+        const timer = setTimeout(() => {
+            console.warn('Video duration limit reached, skipping');
+            next();
+        }, limit);
+
+        return () => clearTimeout(timer);
+    }, [currentItem, next]);
+
+    /* =========================
        YOUTUBE PLAYER EVENTS
     ========================== */
     useEffect(() => {
@@ -210,7 +231,11 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 muted
                                 playsInline
                                 onEnded={next}
-                                
+                                onError={(e) => {
+                                    console.error('Video playback error, skipping:', e);
+                                    next();
+                                }}
+                                crossOrigin="anonymous"
                                 style={{
                                     width: '100%',
                                     height: '100%',
