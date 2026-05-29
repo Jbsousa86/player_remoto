@@ -97,6 +97,12 @@ const AdminPanel = ({ isPairing = false }) => {
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
+    const isVideoUrl = (url) => {
+        if (!url) return false;
+        const cleanUrl = url.split('?')[0].split('#')[0];
+        return /\.(mp4|webm|ogg|ogv|mov|m4v|mkv|avi)$/i.test(cleanUrl);
+    };
+
     const isScreenOnline = (lastSeen) => {
         if (!lastSeen) return false;
         const now = Date.now();
@@ -172,10 +178,34 @@ const AdminPanel = ({ isPairing = false }) => {
         const youtubeId = getYoutubeId(newItem.url);
         const finalUrl = convertToDirectLink(newItem.url);
         let finalType = newItem.type;
-        if (youtubeId) finalType = 'youtube';
+        let finalDuration = newItem.duration;
+
+        if (youtubeId) {
+            finalType = 'youtube';
+            // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
+            if (newItem.type === 'image') {
+                finalDuration = 0;
+            }
+        } else if (isVideoUrl(finalUrl)) {
+            finalType = 'video';
+            // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
+            if (newItem.type === 'image') {
+                finalDuration = 0;
+            }
+        }
 
         const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
-        const updatedPlaylist = [...playlist, { ...newItem, url: finalUrl, type: finalType, id, order: playlist.length + 1 }];
+        const updatedPlaylist = [
+            ...playlist, 
+            { 
+                ...newItem, 
+                url: finalUrl, 
+                type: finalType, 
+                duration: finalDuration, 
+                id, 
+                order: playlist.length + 1 
+            }
+        ];
 
         try {
             await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
