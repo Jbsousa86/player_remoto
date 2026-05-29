@@ -64,7 +64,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:mp4|webm)$/,
+            urlPattern: /\.(?:mp4|webm|ogg|ogv|mov|m4v|mkv|avi)$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'videos-cache',

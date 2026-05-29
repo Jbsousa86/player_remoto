@@ -97,15 +97,14 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     useEffect(() => {
         if (!currentItem || currentItem.type !== 'video') return;
 
+        // Fallback safety limit of 10 minutes (600,000 ms) in case video playback freezes/stalls
         const limit =
             currentItem.duration && currentItem.duration > 0
                 ? currentItem.duration * 1000
-                : null;
-
-        if (!limit) return;
+                : 600000;
 
         const timer = setTimeout(() => {
-            console.warn('Video duration limit reached, skipping');
+            console.warn('Video duration limit or safety timeout reached, skipping');
             next();
         }, limit);
 
@@ -230,6 +229,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 autoPlay
                                 muted
                                 playsInline
+                                preload="auto"
                                 onEnded={next}
                                 onError={(e) => {
                                     console.error('Video playback error, skipping:', e);
