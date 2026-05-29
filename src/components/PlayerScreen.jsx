@@ -25,7 +25,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
 
         const preloadImages = async () => {
             try {
-                const cache = await caches.open('media-cache');
+                const cache = await caches.open('images-cache');
                 for (const item of playlist) {
                     if (item.type !== 'image') continue;
 
