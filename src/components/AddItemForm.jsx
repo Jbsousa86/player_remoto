@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing }) => {
+    const [flash, setFlash] = useState(false);
+    // Trigger flash when URL changes (auto-detection)
+    useEffect(() => {
+        if (newItem.url) {
+            setFlash(true);
+            const timer = setTimeout(() => setFlash(false), 600);
+            return () => clearTimeout(timer);
+        }
+    }, [newItem.url]);
     return (
         <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2.5rem] shadow-2xl mb-12">
             <form onSubmit={addItem} className="space-y-8">
@@ -9,7 +18,25 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing 
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia</label>
                         <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
                             placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
-                            className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium" required />
+                            className={`w-full bg-black border ${
+                                flash ? 'border-yellow-400' : ''
+                                } ${
+                                newItem.type === 'image' ? 'border-blue-500' :
+                                newItem.type === 'video' ? 'border-red-500' :
+                                newItem.type === 'youtube' ? 'border-purple-500' :
+                                'border-zinc-800'
+                            } rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium`} required />
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${
+                                newItem.type === 'image' ? 'bg-blue-600 text-white' :
+                                newItem.type === 'video' ? 'bg-red-600 text-white' :
+                                newItem.type === 'youtube' ? 'bg-purple-600 text-white' :
+                                'bg-gray-600 text-white'
+                            }`}>Tipo: {newItem.type}</span>
+                            {newItem.duration === 0 && (
+                                <span className="inline-flex items-center px-2 py-1 rounded text-xs font-bold bg-emerald-600 text-white">Duração ilimitada</span>
+                            )}
+                        </div>
                     </div>
 
                     <div className="lg:col-span-4">
