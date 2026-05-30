@@ -501,9 +501,10 @@ const AdminPanel = ({ isPairing = false }) => {
                                     value={tickerText}
                                     onChange={(e) => setTickerText(e.target.value)}
                                     onBlur={() => handleTickerTextSave(tickerText)}
-                                    placeholder="Digite as notícias, rss ou recados (salva ao sair do campo)..."
+                                    placeholder="Digite recados. Use {{hora}} ou {{data}} para exibir tempo real..."
                                     className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
+                                <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: Digite <strong className="text-orange-500">{"{{hora}}"}</strong> para mostrar a hora e <strong className="text-orange-500">{"{{data}}"}</strong> para a data atual.</p>
                             </div>
                             <div className="shrink-0 w-full lg:w-auto flex items-end">
                                 <button

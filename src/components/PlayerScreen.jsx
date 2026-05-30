@@ -1,5 +1,35 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
+const DynamicTicker = ({ ticker }) => {
+    const [currentTime, setCurrentTime] = useState(new Date());
+
+    useEffect(() => {
+        if (!ticker?.isActive) return;
+        const interval = setInterval(() => setCurrentTime(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, [ticker?.isActive]);
+
+    if (!ticker?.isActive || !ticker?.text) return null;
+
+    const timeStr = currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = currentTime.toLocaleDateString('pt-BR');
+    const displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr);
+
+    return (
+        <div className="absolute bottom-0 left-0 w-full h-10 md:h-14 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
+            <style>{`
+                @keyframes marquee-scroll {
+                    0% { transform: translateX(0%); }
+                    100% { transform: translateX(-100%); }
+                }
+            `}</style>
+            <div className="whitespace-nowrap font-semibold text-lg md:text-2xl text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
+                {displayText}
+            </div>
+        </div>
+    );
+};
+
 const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, ticker = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const activePlaylist = useMemo(() => {
@@ -390,19 +420,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     </div>
                 </div>
 
-                {ticker?.isActive && ticker?.text && (
-                    <div className="absolute bottom-0 left-0 w-full h-10 md:h-14 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
-                        <style>{`
-                            @keyframes marquee-scroll {
-                                0% { transform: translateX(0%); }
-                                100% { transform: translateX(-100%); }
-                            }
-                        `}</style>
-                        <div className="whitespace-nowrap font-semibold text-lg md:text-2xl text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
-                            {ticker.text}
-                        </div>
-                    </div>
-                )}
+                <DynamicTicker ticker={ticker} />
             </div>
         </div>
     );
