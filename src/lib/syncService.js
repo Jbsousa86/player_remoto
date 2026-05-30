@@ -49,6 +49,7 @@ export const syncService = {
             orientation: 'landscape', 
             isMuted: true,
             isPlaying: true,
+            volume: 100,
             ticker: { text: '', isActive: false }
         }, { merge: true });
         return screenId;

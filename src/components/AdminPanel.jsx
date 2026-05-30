@@ -216,6 +216,15 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleVolumeChange = async (newVolume) => {
+        if (!selectedScreen) return;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { volume: newVolume });
+        } catch (err) {
+            console.error("Erro ao alterar o volume:", err);
+        }
+    };
+
     const handleTogglePlayPause = async () => {
         if (!selectedScreen) return;
         setIsSyncing(true);
@@ -461,6 +470,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             handleForceReload={handleForceReload}
                             handleToggleOrientation={handleToggleOrientation}
                             handleToggleSound={handleToggleSound}
+                            handleVolumeChange={handleVolumeChange}
                             handleTogglePlayPause={handleTogglePlayPause}
                             isSyncing={isSyncing}
                         />

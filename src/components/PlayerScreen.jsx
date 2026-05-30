@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, isPlaying = true, ticker = null }) => {
+const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, ticker = null }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
@@ -135,6 +135,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, isP
                     onReady: (e) => {
                         if (isMuted) e.target.mute();
                         else e.target.unMute();
+                        e.target.setVolume(volume);
                         if (isPlaying) e.target.playVideo();
                     },
                     onStateChange: (e) => {
@@ -178,6 +179,16 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, isP
             else ytPlayerRef.current.unMute();
         }
     }, [isMuted, currentType, currentUrl]);
+
+    useEffect(() => {
+        if (currentType === 'video' && videoRef.current) {
+            // HTML5 Video aceita volume de 0.0 a 1.0
+            videoRef.current.volume = volume / 100;
+        } else if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === 'function') {
+            // YouTube API aceita volume de 0 a 100
+            ytPlayerRef.current.setVolume(volume);
+        }
+    }, [volume, currentType, currentUrl]);
 
     /* =========================
        IMAGE TIMER
