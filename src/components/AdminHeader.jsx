@@ -5,9 +5,14 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
     return (
         <header className="mb-12 flex flex-col md:flex-row justify-between items-start gap-8 mr-8">
             <div>
-                <div className={`inline-flex items-center gap-2 ${isScreenOnline(selectedScreen.lastSeen) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'} text-[10px] font-black px-3 py-1 rounded-full border mb-4 uppercase tracking-widest`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${isScreenOnline(selectedScreen.lastSeen) ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
-                    {selectedScreen.name} • {isScreenOnline(selectedScreen.lastSeen) ? 'ONLINE' : 'OFFLINE'}
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className={`inline-flex items-center gap-2 ${isScreenOnline(selectedScreen.lastSeen) ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-red-500/10 text-red-500 border-red-500/20'} text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-widest`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${isScreenOnline(selectedScreen.lastSeen) ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+                        {selectedScreen.name} • {isScreenOnline(selectedScreen.lastSeen) ? 'ONLINE' : 'OFFLINE'}
+                    </div>
+                    <div className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 border-orange-500/20 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-widest" title="Digite este ID em outro totem para espelhá-los">
+                        ID DO TOTEM: <span className="text-white select-all">{selectedScreen.id}</span>
+                    </div>
                 </div>
                 <button
                     onClick={handleForceReload}
