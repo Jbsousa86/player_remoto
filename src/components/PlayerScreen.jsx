@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true }) => {
+const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, ticker = null }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
@@ -291,6 +291,14 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true }) =
                         )}
                     </div>
                 </div>
+
+                {ticker?.isActive && ticker?.text && (
+                    <div className="absolute bottom-0 left-0 w-full h-16 md:h-24 bg-black/80 backdrop-blur-xl flex items-center overflow-hidden border-t-4 border-orange-500/80 z-50">
+                        <div className="whitespace-nowrap animate-marquee font-black text-3xl md:text-5xl text-white uppercase tracking-widest pl-[100%]">
+                            {ticker.text}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

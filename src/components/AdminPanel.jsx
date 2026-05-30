@@ -18,6 +18,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [tickerText, setTickerText] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
@@ -41,12 +42,13 @@ const AdminPanel = ({ isPairing = false }) => {
             setScreens(data);
             const lastId = localStorage.getItem('last_screen_id');
             if (data.length > 0) {
-                const savedScreen = data.find(s => s.id === lastId);
-                if (savedScreen) {
-                    setSelectedScreen(savedScreen);
-                } else if (!selectedScreen) {
-                    setSelectedScreen(data[0]);
-                }
+                setSelectedScreen(prev => {
+                    const currentId = prev?.id || lastId;
+                    const found = data.find(s => s.id === currentId);
+                    return found || data[0];
+                });
+            } else {
+                setSelectedScreen(null);
             }
             setLoading(false);
         });
@@ -66,6 +68,10 @@ const AdminPanel = ({ isPairing = false }) => {
         });
         return () => unsubscribe();
     }, [selectedScreen?.id]);
+
+    useEffect(() => {
+        setTickerText(selectedScreen?.ticker?.text || '');
+    }, [selectedScreen?.ticker?.text]);
 
     const handleAddScreen = async (e) => {
         e.preventDefault();
@@ -205,6 +211,35 @@ const AdminPanel = ({ isPairing = false }) => {
             await syncService.updateScreen(selectedScreen.id, { isMuted: newIsMuted });
         } catch (err) {
             alert("Erro ao alterar o som.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleTickerToggle = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const newIsActive = !(selectedScreen.ticker?.isActive);
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { ...selectedScreen.ticker, isActive: newIsActive } 
+            });
+        } catch (err) {
+            alert("Erro ao alterar letreiro.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleTickerTextSave = async (text) => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { ...selectedScreen.ticker, text } 
+            });
+        } catch (err) {
+            alert("Erro ao alterar texto do letreiro.");
         } finally {
             setIsSyncing(false);
         }
@@ -426,6 +461,33 @@ const AdminPanel = ({ isPairing = false }) => {
                             addItem={addItem}
                             isSyncing={isSyncing}
                         />
+
+                        {/* Ticker Control */}
+                        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2.5rem] shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                            <div className="flex-1 w-full">
+                                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro / Ticker (Rodapé)</label>
+                                <input 
+                                    type="text" 
+                                    value={tickerText}
+                                    onChange={(e) => setTickerText(e.target.value)}
+                                    onBlur={() => handleTickerTextSave(tickerText)}
+                                    placeholder="Digite as notícias, rss ou recados (salva ao sair do campo)..."
+                                    className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                />
+                            </div>
+                            <div className="shrink-0 w-full lg:w-auto flex items-end">
+                                <button
+                                    onClick={handleTickerToggle}
+                                    className={`w-full lg:w-auto mt-2 lg:mt-0 px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
+                                        selectedScreen.ticker?.isActive 
+                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
+                                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                    }`}
+                                >
+                                    {selectedScreen.ticker?.isActive ? '✅ Letreiro Ativo' : '❌ Letreiro Inativo'}
+                                </button>
+                            </div>
+                        </div>
 
                         {/* Playlist Header */}
                         <div className="flex items-center justify-between mb-8 px-2">

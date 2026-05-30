@@ -42,7 +42,14 @@ export const syncService = {
 
     registerScreen: async (screenId, name) => {
         const docRef = doc(db, 'screens', screenId);
-        await setDoc(docRef, { name, playlist: [], lastSeen: Date.now(), orientation: 'landscape', isMuted: true }, { merge: true });
+        await setDoc(docRef, { 
+            name, 
+            playlist: [], 
+            lastSeen: Date.now(), 
+            orientation: 'landscape', 
+            isMuted: true,
+            ticker: { text: '', isActive: false }
+        }, { merge: true });
         return screenId;
     },
 
