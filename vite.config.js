@@ -20,6 +20,9 @@ export default defineConfig({
         short_name: 'TotemPlayer',
         description: 'Digital Signage Player for Totems',
         theme_color: '#000000',
+        background_color: '#000000',
+        display: 'fullscreen',
+        orientation: 'landscape',
         icons: [
           {
             src: 'pwa-192x192.png',

@@ -72,6 +72,7 @@ const PairingScreen = ({ onPair }) => {
                                     onChange={(e) => setPin(e.target.value)}
                                     placeholder="Digite o ID da Tela"
                                     className="w-full bg-black border-2 border-zinc-800 rounded-2xl py-4 pl-12 pr-4 font-black uppercase tracking-widest focus:border-orange-500 outline-none transition-all placeholder:text-zinc-700 placeholder:tracking-normal placeholder:font-bold"
+                                    autoFocus
                                 />
                             </div>
                         </div>
