@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
+const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
@@ -65,10 +65,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         return match && match[2].length === 11 ? match[2] : null;
     };
 
-    const getYoutubeEmbedUrl = (url) => {
+    const getYoutubeEmbedUrl = (url, muted) => {
         const id = getYoutubeId(url);
         if (!id) return '';
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&controls=0&rel=0&enablejsapi=1`;
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&enablejsapi=1`;
     };
 
     /* =========================
@@ -131,7 +131,11 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
 
             player = new window.YT.Player(iframeId, {
                 events: {
-                    onReady: (e) => e.target.playVideo(),
+                    onReady: (e) => {
+                        if (isMuted) e.target.mute();
+                        else e.target.unMute();
+                        e.target.playVideo();
+                    },
                     onStateChange: (e) => {
                         if (e.data === window.YT.PlayerState.ENDED) next();
                     },
@@ -151,7 +155,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
             clearInterval(interval);
             if (player?.destroy) player.destroy();
         };
-    }, [currentType, currentUrl, next]);
+    }, [currentType, currentUrl, next, isMuted]);
 
     /* =========================
        IMAGE TIMER
@@ -233,7 +237,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                             <video
                                 src={currentUrl}
                                 autoPlay
-                                muted
+                                muted={isMuted}
                                 playsInline
                                 disablePictureInPicture
                                 className="pointer-events-none"
@@ -257,7 +261,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                         {currentType === 'youtube' && (
                             <iframe
                                 id="yt-player"
-                                src={getYoutubeEmbedUrl(currentUrl)}
+                                src={getYoutubeEmbedUrl(currentUrl, isMuted)}
                                 style={{
                                     position: 'absolute',
                                     inset: 0,

@@ -13,6 +13,7 @@ function PlayerContainer() {
   const [screenId, setScreenId] = useState('');
   const [playlist, setPlaylist] = useState([]);
   const [orientation, setOrientation] = useState('landscape');
+  const [isMuted, setIsMuted] = useState(true);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -96,7 +97,12 @@ function PlayerContainer() {
         setOrientation(data.orientation);
       }
 
-      // 3. Check for Remote Commands (RELOAD)
+      // 3. Update Muted State
+      if (data.isMuted !== undefined) {
+        setIsMuted(data.isMuted);
+      }
+
+      // 4. Check for Remote Commands (RELOAD)
       if (data.command?.type === 'RELOAD') {
         const cmdTime = data.command.timestamp;
         const lastReload = parseInt(localStorage.getItem('last_reload_time') || '0');
@@ -205,7 +211,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} orientation={orientation} />
+          <PlayerScreen playlist={playlist} orientation={orientation} isMuted={isMuted} />
         </ErrorBoundary>
       )}
     </div>
