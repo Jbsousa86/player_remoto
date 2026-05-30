@@ -270,6 +270,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 url: finalUrl, 
                 type: finalType, 
                 duration: finalDuration, 
+                isActive: true,
                 id, 
                 order: playlist.length + 1 
             }
@@ -322,6 +323,11 @@ const AdminPanel = ({ isPairing = false }) => {
         } finally {
             setIsSyncing(false);
         }
+    };
+
+    const toggleItemActive = async (id, currentIsActive) => {
+        const newStatus = currentIsActive === false ? true : false;
+        await updateItem(id, { isActive: newStatus });
     };
 
     const updateItem = async (id, updatedProps) => {
@@ -449,6 +455,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             playlist={playlist}
                             deleteItem={deleteItem}
                             moveItem={moveItem}
+                            toggleItemActive={toggleItemActive}
                             getYoutubeId={getYoutubeId}
                         />
                     </div>

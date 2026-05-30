@@ -89,7 +89,7 @@ function PlayerContainer() {
 
       // 1. Update Playlist
       if (data.playlist) {
-        setPlaylist(data.playlist);
+        setPlaylist(data.playlist.filter(item => item.isActive !== false));
       }
 
       // 2. Update Orientation

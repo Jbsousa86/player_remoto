@@ -1,14 +1,14 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
 
-const PlaylistGrid = ({ playlist, deleteItem, moveItem, getYoutubeId }) => {
+const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYoutubeId }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <AnimatePresence mode="popLayout">
                 {playlist.map((item, index) => (
                     <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id}
-                        className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden group shadow-xl"
+                        className={`bg-zinc-900/50 border ${item.isActive === false ? 'border-zinc-800/50 opacity-40 grayscale' : 'border-zinc-800'} rounded-2xl overflow-hidden group shadow-xl transition-all`}
                     >
                         <div className="aspect-video bg-black relative">
                             {item.type === 'video' ? (
@@ -42,9 +42,14 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, getYoutubeId }) => {
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
                                 </div>
-                                <button onClick={() => deleteItem(item.id)} title="Excluir Mídia" className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shrink-0">
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button onClick={() => toggleItemActive(item.id, item.isActive)} title={item.isActive === false ? "Ativar Mídia" : "Desativar Mídia"} className={`p-2.5 rounded-xl transition-all shrink-0 ${item.isActive === false ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}>
+                                        {item.isActive === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                    <button onClick={() => deleteItem(item.id)} title="Excluir Mídia" className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shrink-0">
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
