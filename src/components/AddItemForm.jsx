@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing }) => {
+const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing, handleFileUpload, isUploading, uploadProgress }) => {
     const [flash, setFlash] = useState(false);
     // Trigger flash when URL changes (auto-detection)
     useEffect(() => {
@@ -22,10 +22,21 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing 
             <form onSubmit={addItem} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
                     <div className="lg:col-span-12">
-                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia</label>
-                        <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
-                            placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
-                            className={`w-full bg-black ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium`} required />
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia ou Upload</label>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
+                                placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
+                                className={`flex-1 w-full bg-black ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
+                                required={!isUploading} 
+                                disabled={isUploading} 
+                            />
+                            <div className="shrink-0 flex">
+                                <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                                <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-zinc-800 border-zinc-700 text-zinc-400' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                    {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
+                                </label>
+                            </div>
+                        </div>
                         <div className="mt-2 flex items-center gap-2">
                             <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${
                                 newItem.type === 'image' ? 'bg-blue-600 text-white' :
@@ -69,7 +80,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing 
                     </div>
 
                     <div className="lg:col-span-3">
-                        <button type="submit" disabled={isSyncing || !newItem.url} className="w-full h-[66px] bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-xs">
+                        <button type="submit" disabled={isSyncing || !newItem.url} className="w-full h-16.5 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-xs">
                             Adicionar
                         </button>
                     </div>

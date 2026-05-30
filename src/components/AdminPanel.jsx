@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { syncService } from '../lib/syncService';
+import { storage } from '../lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminHeader from './AdminHeader';
@@ -15,6 +17,8 @@ const AdminPanel = ({ isPairing = false }) => {
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
@@ -163,6 +167,34 @@ const AdminPanel = ({ isPairing = false }) => {
             return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '');
         }
         return url;
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        const fileRef = ref(storage, `medias/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`);
+        const uploadTask = uploadBytesResumable(fileRef, file);
+
+        uploadTask.on('state_changed',
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                setUploadProgress(Math.round(progress));
+            },
+            (error) => {
+                console.error("Erro no upload:", error);
+                alert("Erro ao enviar arquivo. Verifique se o Firebase Storage está ativado.");
+                setIsUploading(false);
+            },
+            async () => {
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                handleUrlChange(downloadURL);
+                setIsUploading(false);
+            }
+        );
     };
 
     const handleToggleOrientation = async () => {
@@ -338,6 +370,9 @@ const AdminPanel = ({ isPairing = false }) => {
                             newItem={newItem}
                             setNewItem={setNewItem}
                             handleUrlChange={handleUrlChange}
+                            handleFileUpload={handleFileUpload}
+                            isUploading={isUploading}
+                            uploadProgress={uploadProgress}
                             addItem={addItem}
                             isSyncing={isSyncing}
                         />
