@@ -1,25 +1,31 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, ticker = null }) => {
+    // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
+    const activePlaylist = useMemo(() => {
+        return playlist?.filter(item => item.isActive !== false) || [];
+    }, [playlist]);
+
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
     // Guardar a playlist em uma ref previne que a função 'next' seja recriada a cada 
     // vez que o Firebase receber um Heartbeat (lastSeen)
-    const playlistRef = useRef(playlist);
+    const playlistRef = useRef(activePlaylist);
     useEffect(() => {
-        playlistRef.current = playlist;
-    }, [playlist]);
+        playlistRef.current = activePlaylist;
+    }, [activePlaylist]);
 
     // Previne que o index fique fora dos limites caso a playlist seja reduzida
     useEffect(() => {
-        if (playlist?.length && currentIndex >= playlist.length) {
+        if (activePlaylist?.length && currentIndex >= activePlaylist.length) {
             setCurrentIndex(0);
         }
-    }, [playlist, currentIndex]);
+    }, [activePlaylist, currentIndex]);
 
-    const next = useCallback(() => {
-        if (advancedRef.current || !playlistRef.current?.length) return;
+    const next = useCallback((force = false) => {
+        // 2. CORREÇÃO DE RACE CONDITION: force permite pular o debounce de 150ms em erros críticos de mídia
+        if ((advancedRef.current && force !== true) || !playlistRef.current?.length) return;
         advancedRef.current = true;
         
         if (playlistRef.current.length === 1) {
@@ -40,7 +46,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         }, 150);
     }, []);
 
-    const currentItem = playlist?.length ? playlist[currentIndex] : null;
+    const currentItem = activePlaylist?.length ? activePlaylist[currentIndex] : null;
     const currentType = currentItem?.type;
     const currentUrl = currentItem?.url;
     const currentDuration = currentItem?.duration;
@@ -52,12 +58,12 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
        PRELOAD (IMAGENS APENAS)
     ========================== */
     useEffect(() => {
-        if (!playlist || !window.caches) return;
+        if (!activePlaylist || !window.caches) return;
 
         const preloadImages = async () => {
             try {
                 const cache = await caches.open('images-cache');
-                for (const item of playlist) {
+                for (const item of activePlaylist) {
                     if (item.type !== 'image') continue;
 
                     const cached = await cache.match(item.url);
@@ -114,7 +120,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
 
         const timer = setTimeout(() => {
             console.warn('YouTube safety skip');
-            next();
+            next(true);
         }, limit);
 
         return () => clearTimeout(timer);
@@ -132,7 +138,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
 
         const timer = setTimeout(() => {
             console.warn('Video duration limit or safety timeout reached, skipping');
-            next();
+            next(true);
         }, limit);
 
         return () => clearTimeout(timer);
@@ -160,7 +166,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     onStateChange: (e) => {
                         if (e.data === window.YT.PlayerState.ENDED) next();
                     },
-                    onError: next
+                    onError: () => next(true)
                 }
             });
         };
@@ -184,8 +190,18 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     ========================== */
     useEffect(() => {
         if (currentType === 'video' && videoRef.current) {
-            if (isPlaying) videoRef.current.play().catch(e => console.warn(e));
-            else videoRef.current.pause();
+            // 3. CAPTURA DE BLOQUEIO DE AUTOPLAY: Pula logo ao invés de congelar caso a TV bloqueie o vídeo
+            if (isPlaying) {
+                const playPromise = videoRef.current.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.warn('Erro ao tocar vídeo ou bloqueio de autoplay:', e);
+                        next(true);
+                    });
+                }
+            } else {
+                videoRef.current.pause();
+            }
         } else if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
             if (isPlaying) ytPlayerRef.current.playVideo();
             else ytPlayerRef.current.pauseVideo();
@@ -215,11 +231,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType !== 'image' || !isPlaying) return;
 
-        const fallback = 5000;
+        // 4. DURAÇÃO ILIMITADA (0): Respeita o zero como sendo pausa completa da passagem
+        if (currentDuration === 0) return;
+
         const limit =
             currentDuration && currentDuration > 0
                 ? currentDuration * 1000
-                : fallback;
+                : 10000;
 
         const timer = setTimeout(next, limit);
 
@@ -231,6 +249,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     ========================== */
     useEffect(() => {
         if (currentType !== 'web' || !isPlaying) return;
+
+        if (currentDuration === 0) return;
 
         const limit =
             currentDuration && currentDuration > 0
@@ -262,7 +282,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     /* =========================
        LOADING
     ========================== */
-    if (!playlist?.length) {
+    if (!activePlaylist?.length) {
         return (
             <div className="h-screen w-screen flex items-center justify-center bg-black text-white">
                 Sincronizando Totem…
@@ -304,7 +324,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 onEnded={next}
                                 onError={(e) => {
                                     console.error('Video playback error, skipping:', e);
-                                    next();
+                                next(true);
                                 }}
                                 style={{
                                     width: '100%',
@@ -341,7 +361,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 alt=""
                                 onError={() => {
                                     console.warn('Erro ao exibir imagem, pulando');
-                                    next();
+                                next(true);
                                 }}
                                 style={{
                                     width: '100%',
