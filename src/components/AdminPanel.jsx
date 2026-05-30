@@ -493,18 +493,6 @@ const AdminPanel = ({ isPairing = false }) => {
                         <div className="flex items-center justify-between mb-8 px-2">
                             <div className="flex items-center gap-4">
                                 <h3 className="font-black text-2xl uppercase tracking-tighter text-zinc-300">Playlist Ativa ({playlist.length})</h3>
-                                {selectedScreen && (
-                                    <button
-                                        onClick={handleToggleSound}
-                                        className={`text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border transition-all ${
-                                            selectedScreen.isMuted === false
-                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20'
-                                                : 'bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20'
-                                        }`}
-                                    >
-                                        {selectedScreen.isMuted === false ? '🔊 Com Som' : '🔇 Sem Som'}
-                                    </button>
-                                )}
                             </div>
                             {playlist.length > 0 && (
                                 <button onClick={handleClearPlaylist} className="text-[10px] font-black text-red-500 hover:text-red-400 uppercase tracking-widest bg-red-500/5 px-4 py-2 rounded-xl border border-red-500/10">
