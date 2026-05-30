@@ -117,7 +117,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     ========================== */
     const getYoutubeId = (url) => {
         if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=)([^#&?]*).*/;
+        const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=|live\/)([^#&?]*).*/;
         const match = url.match(regExp);
         return match && match[2].length === 11 ? match[2] : null;
     };
@@ -145,16 +145,16 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType !== 'youtube' || !isPlaying) return;
 
-        // Forçar YouTube a tocar até o final, com limite de segurança longo (10 min)
-        const limit = 600000;
+        // Se for live ou vídeo com duração definida, respeita. Senão, limite longo (10 min).
+        const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 
         const timer = setTimeout(() => {
-            console.warn('YouTube safety skip');
+            console.warn('YouTube timeout skip');
             next(true);
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
 
     /* =========================
        VIDEO SAFETY TIMER
@@ -162,17 +162,16 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType !== 'video' || !isPlaying) return;
 
-        // Ignorar a duração vinda do banco para vídeos, deixando-os terminar naturalmente
-        // Mantemos apenas um timer de 10 minutos para caso o vídeo congele/trave.
-        const limit = 600000;
+        // Se o usuário estipular tempo, ele corta o vídeo na hora definida. Senão, 10 minutos de segurança.
+        const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 
         const timer = setTimeout(() => {
-            console.warn('Video duration limit or safety timeout reached, skipping');
+            console.warn('Video timeout skip');
             next(true);
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
 
     /* =========================
        YOUTUBE PLAYER EVENTS
