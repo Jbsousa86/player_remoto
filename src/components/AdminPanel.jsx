@@ -294,6 +294,36 @@ const AdminPanel = ({ isPairing = false }) => {
         setIsSyncing(false); // Make sure to turn off syncing indicator
     };
 
+    const moveItem = async (index, direction) => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+
+        const newPlaylist = [...playlist];
+        const newIndex = index + direction;
+
+        if (newIndex < 0 || newIndex >= newPlaylist.length) {
+            setIsSyncing(false);
+            return;
+        }
+
+        // Troca os itens de posição
+        const temp = newPlaylist[newIndex];
+        newPlaylist[newIndex] = newPlaylist[index];
+        newPlaylist[index] = temp;
+
+        // Opcional: Atualiza a propriedade "order" de cada um
+        const updatedPlaylist = newPlaylist.map((item, idx) => ({ ...item, order: idx + 1 }));
+        setPlaylist(updatedPlaylist); // Atualização visual imediata
+
+        try {
+            await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
+        } catch (err) {
+            alert("Erro ao reordenar a playlist.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const updateItem = async (id, updatedProps) => {
         if (!selectedScreen) return;
         
@@ -376,6 +406,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             isScreenOnline={isScreenOnline}
                             handleForceReload={handleForceReload}
                             handleToggleOrientation={handleToggleOrientation}
+                            handleToggleSound={handleToggleSound}
                             isSyncing={isSyncing}
                         />
 
@@ -417,6 +448,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         <PlaylistGrid
                             playlist={playlist}
                             deleteItem={deleteItem}
+                            moveItem={moveItem}
                             getYoutubeId={getYoutubeId}
                         />
                     </div>
