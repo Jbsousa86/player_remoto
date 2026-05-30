@@ -293,8 +293,14 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
                 </div>
 
                 {ticker?.isActive && ticker?.text && (
-                    <div className="absolute bottom-0 left-0 w-full h-16 md:h-24 bg-blue-900/90 backdrop-blur-xl flex items-center overflow-hidden border-t-4 border-blue-500/80 z-50">
-                        <div className="whitespace-nowrap animate-marquee font-black text-3xl md:text-5xl text-yellow-400 uppercase tracking-widest pl-[100%]">
+                    <div className="absolute bottom-0 left-0 w-full h-10 md:h-14 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
+                        <style>{`
+                            @keyframes marquee-scroll {
+                                0% { transform: translateX(0%); }
+                                100% { transform: translateX(-100%); }
+                            }
+                        `}</style>
+                        <div className="whitespace-nowrap font-semibold text-lg md:text-2xl text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
                             {ticker.text}
                         </div>
                     </div>
