@@ -78,10 +78,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     useEffect(() => {
         if (!currentItem || currentItem.type !== 'youtube') return;
 
-        const limit =
-            currentItem.duration && currentItem.duration > 0
-                ? currentItem.duration * 1000
-                : 300000; // 5 min fallback
+        // Forçar YouTube a tocar até o final, com limite de segurança longo (10 min)
+        const limit = 600000;
 
         const timer = setTimeout(() => {
             console.warn('YouTube safety skip');
@@ -97,11 +95,9 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
     useEffect(() => {
         if (!currentItem || currentItem.type !== 'video') return;
 
-        // Fallback safety limit of 10 minutes (600,000 ms) in case video playback freezes/stalls
-        const limit =
-            currentItem.duration && currentItem.duration > 0
-                ? currentItem.duration * 1000
-                : 600000;
+        // Ignorar a duração vinda do banco para vídeos, deixando-os terminar naturalmente
+        // Mantemos apenas um timer de 10 minutos para caso o vídeo congele/trave.
+        const limit = 600000;
 
         const timer = setTimeout(() => {
             console.warn('Video duration limit or safety timeout reached, skipping');

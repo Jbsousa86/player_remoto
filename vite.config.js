@@ -50,7 +50,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|bmp|tiff|ico)$/i,
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|bmp|tiff|ico)(?:\?.*)?$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'images-cache',
@@ -64,7 +64,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /\.(?:mp4|webm|ogg|ogv|mov|m4v|mkv|avi)$/i,
+            urlPattern: /\.(?:mp4|webm|ogg|ogv|mov|m4v|mkv|avi)(?:\?.*)?$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'videos-cache',
