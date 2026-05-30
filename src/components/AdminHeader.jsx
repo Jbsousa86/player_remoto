@@ -1,7 +1,7 @@
 import React from 'react';
-import { RefreshCw, Monitor, Smartphone } from 'lucide-react';
+import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 
-const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleToggleOrientation, isSyncing }) => {
+const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleToggleOrientation, handleToggleSound, handleTogglePlayPause, isSyncing }) => {
     return (
         <header className="mb-12 flex flex-col md:flex-row justify-between items-start gap-8 mr-8">
             <div>
@@ -12,7 +12,7 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 <button
                     onClick={handleForceReload}
                     title="Forçar recarregamento da página no Totem"
-                    className="ml-3 inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-zinc-700 transition-all uppercase tracking-widest active:scale-95"
+                    className="ml-3 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
                 >
                     <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
                     Reiniciar Player
@@ -20,10 +20,30 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 <button
                     onClick={handleToggleOrientation}
                     title="Alternar entre Horizontal e Vertical"
-                    className="ml-2 inline-flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-zinc-700 transition-all uppercase tracking-widest active:scale-95"
+                    className="ml-2 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
                 >
                     {selectedScreen.orientation === 'portrait' ? <Smartphone className="w-3 h-3" /> : <Monitor className="w-3 h-3" />}
                     {selectedScreen.orientation === 'portrait' ? 'MODO VERTICAL' : 'MODO HORIZONTAL'}
+                </button>
+                <button
+                    onClick={handleToggleSound}
+                    title="Alternar entre Com Som e Sem Som"
+                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
+                        selectedScreen.isMuted === false ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10'
+                    }`}
+                >
+                    {selectedScreen.isMuted === false ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+                    {selectedScreen.isMuted === false ? 'COM SOM' : 'SEM SOM'}
+                </button>
+                <button
+                    onClick={handleTogglePlayPause}
+                    title="Pausar ou Reproduzir Totem"
+                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
+                        selectedScreen.isPlaying === false ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 'border-white/10'
+                    }`}
+                >
+                    {selectedScreen.isPlaying === false ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+                    {selectedScreen.isPlaying === false ? 'RETOMAR' : 'PAUSAR'}
                 </button>
                 <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
                     Gerenciar <span className="text-orange-500">Mídias</span>

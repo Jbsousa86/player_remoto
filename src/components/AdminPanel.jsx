@@ -216,6 +216,19 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleTogglePlayPause = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const newIsPlaying = selectedScreen.isPlaying === false ? true : false;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { isPlaying: newIsPlaying });
+        } catch (err) {
+            alert("Erro ao alterar reprodução.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const handleTickerToggle = async () => {
         if (!selectedScreen) return;
         setIsSyncing(true);
@@ -398,7 +411,7 @@ const AdminPanel = ({ isPairing = false }) => {
     return (
         <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col md:flex-row font-sans selection:bg-orange-500 selection:text-white overflow-hidden">
             {/* Mobile Header */}
-            <div className="md:hidden flex items-center justify-between p-4 bg-black/80 border-b border-zinc-800 backdrop-blur-xl shrink-0 z-60">
+            <div className="md:hidden flex items-center justify-between p-4 bg-zinc-950/80 border-b border-white/5 backdrop-blur-xl shrink-0 z-40">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
                         <LayoutDashboard className="w-5 h-5 text-white" />
@@ -407,7 +420,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-3 bg-zinc-900 rounded-xl text-orange-500 active:scale-95 border border-zinc-800"
+                    className="p-3 bg-white/5 rounded-xl text-orange-500 active:scale-95 border border-white/10"
                 >
                     <RefreshCw className={`w-6 h-6 ${isSyncing ? 'animate-spin' : ''}`} />
                 </button>
@@ -418,7 +431,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 {isMobileMenuOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-70"
+                        className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
                     />
                 )}
             </AnimatePresence>
@@ -448,6 +461,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             handleForceReload={handleForceReload}
                             handleToggleOrientation={handleToggleOrientation}
                             handleToggleSound={handleToggleSound}
+                            handleTogglePlayPause={handleTogglePlayPause}
                             isSyncing={isSyncing}
                         />
 
@@ -463,7 +477,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         />
 
                         {/* Ticker Control */}
-                        <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-[2.5rem] shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
                             <div className="flex-1 w-full">
                                 <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro / Ticker (Rodapé)</label>
                                 <input 
@@ -472,7 +486,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     onChange={(e) => setTickerText(e.target.value)}
                                     onBlur={() => handleTickerTextSave(tickerText)}
                                     placeholder="Digite as notícias, rss ou recados (salva ao sair do campo)..."
-                                    className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
                             </div>
                             <div className="shrink-0 w-full lg:w-auto flex items-end">
@@ -481,7 +495,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     className={`w-full lg:w-auto mt-2 lg:mt-0 px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
                                         selectedScreen.ticker?.isActive 
                                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
-                                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:bg-zinc-700 hover:text-white'
+                                            : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
                                     }`}
                                 >
                                     {selectedScreen.ticker?.isActive ? '✅ Letreiro Ativo' : '❌ Letreiro Inativo'}
@@ -511,7 +525,7 @@ const AdminPanel = ({ isPairing = false }) => {
                     </div>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center p-12">
-                        <div className="w-24 h-24 bg-zinc-900 border border-zinc-800 rounded-[2.5rem] flex items-center justify-center mb-8 shadow-2xl">
+                        <div className="w-24 h-24 bg-white/5 border border-white/5 rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
                             <Monitor className="w-10 h-10 text-zinc-700" />
                         </div>
                         <h2 className="text-3xl font-black mb-3 uppercase tracking-tighter leading-none italic">Selecione <span className="text-zinc-700">um Totem</span></h2>

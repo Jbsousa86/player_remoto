@@ -48,6 +48,7 @@ export const syncService = {
             lastSeen: Date.now(), 
             orientation: 'landscape', 
             isMuted: true,
+            isPlaying: true,
             ticker: { text: '', isActive: false }
         }, { merge: true });
         return screenId;

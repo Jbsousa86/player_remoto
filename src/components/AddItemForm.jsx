@@ -12,13 +12,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing,
     }, [newItem.url]);
     // Determine border color: flash overrides type-specific colors
     const borderColor = flash ? 'border-yellow-400' : (
-        newItem.type === 'image' ? 'border-blue-500' :
-        newItem.type === 'video' ? 'border-red-500' :
-        newItem.type === 'youtube' ? 'border-purple-500' :
-        'border-zinc-800'
+        newItem.type === 'image' ? 'border-blue-500/50' :
+        newItem.type === 'video' ? 'border-red-500/50' :
+        newItem.type === 'youtube' ? 'border-purple-500/50' :
+        'border-white/10'
     );
     return (
-        <div className="bg-zinc-900/50 border border-zinc-800 p-8 rounded-[2.5rem] shadow-2xl mb-12">
+        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
             <form onSubmit={addItem} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
                     <div className="lg:col-span-12">
@@ -26,13 +26,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing,
                         <div className="flex flex-col sm:flex-row gap-4">
                             <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
                                 placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
-                                className={`flex-1 w-full bg-black ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
+                                className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
                                 required={!isUploading} 
                                 disabled={isUploading} 
                             />
                             <div className="shrink-0 flex">
                                 <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
-                                <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-zinc-800 border-zinc-700 text-zinc-400' : 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
                                     {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
                                 </label>
                             </div>
@@ -55,7 +55,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing,
                         <select value={newItem.type} onChange={(e) => {
                             const val = e.target.value;
                             setNewItem({ ...newItem, type: val, duration: (val === 'video' || val === 'youtube') ? 0 : 10 });
-                        }} className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white appearance-none cursor-pointer">
+                        }} className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white appearance-none cursor-pointer">
                             <option value="image">🖼️ Imagem</option>
                             <option value="video">🎥 Vídeo Direto</option>
                             <option value="youtube">📺 YouTube</option>
@@ -65,13 +65,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing,
                     <div className="lg:col-span-3">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Exibição (Seg)</label>
                         <input type="number" value={newItem.duration} onChange={(e) => setNewItem({ ...newItem, duration: parseInt(e.target.value) || 0 })}
-                            className={`w-full bg-black border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500' : 'border-zinc-800 text-white'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
+                            className={`w-full bg-black/40 border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-white/10 text-white'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
                     </div>
 
                     <div className="lg:col-span-3">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Encaixe</label>
                         <select value={newItem.fitMode} onChange={(e) => setNewItem({ ...newItem, fitMode: e.target.value })}
-                            className="w-full bg-black border border-zinc-800 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
+                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
                         >
                             <option value="cover">✂️ Preencher (Cortar)</option>
                             <option value="contain">🖼️ Ajustar (Inteira)</option>

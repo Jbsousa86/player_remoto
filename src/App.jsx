@@ -14,6 +14,7 @@ function PlayerContainer() {
   const [playlist, setPlaylist] = useState([]);
   const [orientation, setOrientation] = useState('landscape');
   const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [ticker, setTicker] = useState({ text: '', isActive: false });
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -101,6 +102,11 @@ function PlayerContainer() {
       // 3. Update Muted State
       if (data.isMuted !== undefined) {
         setIsMuted(data.isMuted);
+      }
+
+      // 4. Update Play/Pause State
+      if (data.isPlaying !== undefined) {
+        setIsPlaying(data.isPlaying);
       }
 
       // Update Ticker
@@ -217,7 +223,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} orientation={orientation} isMuted={isMuted} ticker={ticker} />
+          <PlayerScreen playlist={playlist} orientation={orientation} isMuted={isMuted} isPlaying={isPlaying} ticker={ticker} />
         </ErrorBoundary>
       )}
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, ticker = null }) => {
+const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, isPlaying = true, ticker = null }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
@@ -26,6 +26,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
     const currentUrl = currentItem?.url;
     const currentDuration = currentItem?.duration;
     const isPortrait = orientation === 'portrait';
+    const videoRef = useRef(null);
+    const ytPlayerRef = useRef(null);
 
     /* =========================
        PRELOAD (IMAGENS APENAS)
@@ -86,7 +88,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
        SAFETY TIMER (YOUTUBE ONLY)
     ========================== */
     useEffect(() => {
-        if (currentType !== 'youtube') return;
+        if (currentType !== 'youtube' || !isPlaying) return;
 
         // Forçar YouTube a tocar até o final, com limite de segurança longo (10 min)
         const limit = 600000;
@@ -103,7 +105,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
        VIDEO SAFETY TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'video') return;
+        if (currentType !== 'video' || !isPlaying) return;
 
         // Ignorar a duração vinda do banco para vídeos, deixando-os terminar naturalmente
         // Mantemos apenas um timer de 10 minutos para caso o vídeo congele/trave.
@@ -123,18 +125,17 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
     useEffect(() => {
         if (currentType !== 'youtube') return;
 
-        let player;
         const iframeId = `yt-player`;
 
         const init = () => {
             if (!window.YT || !window.YT.Player) return;
 
-            player = new window.YT.Player(iframeId, {
+            ytPlayerRef.current = new window.YT.Player(iframeId, {
                 events: {
                     onReady: (e) => {
                         if (isMuted) e.target.mute();
                         else e.target.unMute();
-                        e.target.playVideo();
+                        if (isPlaying) e.target.playVideo();
                     },
                     onStateChange: (e) => {
                         if (e.data === window.YT.PlayerState.ENDED) next();
@@ -153,15 +154,36 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
 
         return () => {
             clearInterval(interval);
-            if (player?.destroy) player.destroy();
+            if (ytPlayerRef.current?.destroy) ytPlayerRef.current.destroy();
+            ytPlayerRef.current = null;
         };
-    }, [currentType, currentUrl, next, isMuted]);
+    }, [currentType, currentUrl, next]);
+
+    /* =========================
+       PLAY/PAUSE & MUTE EFFECTS (DYNAMIC)
+    ========================== */
+    useEffect(() => {
+        if (currentType === 'video' && videoRef.current) {
+            if (isPlaying) videoRef.current.play().catch(e => console.warn(e));
+            else videoRef.current.pause();
+        } else if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
+            if (isPlaying) ytPlayerRef.current.playVideo();
+            else ytPlayerRef.current.pauseVideo();
+        }
+    }, [isPlaying, currentType, currentUrl]);
+
+    useEffect(() => {
+        if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.mute === 'function') {
+            if (isMuted) ytPlayerRef.current.mute();
+            else ytPlayerRef.current.unMute();
+        }
+    }, [isMuted, currentType, currentUrl]);
 
     /* =========================
        IMAGE TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'image') return;
+        if (currentType !== 'image' || !isPlaying) return;
 
         const img = new Image();
         img.src = currentUrl;
@@ -235,6 +257,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, tic
                     <div className="relative w-full h-full flex items-center justify-center">
                         {currentType === 'video' && (
                             <video
+                                ref={videoRef}
                                 src={currentUrl}
                                 autoPlay
                                 muted={isMuted}
