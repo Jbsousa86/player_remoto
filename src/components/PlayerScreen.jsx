@@ -239,6 +239,22 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
 
     /* =========================
+       WEB PAGE TIMER
+    ========================== */
+    useEffect(() => {
+        if (currentType !== 'web' || !isPlaying) return;
+
+        const limit =
+            currentDuration && currentDuration > 0
+                ? currentDuration * 1000
+                : 10000;
+
+        const timer = setTimeout(next, limit);
+
+        return () => clearTimeout(timer);
+    }, [currentType, currentDuration, currentItem?.id, isPlaying, next]);
+
+    /* =========================
        ROTATION LOGIC
     ========================== */
     const [screenSize, setScreenSize] = useState({
@@ -343,6 +359,20 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                         currentItem.fitMode === 'cover'
                                             ? 'cover'
                                             : 'contain'
+                                }}
+                            />
+                        )}
+
+                        {currentType === 'web' && (
+                            <iframe
+                                key={currentItem.id}
+                                src={currentUrl}
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    border: 'none'
                                 }}
                             />
                         )}

@@ -15,6 +15,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 <video src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} muted />
                             ) : item.type === 'youtube' ? (
                                 <img src={`https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
+                            ) : item.type === 'web' ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-zinc-500">
+                                    <span className="text-4xl mb-2">🌐</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Website</span>
+                                </div>
                             ) : (
                                 <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} alt="" />
                             )}
