@@ -216,7 +216,6 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         if (currentType !== 'image' || !isPlaying) return;
 
         const img = new Image();
-        img.src = currentUrl;
 
         const fallback = 5000;
         const limit =
@@ -233,6 +232,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
             console.warn('Erro ao carregar imagem, pulando');
             next();
         };
+
+        img.src = currentUrl;
 
         return () => clearTimeout(timer);
     }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
