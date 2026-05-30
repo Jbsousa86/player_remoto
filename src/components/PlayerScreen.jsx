@@ -4,10 +4,6 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
 
-    useEffect(() => {
-        advancedRef.current = false;
-    }, [currentIndex]);
-
     // Guardar a playlist em uma ref previne que a função 'next' seja recriada a cada 
     // vez que o Firebase receber um Heartbeat (lastSeen)
     const playlistRef = useRef(playlist);
@@ -15,10 +11,33 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         playlistRef.current = playlist;
     }, [playlist]);
 
+    // Previne que o index fique fora dos limites caso a playlist seja reduzida
+    useEffect(() => {
+        if (playlist?.length && currentIndex >= playlist.length) {
+            setCurrentIndex(0);
+        }
+    }, [playlist, currentIndex]);
+
     const next = useCallback(() => {
         if (advancedRef.current || !playlistRef.current?.length) return;
         advancedRef.current = true;
-        setCurrentIndex((prev) => (prev + 1) % playlistRef.current.length);
+        
+        if (playlistRef.current.length === 1) {
+            const item = playlistRef.current[0];
+            if (item.type === 'video' && videoRef.current) {
+                videoRef.current.currentTime = 0;
+                videoRef.current.play().catch(e => console.warn(e));
+            } else if (item.type === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.seekTo === 'function') {
+                ytPlayerRef.current.seekTo(0);
+                ytPlayerRef.current.playVideo();
+            }
+        } else {
+            setCurrentIndex((prev) => (prev + 1) % playlistRef.current.length);
+        }
+
+        setTimeout(() => {
+            advancedRef.current = false;
+        }, 150);
     }, []);
 
     const currentItem = playlist?.length ? playlist[currentIndex] : null;
@@ -99,7 +118,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, next]);
+    }, [currentType, currentUrl, currentItem?.id, isPlaying, next]);
 
     /* =========================
        VIDEO SAFETY TIMER
@@ -117,7 +136,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, next]);
+    }, [currentType, currentUrl, currentItem?.id, isPlaying, next]);
 
     /* =========================
        YOUTUBE PLAYER EVENTS
@@ -125,7 +144,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType !== 'youtube') return;
 
-        const iframeId = `yt-player`;
+        const iframeId = `yt-player-${currentItem?.id}`;
 
         const init = () => {
             if (!window.YT || !window.YT.Player) return;
@@ -158,7 +177,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
             if (ytPlayerRef.current?.destroy) ytPlayerRef.current.destroy();
             ytPlayerRef.current = null;
         };
-    }, [currentType, currentUrl, next]);
+    }, [currentType, currentUrl, currentItem?.id, next]);
 
     /* =========================
        PLAY/PAUSE & MUTE EFFECTS (DYNAMIC)
@@ -171,14 +190,14 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
             if (isPlaying) ytPlayerRef.current.playVideo();
             else ytPlayerRef.current.pauseVideo();
         }
-    }, [isPlaying, currentType, currentUrl]);
+        }, [isPlaying, currentType, currentUrl, currentItem?.id]);
 
     useEffect(() => {
         if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.mute === 'function') {
             if (isMuted) ytPlayerRef.current.mute();
             else ytPlayerRef.current.unMute();
         }
-    }, [isMuted, currentType, currentUrl]);
+    }, [isMuted, currentType, currentUrl, currentItem?.id]);
 
     useEffect(() => {
         if (currentType === 'video' && videoRef.current) {
@@ -188,7 +207,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
             // YouTube API aceita volume de 0 a 100
             ytPlayerRef.current.setVolume(volume);
         }
-    }, [volume, currentType, currentUrl]);
+    }, [volume, currentType, currentUrl, currentItem?.id]);
 
     /* =========================
        IMAGE TIMER
@@ -216,7 +235,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         };
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentDuration, next]);
+    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
 
     /* =========================
        ROTATION LOGIC
@@ -268,6 +287,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     <div className="relative w-full h-full flex items-center justify-center">
                         {currentType === 'video' && (
                             <video
+                                key={currentItem.id}
                                 ref={videoRef}
                                 src={currentUrl}
                                 autoPlay
@@ -294,7 +314,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
 
                         {currentType === 'youtube' && (
                             <iframe
-                                id="yt-player"
+                                key={currentItem.id}
+                                id={`yt-player-${currentItem.id}`}
                                 src={getYoutubeEmbedUrl(currentUrl, isMuted)}
                                 style={{
                                     position: 'absolute',
@@ -310,6 +331,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
 
                         {currentType === 'image' && (
                             <img
+                                key={currentItem.id}
                                 src={currentUrl}
                                 alt=""
                                 
