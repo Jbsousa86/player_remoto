@@ -227,7 +227,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                     backgroundColor: '#000'
                 }}
             >
-                <div className="absolute inset-0 w-full h-full overflow-hidden">
+                <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
                     <div className="relative w-full h-full flex items-center justify-center">
                         {currentType === 'video' && (
                             <video
@@ -235,6 +235,8 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                 autoPlay
                                 muted
                                 playsInline
+                                disablePictureInPicture
+                                className="pointer-events-none"
                                 preload="auto"
                                 onEnded={next}
                                 onError={(e) => {
