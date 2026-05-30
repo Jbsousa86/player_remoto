@@ -351,7 +351,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 key={currentItem.id}
                                 src={currentUrl}
                                 alt=""
-                                
+                                onError={() => {
+                                    console.warn('Erro ao exibir imagem, pulando');
+                                    next();
+                                }}
                                 style={{
                                     width: '100%',
                                     height: '100%',
