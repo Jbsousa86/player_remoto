@@ -358,6 +358,60 @@ const AdminPanel = ({ isPairing = false }) => {
         setIsSyncing(false); // Make sure to turn off syncing indicator
     };
 
+    const broadcastItem = async (e) => {
+        e.preventDefault();
+        if (!newItem.url || screens.length === 0) return;
+        
+        if (!window.confirm(`Deseja adicionar esta mídia na playlist de TODOS os ${screens.length} totens simultaneamente?`)) return;
+
+        setIsSyncing(true);
+
+        const youtubeId = getYoutubeId(newItem.url);
+        const finalUrl = convertToDirectLink(newItem.url);
+        let finalType = newItem.type;
+        let finalDuration = newItem.duration;
+
+        if (youtubeId) {
+            finalType = 'youtube';
+            if (newItem.type === 'image') finalDuration = 0;
+        } else if (isVideoUrl(finalUrl)) {
+            finalType = 'video';
+            if (newItem.type === 'image') finalDuration = 0;
+        }
+
+        try {
+            // Processa um totem por vez para garantir a leitura correta de cada playlist
+            for (const screen of screens) {
+                const currentPlaylist = await new Promise((resolve) => {
+                    if (screen.id === selectedScreen?.id) {
+                        resolve(playlist);
+                    } else {
+                        // Puxa rapidamente a playlist daquela tela específica e desinscreve
+                        let unsubscribe;
+                        unsubscribe = syncService.subscribeToScreen(screen.id, (data) => {
+                            if (typeof unsubscribe === 'function') unsubscribe();
+                            else setTimeout(() => unsubscribe && unsubscribe(), 50);
+                            resolve(data?.playlist || []);
+                        });
+                    }
+                });
+
+                const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+                const updatedPlaylist = [...currentPlaylist, { ...newItem, url: finalUrl, type: finalType, duration: finalDuration, isActive: true, id, order: currentPlaylist.length + 1 }];
+
+                await syncService.updatePlaylist(screen.id, updatedPlaylist);
+            }
+
+            setNewItem({ url: '', type: 'image', duration: 10, fitMode: 'cover' });
+            alert("Sucesso! A Live/Mídia foi adicionada em todos os totens.");
+        } catch (err) {
+            console.error("Erro ao transmitir para todos:", err);
+            alert("Ocorreu um erro ao tentar enviar para todos os totens.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const moveItem = async (index, direction) => {
         if (!selectedScreen) return;
         setIsSyncing(true);
@@ -489,6 +543,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             isUploading={isUploading}
                             uploadProgress={uploadProgress}
                             addItem={addItem}
+                            broadcastItem={broadcastItem}
                             isSyncing={isSyncing}
                         />
 

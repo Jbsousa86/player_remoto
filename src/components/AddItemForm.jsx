@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing, handleFileUpload, isUploading, uploadProgress }) => {
+const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastItem, isSyncing, handleFileUpload, isUploading, uploadProgress }) => {
     const [flash, setFlash] = useState(false);
     // Trigger flash when URL changes (auto-detection)
     useEffect(() => {
@@ -82,8 +82,11 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, isSyncing,
                         </select>
                     </div>
 
-                    <div className="lg:col-span-3">
-                        <button type="submit" disabled={isSyncing || !newItem.url} className="w-full h-16.5 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-xs">
+                    <div className="lg:col-span-3 flex gap-2">
+                        <button type="button" onClick={broadcastItem} disabled={isSyncing || !newItem.url} title="Adicionar esta mídia em TODOS os totens" className="flex-1 h-16 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-red-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-[10px] leading-tight px-1">
+                            📡 Em Todos
+                        </button>
+                        <button type="submit" disabled={isSyncing || !newItem.url} title="Adicionar apenas no totem selecionado" className="flex-1 h-16 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-[10px] leading-tight px-1">
                             Adicionar
                         </button>
                     </div>
