@@ -8,13 +8,23 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         advancedRef.current = false;
     }, [currentIndex]);
 
-    const next = useCallback(() => {
-        if (advancedRef.current || !playlist?.length) return;
-        advancedRef.current = true;
-        setCurrentIndex((prev) => (prev + 1) % playlist.length);
+    // Guardar a playlist em uma ref previne que a função 'next' seja recriada a cada 
+    // vez que o Firebase receber um Heartbeat (lastSeen)
+    const playlistRef = useRef(playlist);
+    useEffect(() => {
+        playlistRef.current = playlist;
     }, [playlist]);
 
+    const next = useCallback(() => {
+        if (advancedRef.current || !playlistRef.current?.length) return;
+        advancedRef.current = true;
+        setCurrentIndex((prev) => (prev + 1) % playlistRef.current.length);
+    }, []);
+
     const currentItem = playlist?.length ? playlist[currentIndex] : null;
+    const currentType = currentItem?.type;
+    const currentUrl = currentItem?.url;
+    const currentDuration = currentItem?.duration;
     const isPortrait = orientation === 'portrait';
 
     /* =========================
@@ -76,7 +86,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
        SAFETY TIMER (YOUTUBE ONLY)
     ========================== */
     useEffect(() => {
-        if (!currentItem || currentItem.type !== 'youtube') return;
+        if (currentType !== 'youtube') return;
 
         // Forçar YouTube a tocar até o final, com limite de segurança longo (10 min)
         const limit = 600000;
@@ -87,13 +97,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentItem, next]);
+    }, [currentType, currentUrl, next]);
 
     /* =========================
        VIDEO SAFETY TIMER
     ========================== */
     useEffect(() => {
-        if (!currentItem || currentItem.type !== 'video') return;
+        if (currentType !== 'video') return;
 
         // Ignorar a duração vinda do banco para vídeos, deixando-os terminar naturalmente
         // Mantemos apenas um timer de 10 minutos para caso o vídeo congele/trave.
@@ -105,13 +115,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentItem, next]);
+    }, [currentType, currentUrl, next]);
 
     /* =========================
        YOUTUBE PLAYER EVENTS
     ========================== */
     useEffect(() => {
-        if (currentItem?.type !== 'youtube') return;
+        if (currentType !== 'youtube') return;
 
         let player;
         const iframeId = `yt-player`;
@@ -141,21 +151,21 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
             clearInterval(interval);
             if (player?.destroy) player.destroy();
         };
-    }, [currentItem, next]);
+    }, [currentType, currentUrl, next]);
 
     /* =========================
        IMAGE TIMER
     ========================== */
     useEffect(() => {
-        if (currentItem?.type !== 'image') return;
+        if (currentType !== 'image') return;
 
         const img = new Image();
-        img.src = currentItem.url;
+        img.src = currentUrl;
 
         const fallback = 5000;
         const limit =
-            currentItem.duration && currentItem.duration > 0
-                ? currentItem.duration * 1000
+            currentDuration && currentDuration > 0
+                ? currentDuration * 1000
                 : fallback;
 
         let timer;
@@ -169,7 +179,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
         };
 
         return () => clearTimeout(timer);
-    }, [currentItem, next]);
+    }, [currentType, currentUrl, currentDuration, next]);
 
     /* =========================
        ROTATION LOGIC
@@ -219,9 +229,9 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
             >
                 <div className="absolute inset-0 w-full h-full overflow-hidden">
                     <div className="relative w-full h-full flex items-center justify-center">
-                        {currentItem.type === 'video' && (
+                        {currentType === 'video' && (
                             <video
-                                src={currentItem.url}
+                                src={currentUrl}
                                 autoPlay
                                 muted
                                 playsInline
@@ -231,7 +241,6 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                                     console.error('Video playback error, skipping:', e);
                                     next();
                                 }}
-                                crossOrigin="anonymous"
                                 style={{
                                     width: '100%',
                                     height: '100%',
@@ -243,10 +252,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                             />
                         )}
 
-                        {currentItem.type === 'youtube' && (
+                        {currentType === 'youtube' && (
                             <iframe
                                 id="yt-player"
-                                src={getYoutubeEmbedUrl(currentItem.url)}
+                                src={getYoutubeEmbedUrl(currentUrl)}
                                 style={{
                                     position: 'absolute',
                                     inset: 0,
@@ -259,9 +268,9 @@ const PlayerScreen = ({ playlist, orientation = 'landscape' }) => {
                             />
                         )}
 
-                        {currentItem.type === 'image' && (
+                        {currentType === 'image' && (
                             <img
-                                src={currentItem.url}
+                                src={currentUrl}
                                 alt=""
                                 
                                 style={{
