@@ -215,28 +215,16 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType !== 'image' || !isPlaying) return;
 
-        const img = new Image();
-
         const fallback = 5000;
         const limit =
             currentDuration && currentDuration > 0
                 ? currentDuration * 1000
                 : fallback;
 
-        let timer;
-        img.onload = () => {
-            timer = setTimeout(next, limit);
-        };
-
-        img.onerror = () => {
-            console.warn('Erro ao carregar imagem, pulando');
-            next();
-        };
-
-        img.src = currentUrl;
+        const timer = setTimeout(next, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentDuration, currentItem?.id, isPlaying, next]);
 
     /* =========================
        WEB PAGE TIMER
