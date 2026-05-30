@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { syncService } from '../lib/syncService';
-import { storage } from '../lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminHeader from './AdminHeader';
@@ -180,27 +179,34 @@ const AdminPanel = ({ isPairing = false }) => {
         if (!file) return;
 
         setIsUploading(true);
-        setUploadProgress(0);
+        setUploadProgress(10); // Inicia o progresso
 
-        const fileRef = ref(storage, `medias/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`);
-        const uploadTask = uploadBytesResumable(fileRef, file);
+        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
 
-        uploadTask.on('state_changed',
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                setUploadProgress(Math.round(progress));
-            },
-            (error) => {
-                console.error("Erro no upload:", error);
-                alert("Erro ao enviar arquivo. Verifique se o Firebase Storage está ativado.");
-                setIsUploading(false);
-            },
-            async () => {
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                handleUrlChange(downloadURL);
-                setIsUploading(false);
-            }
-        );
+        try {
+            // Envia o arquivo para o bucket 'medias' no Supabase
+            const { data, error } = await supabase.storage
+                .from('medias')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (error) throw error;
+
+            setUploadProgress(100);
+
+            // Recupera a URL pública do arquivo recém-enviado
+            const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(fileName);
+            
+            handleUrlChange(publicUrlData.publicUrl);
+        } catch (error) {
+            console.error("Erro no upload:", error);
+            alert("Erro ao enviar arquivo para o Supabase. Verifique se o bucket 'medias' é público e as políticas RLS.");
+        } finally {
+            setIsUploading(false);
+            setTimeout(() => setUploadProgress(0), 1000);
+        }
     };
 
     const handleToggleSound = async () => {
