@@ -318,6 +318,15 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
 
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">
+            <style>{`
+                @keyframes fade-in {
+                    0% { opacity: 0; }
+                    100% { opacity: 1; }
+                }
+                .animate-fade {
+                    animation: fade-in 0.8s ease-in-out;
+                }
+            `}</style>
             <div
                 style={{
                     position: 'absolute',
@@ -358,7 +367,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 muted={isMuted}
                                 playsInline
                                 disablePictureInPicture
-                                className="pointer-events-none"
+                                className="pointer-events-none animate-fade"
                                 preload="auto"
                                 onEnded={next}
                                 onError={(e) => {
@@ -390,6 +399,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 }}
                                 allow="autoplay; encrypted-media"
                                 title="YouTube Player"
+                                className="animate-fade"
                             />
                         )}
 
@@ -402,6 +412,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                     console.warn('Erro ao exibir imagem, pulando');
                                 next(true);
                                 }}
+                                className="animate-fade"
                                 style={{
                                     width: '100%',
                                     height: '100%',
@@ -417,6 +428,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                             <iframe
                                 key={currentItem.id}
                                 src={currentUrl}
+                                className="animate-fade"
                                 style={{
                                     position: 'absolute',
                                     inset: 0,
