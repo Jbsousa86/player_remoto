@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const DynamicTicker = ({ ticker }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -86,13 +87,26 @@ const NewsDisplay = ({ url, onError }) => {
         <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-black animate-fade">
             {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
             <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-transparent" />
-            <div className="relative z-10 p-8 md:p-16 w-full max-w-7xl mx-auto">
-                <div className="flex items-center gap-3 mb-6">
-                    <span className="bg-pink-600 text-white font-black px-4 py-2 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-lg shadow-pink-500/50">📰 Notícias</span>
-                    <span className="text-white/50 font-bold text-xs uppercase tracking-widest">{news.author || 'Última Hora'}</span>
+            <div className="relative z-10 p-8 md:p-16 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-8">
+                <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-6">
+                        <span className="bg-pink-600 text-white font-black px-4 py-2 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-lg shadow-pink-500/50">📰 Notícias</span>
+                        <span className="text-white/50 font-bold text-xs uppercase tracking-widest">{news.author || 'Última Hora'}</span>
+                    </div>
+                    <h1 className="text-white font-black text-3xl md:text-6xl leading-tight drop-shadow-2xl mb-4">{news.title}</h1>
+                    {news.description && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
-                <h1 className="text-white font-black text-3xl md:text-6xl leading-tight drop-shadow-2xl mb-4">{news.title}</h1>
-                {news.description && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
+
+                {news.link && (
+                    <div className="hidden sm:flex flex-col items-center bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20 shadow-2xl shrink-0 animate-fade">
+                        <div className="bg-white p-3 rounded-2xl mb-3 shadow-inner">
+                            <QRCodeSVG value={news.link} size={120} level="Q" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-white text-center leading-tight">
+                            Leia a matéria<br/>no celular
+                        </span>
+                    </div>
+                )}
             </div>
         </div>
     );
