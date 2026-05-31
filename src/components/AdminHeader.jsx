@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX, Square } from 'lucide-react';
 
-const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, isSyncing }) => {
+const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, handleToggleStop, isSyncing }) => {
     const [localVolume, setLocalVolume] = useState(selectedScreen?.volume ?? 100);
 
     useEffect(() => {
@@ -80,6 +80,16 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 >
                     {selectedScreen.isPlaying === false ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
                     {selectedScreen.isPlaying === false ? 'RETOMAR' : 'PAUSAR'}
+                </button>
+                <button
+                    onClick={handleToggleStop}
+                    title="Parar ou Iniciar Totem"
+                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
+                        selectedScreen.isStopped ? 'border-red-500/50 text-red-400 bg-red-500/5' : 'border-white/10'
+                    }`}
+                >
+                    <Square className="w-3 h-3" />
+                    {selectedScreen.isStopped ? 'INICIAR' : 'PARAR'}
                 </button>
                 <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
                     Gerenciar <span className="text-orange-500">Mídias</span>

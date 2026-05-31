@@ -279,6 +279,19 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleToggleStop = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const newIsStopped = !selectedScreen.isStopped;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { isStopped: newIsStopped });
+        } catch (err) {
+            alert("Erro ao alterar estado de parada.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const handleTickerToggle = async () => {
         if (!selectedScreen) return;
         setIsSyncing(true);
@@ -568,6 +581,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             handleToggleSound={handleToggleSound}
                             handleVolumeChange={handleVolumeChange}
                             handleTogglePlayPause={handleTogglePlayPause}
+                            handleToggleStop={handleToggleStop}
                             isSyncing={isSyncing}
                         />
 

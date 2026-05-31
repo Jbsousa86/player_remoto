@@ -30,7 +30,7 @@ const DynamicTicker = ({ ticker }) => {
     );
 };
 
-const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, ticker = null }) => {
+const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const activePlaylist = useMemo(() => {
         return playlist?.filter(item => item.isActive !== false) || [];
@@ -143,7 +143,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
        SAFETY TIMER (YOUTUBE ONLY)
     ========================== */
     useEffect(() => {
-        if (currentType !== 'youtube' || !isPlaying) return;
+        if (currentType !== 'youtube' || !isPlaying || isStopped) return;
 
         // Se for live ou vídeo com duração definida, respeita. Senão, limite longo (10 min).
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
@@ -154,13 +154,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
        VIDEO SAFETY TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'video' || !isPlaying) return;
+        if (currentType !== 'video' || !isPlaying || isStopped) return;
 
         // Se o usuário estipular tempo, ele corta o vídeo na hora definida. Senão, 10 minutos de segurança.
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
@@ -171,13 +171,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         }, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
        YOUTUBE PLAYER EVENTS
     ========================== */
     useEffect(() => {
-        if (currentType !== 'youtube') return;
+        if (currentType !== 'youtube' || isStopped) return;
 
         const iframeId = `yt-player-${currentItem?.id}`;
 
@@ -212,7 +212,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
             if (ytPlayerRef.current?.destroy) ytPlayerRef.current.destroy();
             ytPlayerRef.current = null;
         };
-    }, [currentType, currentUrl, currentItem?.id, next]);
+    }, [currentType, currentUrl, currentItem?.id, isStopped, next]);
 
     /* =========================
        PLAY/PAUSE & MUTE EFFECTS (DYNAMIC)
@@ -220,7 +220,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     useEffect(() => {
         if (currentType === 'video' && videoRef.current) {
             // 3. CAPTURA DE BLOQUEIO DE AUTOPLAY: Pula logo ao invés de congelar caso a TV bloqueie o vídeo
-            if (isPlaying) {
+            if (isPlaying && !isStopped) {
                 const playPromise = videoRef.current.play();
                 if (playPromise !== undefined) {
                     playPromise.catch(e => {
@@ -232,10 +232,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                 videoRef.current.pause();
             }
         } else if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.playVideo === 'function') {
-            if (isPlaying) ytPlayerRef.current.playVideo();
+            if (isPlaying && !isStopped) ytPlayerRef.current.playVideo();
             else ytPlayerRef.current.pauseVideo();
         }
-        }, [isPlaying, currentType, currentUrl, currentItem?.id]);
+        }, [isPlaying, isStopped, currentType, currentUrl, currentItem?.id, next]);
 
     useEffect(() => {
         if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.mute === 'function') {
@@ -258,7 +258,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
        IMAGE TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'image' || !isPlaying) return;
+        if (currentType !== 'image' || !isPlaying || isStopped) return;
 
         // 4. DURAÇÃO ILIMITADA (0): Respeita o zero como sendo pausa completa da passagem
         if (currentDuration === 0) return;
@@ -271,13 +271,13 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         const timer = setTimeout(next, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentDuration, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
        WEB PAGE TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'web' || !isPlaying) return;
+        if (currentType !== 'web' || !isPlaying || isStopped) return;
 
         if (currentDuration === 0) return;
 
@@ -289,7 +289,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
         const timer = setTimeout(next, limit);
 
         return () => clearTimeout(timer);
-    }, [currentType, currentDuration, currentItem?.id, isPlaying, next]);
+    }, [currentType, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
        ROTATION LOGIC
@@ -309,19 +309,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     const needsRotation = isPortrait && screenSize.w > screenSize.h;
 
     /* =========================
-       LOADING
-    ========================== */
-    if (!activePlaylist?.length) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center bg-black text-white">
-                Sincronizando Totem…
-            </div>
-        );
-    }
-
-    /* =========================
        RENDER
     ========================== */
+    const standbyImage = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop";
+
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">
             <div
@@ -337,9 +328,21 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     backgroundColor: '#000'
                 }}
             >
-                <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
-                    <div className="relative w-full h-full flex items-center justify-center">
-                        {currentType === 'video' && (
+                {(isStopped || !activePlaylist?.length) ? (
+                    <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-black">
+                        <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                        <div className="z-10 flex flex-col items-center text-center px-4">
+                            <span className="text-6xl mb-4">📺</span>
+                            <h1 className="text-3xl font-black uppercase tracking-widest">Totem em Espera</h1>
+                            <p className="text-zinc-400 mt-2 text-sm uppercase tracking-widest">
+                                {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
+                        <div className="relative w-full h-full flex items-center justify-center">
+                            {currentType === 'video' && (
                             <video
                                 key={currentItem.id}
                                 ref={videoRef}
@@ -366,7 +369,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                             />
                         )}
 
-                        {currentType === 'youtube' && (
+                            {currentType === 'youtube' && (
                             <iframe
                                 key={currentItem.id}
                                 id={`yt-player-${currentItem.id}`}
@@ -383,7 +386,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                             />
                         )}
 
-                        {currentType === 'image' && (
+                            {currentType === 'image' && (
                             <img
                                 key={currentItem.id}
                                 src={currentUrl}
@@ -403,7 +406,7 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                             />
                         )}
 
-                        {currentType === 'web' && (
+                            {currentType === 'web' && (
                             <iframe
                                 key={currentItem.id}
                                 src={currentUrl}
@@ -416,8 +419,9 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                 }}
                             />
                         )}
+                        </div>
                     </div>
-                </div>
+                )}
 
                 <DynamicTicker ticker={ticker} />
             </div>
