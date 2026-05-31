@@ -16,6 +16,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
         newItem.type === 'video' ? 'border-red-500/50' :
         newItem.type === 'youtube' ? 'border-purple-500/50' :
         newItem.type === 'web' ? 'border-teal-500/50' :
+        newItem.type === 'news' ? 'border-pink-500/50' :
         'border-white/10'
     );
     return (
@@ -26,7 +27,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia ou Upload</label>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
-                                placeholder="Cole aqui a URL da Imagem, Vídeo ou YouTube"
+                                placeholder="Cole a URL da Imagem, Vídeo, Web ou RSS de Notícias"
                                 className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
                                 required={!isUploading} 
                                 disabled={isUploading} 
@@ -44,6 +45,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                                 newItem.type === 'video' ? 'bg-red-600 text-white' :
                                 newItem.type === 'youtube' ? 'bg-purple-600 text-white' :
                                 newItem.type === 'web' ? 'bg-teal-600 text-white' :
+                                newItem.type === 'news' ? 'bg-pink-600 text-white' :
                                 'bg-gray-600 text-white'
                             }`}>Tipo: {newItem.type}</span>
                             {newItem.duration === 0 && (
@@ -62,6 +64,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             <option value="video">🎥 Vídeo Direto</option>
                             <option value="youtube">📺 YouTube</option>
                             <option value="web">🌐 Página da Web</option>
+                            <option value="news">📰 Notícias (RSS)</option>
                         </select>
                     </div>
 

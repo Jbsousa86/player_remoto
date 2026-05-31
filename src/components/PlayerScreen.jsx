@@ -30,6 +30,55 @@ const DynamicTicker = ({ ticker }) => {
     );
 };
 
+const NewsDisplay = ({ url, onError }) => {
+    const [news, setNews] = useState(null);
+
+    useEffect(() => {
+        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data?.status === 'ok' && data.items?.length > 0) {
+                    // Sorteia aleatoriamente uma das 5 últimas notícias recentes
+                    const item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
+                    setNews(item);
+                } else {
+                    console.warn('RSS Feed sem itens', data);
+                    onError?.();
+                }
+            })
+            .catch(err => {
+                console.error('Erro ao buscar RSS:', err);
+                onError?.();
+            });
+    }, [url, onError]);
+
+    if (!news) return (
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-900 text-white">
+            <div className="animate-pulse flex flex-col items-center">
+                <span className="text-4xl mb-4">📰</span>
+                <span className="text-sm font-bold tracking-widest uppercase text-zinc-500">Buscando Notícias...</span>
+            </div>
+        </div>
+    );
+
+    const image = news.enclosure?.link || news.thumbnail;
+
+    return (
+        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-black animate-fade">
+            {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
+            <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-transparent" />
+            <div className="relative z-10 p-8 md:p-16 w-full max-w-7xl mx-auto">
+                <div className="flex items-center gap-3 mb-6">
+                    <span className="bg-pink-600 text-white font-black px-4 py-2 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-lg shadow-pink-500/50">📰 Notícias</span>
+                    <span className="text-white/50 font-bold text-xs uppercase tracking-widest">{news.author || 'Última Hora'}</span>
+                </div>
+                <h1 className="text-white font-black text-3xl md:text-6xl leading-tight drop-shadow-2xl mb-4">{news.title}</h1>
+                {news.description && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
+            </div>
+        </div>
+    );
+};
+
 const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const activePlaylist = useMemo(() => {
@@ -274,10 +323,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     }, [currentType, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
-       WEB PAGE TIMER
+       WEB PAGE & NEWS TIMER
     ========================== */
     useEffect(() => {
-        if (currentType !== 'web' || !isPlaying || isStopped) return;
+        if ((currentType !== 'web' && currentType !== 'news') || !isPlaying || isStopped) return;
 
         if (currentDuration === 0) return;
 
@@ -437,6 +486,10 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                                     border: 'none'
                                 }}
                             />
+                        )}
+
+                        {currentType === 'news' && (
+                            <NewsDisplay key={currentItem.id} url={currentUrl} onError={() => next(true)} />
                         )}
                         </div>
                     </div>

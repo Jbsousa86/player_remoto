@@ -20,6 +20,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     <span className="text-4xl mb-2">🌐</span>
                                     <span className="text-[10px] font-black uppercase tracking-widest">Website</span>
                                 </div>
+                            ) : item.type === 'news' ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-pink-500">
+                                    <span className="text-4xl mb-2">📰</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Notícias</span>
+                                </div>
                             ) : (
                                 <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} alt="" />
                             )}
