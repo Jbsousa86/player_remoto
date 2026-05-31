@@ -204,13 +204,15 @@ const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape'
         const updatePlayableItems = () => {
             const now = new Date();
             
-            // Abordagem à prova de falhas para garantir formato "HH:MM" e fuso de SP
-            // mesmo em Android TV / WebViews antigos que bugam o toLocaleTimeString
-            const spTimeStr = now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
-            const spDate = new Date(spTimeStr);
+            // Abordagem matemática 100% à prova de falhas via UTC puro.
+            // Ignora completamente os bugs de "Invalid Date" em TVs antigas.
+            // O fuso de São Paulo é fixamente UTC-3.
+            let spHour = now.getUTCHours() - 3;
+            if (spHour < 0) spHour += 24;
+            const spMinute = now.getUTCMinutes();
             
-            const currentHour = spDate.getHours().toString().padStart(2, '0');
-            const currentMinute = spDate.getMinutes().toString().padStart(2, '0');
+            const currentHour = spHour < 10 ? '0' + spHour : spHour.toString();
+            const currentMinute = spMinute < 10 ? '0' + spMinute : spMinute.toString();
             const currentTimeStr = `${currentHour}:${currentMinute}`;
 
             const playable = playlist?.filter(item => {
