@@ -13,8 +13,8 @@ const DynamicTicker = ({ ticker }) => {
 
     if (!ticker?.isActive || !ticker?.text) return null;
 
-    const timeStr = currentTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    const dateStr = currentTime.toLocaleDateString('pt-BR');
+    const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+    const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     const displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr);
 
     return (
@@ -114,6 +114,64 @@ const NewsDisplay = ({ url, onError }) => {
     );
 };
 
+const StandbyWeather = () => {
+    const [weather, setWeather] = useState(null);
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                // 1. Obter localização aproximada por IP
+                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const { latitude, longitude, city } = await geoRes.json();
+
+                // 2. Obter clima (Open-Meteo é gratuito e sem API Key)
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+                const weatherData = await weatherRes.json();
+
+                setWeather({
+                    temp: Math.round(weatherData.current_weather.temperature),
+                    city: city || 'Local',
+                    code: weatherData.current_weather.weathercode
+                });
+            } catch (error) {
+                console.error("Erro ao buscar clima:", error);
+            }
+        };
+
+        fetchWeather();
+        const interval = setInterval(fetchWeather, 30 * 60 * 1000); // Atualiza a cada 30 minutos
+        return () => clearInterval(interval);
+    }, []);
+
+    const getWeatherEmoji = (code) => {
+        if (code === 0) return '☀️'; // Limpo
+        if (code === 1 || code === 2 || code === 3) return '⛅'; // Parcialmente nublado
+        if (code >= 45 && code <= 48) return '🌫️'; // Névoa
+        if (code >= 51 && code <= 67) return '🌧️'; // Chuva leve/Garoa
+        if (code >= 71 && code <= 77) return '❄️'; // Neve
+        if (code >= 80 && code <= 82) return '🌧️'; // Pancadas de chuva
+        if (code >= 95 && code <= 99) return '⛈️'; // Tempestade
+        return '☁️';
+    };
+
+    if (!weather) return (
+        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-white/10 opacity-30 animate-pulse min-w-25">
+            <span className="text-4xl md:text-5xl drop-shadow-lg">☁️</span>
+            <span className="text-2xl md:text-3xl font-black mt-2">--°C</span>
+        </div>
+    );
+
+    return (
+        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-white/10 min-w-25">
+            <span className="text-4xl md:text-5xl drop-shadow-lg">{getWeatherEmoji(weather.code)}</span>
+            <span className="text-2xl md:text-3xl font-black mt-2">{weather.temp}°C</span>
+            <span className="text-[10px] md:text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1 max-w-25 truncate text-center" title={weather.city}>
+                {weather.city}
+            </span>
+        </div>
+    );
+};
+
 const StandbyClock = () => {
     const [time, setTime] = useState(new Date());
 
@@ -123,13 +181,17 @@ const StandbyClock = () => {
     }, []);
 
     return (
-        <div className="mt-12 flex flex-col items-center bg-white/5 px-12 py-8 rounded-[3rem] backdrop-blur-xl border border-white/10 shadow-2xl">
-            <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-white drop-shadow-lg">
-                {time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-            </span>
-            <span className="text-xs md:text-sm font-bold text-orange-500 uppercase tracking-[0.3em] mt-4 text-center">
-                {time.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </span>
+        <div className="mt-12 flex flex-row items-center justify-center bg-white/5 px-10 md:px-16 py-8 rounded-[3rem] backdrop-blur-xl border border-white/10 shadow-2xl">
+            <div className="flex flex-col items-center">
+                <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-white drop-shadow-lg">
+                    {time.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+                </span>
+                <span className="text-[10px] md:text-sm font-bold text-orange-500 uppercase tracking-[0.3em] mt-4 text-center">
+                    {time.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+            </div>
+            
+            <StandbyWeather />
         </div>
     );
 };
@@ -141,9 +203,12 @@ const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape'
     useEffect(() => {
         const updatePlayableItems = () => {
             const now = new Date();
-            const currentHour = now.getHours().toString().padStart(2, '0');
-            const currentMinute = now.getMinutes().toString().padStart(2, '0');
-            const currentTimeStr = `${currentHour}:${currentMinute}`;
+            const currentTimeStr = now.toLocaleTimeString('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).replace(/^24:/, '00:'); // Prevenção para alguns navegadores
 
             const playable = playlist?.filter(item => {
                 if (item.isActive === false) return false;
