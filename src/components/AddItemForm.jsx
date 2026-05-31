@@ -32,7 +32,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                                 disabled={isUploading} 
                             />
                             <div className="shrink-0 flex">
-                                <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                                <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} multiple />
                                 <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
                                     {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
                                 </label>
@@ -52,7 +52,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         </div>
                     </div>
 
-                    <div className="lg:col-span-4">
+                    <div className="lg:col-span-3">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Tipo</label>
                         <select value={newItem.type} onChange={(e) => {
                             const val = e.target.value;
@@ -82,12 +82,19 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         </select>
                     </div>
 
-                    <div className="lg:col-span-3 flex gap-2">
-                        <button type="button" onClick={broadcastItem} disabled={isSyncing || !newItem.url} title="Adicionar esta mídia em TODOS os totens" className="flex-1 h-16 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-red-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-[10px] leading-tight px-1">
-                            📡 Em Todos
+                    <div className="lg:col-span-3">
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Grupo / Bloco (Opcional)</label>
+                        <input type="text" value={newItem.block || ''} onChange={(e) => setNewItem({ ...newItem, block: e.target.value })}
+                            placeholder="Ex: Promoções..."
+                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white" />
+                    </div>
+
+                    <div className="lg:col-span-12 flex flex-col sm:flex-row gap-4 mt-2">
+                        <button type="button" onClick={broadcastItem} disabled={isSyncing || !newItem.url} title="Adicionar esta mídia em TODOS os totens" className="flex-1 h-16 bg-red-600 hover:bg-red-700 text-white font-black rounded-2xl transition-all shadow-xl shadow-red-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-xs px-4">
+                            📡 Adicionar em Todos
                         </button>
-                        <button type="submit" disabled={isSyncing || !newItem.url} title="Adicionar apenas no totem selecionado" className="flex-1 h-16 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-[10px] leading-tight px-1">
-                            Adicionar
+                        <button type="submit" disabled={isSyncing || !newItem.url} title="Adicionar apenas no totem selecionado" className="flex-1 h-16 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-2xl transition-all shadow-xl shadow-orange-500/20 active:scale-95 uppercase tracking-widest disabled:opacity-50 text-xs px-4">
+                            Adicionar Neste Totem
                         </button>
                     </div>
                 </div>

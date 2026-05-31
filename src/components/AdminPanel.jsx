@@ -12,7 +12,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [screens, setScreens] = useState([]);
     const [selectedScreen, setSelectedScreen] = useState(null);
     const [playlist, setPlaylist] = useState([]);
-    const [newItem, setNewItem] = useState({ url: '', type: 'image', duration: 10, fitMode: 'cover' });
+    const [newItem, setNewItem] = useState({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: '' });
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -175,37 +175,72 @@ const AdminPanel = ({ isPairing = false }) => {
     };
 
     const handleFileUpload = async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
 
         setIsUploading(true);
-        setUploadProgress(10); // Inicia o progresso
-
-        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+        setUploadProgress(10);
 
         try {
-            // Envia o arquivo para o bucket 'medias' no Supabase
-            const { data, error } = await supabase.storage
-                .from('medias')
-                .upload(fileName, file, {
-                    cacheControl: '3600',
-                    upsert: false
-                });
+            const newUploadedUrls = [];
+            let currentProgress = 10;
+            const progressStep = 90 / files.length;
 
-            if (error) throw error;
+            for (const file of files) {
+                const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                const { data, error } = await supabase.storage
+                    .from('medias')
+                    .upload(fileName, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) throw error;
+
+                const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(fileName);
+                newUploadedUrls.push(publicUrlData.publicUrl);
+                
+                currentProgress += progressStep;
+                setUploadProgress(Math.round(currentProgress));
+            }
 
             setUploadProgress(100);
 
-            // Recupera a URL pública do arquivo recém-enviado
-            const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(fileName);
-            
-            handleUrlChange(publicUrlData.publicUrl);
+            if (newUploadedUrls.length === 1) {
+                handleUrlChange(newUploadedUrls[0]);
+            } else {
+                if (!selectedScreen) {
+                    alert("Mídias enviadas! Mas selecione um Totem para aplicá-las em lote.");
+                    return;
+                }
+                setIsSyncing(true);
+                const updatedPlaylist = [...playlist];
+                
+                newUploadedUrls.forEach((url, idx) => {
+                    const isVideo = isVideoUrl(url);
+                    const id = Date.now().toString() + Math.random().toString(36).substring(2, 9) + idx;
+                    updatedPlaylist.push({
+                        url,
+                        type: isVideo ? 'video' : 'image',
+                        duration: isVideo ? 0 : (newItem.duration || 10),
+                        fitMode: newItem.fitMode || 'cover',
+                        block: newItem.block || 'Lote de Upload',
+                        isActive: true,
+                        id,
+                        order: updatedPlaylist.length + 1
+                    });
+                });
+
+                await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
+                alert(`${newUploadedUrls.length} mídias adicionadas em bloco com sucesso!`);
+            }
         } catch (error) {
             console.error("Erro no upload:", error);
             alert("Erro ao enviar arquivo para o Supabase. Verifique se o bucket 'medias' é público e as políticas RLS.");
         } finally {
             setIsUploading(false);
             setTimeout(() => setUploadProgress(0), 1000);
+            e.target.value = ''; // Limpa o input
         }
     };
 
@@ -333,6 +368,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 url: finalUrl, 
                 type: finalType, 
                 duration: finalDuration, 
+                block: newItem.block || '',
                 isActive: true,
                 id, 
                 order: playlist.length + 1 
@@ -341,7 +377,7 @@ const AdminPanel = ({ isPairing = false }) => {
 
         try {
             await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
-            setNewItem({ url: '', type: 'image', duration: 10, fitMode: 'cover' });
+            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: prev.block || '' }));
         } catch (err) {
             console.error("Erro ao adicionar item:", err);
             alert("Erro ao salvar no Firebase.");
@@ -397,12 +433,12 @@ const AdminPanel = ({ isPairing = false }) => {
                 });
 
                 const id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
-                const updatedPlaylist = [...currentPlaylist, { ...newItem, url: finalUrl, type: finalType, duration: finalDuration, isActive: true, id, order: currentPlaylist.length + 1 }];
+                const updatedPlaylist = [...currentPlaylist, { ...newItem, url: finalUrl, type: finalType, duration: finalDuration, block: newItem.block || '', isActive: true, id, order: currentPlaylist.length + 1 }];
 
                 await syncService.updatePlaylist(screen.id, updatedPlaylist);
             }
 
-            setNewItem({ url: '', type: 'image', duration: 10, fitMode: 'cover' });
+            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: prev.block || '' }));
             alert("Sucesso! A Live/Mídia foi adicionada em todos os totens.");
         } catch (err) {
             console.error("Erro ao transmitir para todos:", err);

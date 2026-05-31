@@ -31,6 +31,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     #{index + 1}
                                 </div>
                             </div>
+                            {item.block && (
+                                <div className="absolute top-4 right-4 bg-purple-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/10 text-white uppercase tracking-widest shadow-lg shadow-purple-900/50">
+                                    📁 {item.block}
+                                </div>
+                            )}
                         </div>
                         <div className="p-5 flex flex-col gap-4">
                             <div className="truncate">
