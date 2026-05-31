@@ -22,6 +22,8 @@ const AdminPanel = ({ isPairing = false }) => {
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
+    const [localSchedules, setLocalSchedules] = useState({});
+    const [scheduleSaveStatus, setScheduleSaveStatus] = useState({});
 
     const uniqueBlocks = useMemo(() => {
         if (!playlist) return [];
@@ -73,6 +75,13 @@ const AdminPanel = ({ isPairing = false }) => {
         });
         return () => unsubscribe();
     }, [selectedScreen?.id]);
+
+    // Mantém o estado local de agendamentos sincronizado e previne race conditions
+    useEffect(() => {
+        if (selectedScreen) {
+            setLocalSchedules(selectedScreen.blockSchedules || {});
+        }
+    }, [selectedScreen?.blockSchedules, selectedScreen?.id]);
 
     useEffect(() => {
         setTickerText(selectedScreen?.ticker?.text || '');
@@ -340,23 +349,23 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
-    const handleScheduleChange = async (blockName, field, value) => {
+    const handleScheduleChange = (blockName, field, value) => {
         if (!selectedScreen) return;
-        setIsSyncing(true);
-        const currentSchedules = selectedScreen.blockSchedules || {};
-        const blockSchedule = currentSchedules[blockName] || { startTime: '', endTime: '' };
-        const newSchedules = {
-            ...currentSchedules,
-            [blockName]: { ...blockSchedule, [field]: value }
-        };
         
-        try {
-            await syncService.updateScreen(selectedScreen.id, { blockSchedules: newSchedules });
-        } catch (err) {
-            alert("Erro ao alterar agendamento.");
-        } finally {
-            setIsSyncing(false);
-        }
+        setLocalSchedules(prev => {
+            const currentBlock = prev[blockName] || { startTime: '', endTime: '' };
+            const newSchedules = {
+                ...prev,
+                [blockName]: { ...currentBlock, [field]: value }
+            };
+            
+            syncService.updateScreen(selectedScreen.id, { blockSchedules: newSchedules }).then(() => {
+                setScheduleSaveStatus(s => ({ ...s, [blockName]: 'Salvo!' }));
+                setTimeout(() => setScheduleSaveStatus(s => ({ ...s, [blockName]: null })), 2500);
+            }).catch(() => alert("Erro ao salvar agendamento."));
+            
+            return newSchedules;
+        });
     };
 
     const handleForceReload = async () => {
@@ -658,10 +667,24 @@ const AdminPanel = ({ isPairing = false }) => {
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {uniqueBlocks.map(block => {
-                                        const schedule = selectedScreen.blockSchedules?.[block] || { startTime: '', endTime: '' };
+                                        const schedule = localSchedules[block] || { startTime: '', endTime: '' };
                                         return (
-                                            <div key={block} className="bg-black/40 border border-white/10 p-4 rounded-2xl">
-                                                <h4 className="font-bold text-white mb-3 text-sm truncate" title={block}>📁 {block}</h4>
+                                            <div key={block} className="bg-black/40 border border-white/10 p-4 rounded-2xl relative">
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <h4 className="font-bold text-white text-sm truncate pr-2" title={block}>📁 {block}</h4>
+                                                    <AnimatePresence>
+                                                        {scheduleSaveStatus[block] && (
+                                                            <motion.span 
+                                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                                animate={{ opacity: 1, scale: 1 }}
+                                                                exit={{ opacity: 0, scale: 0.8 }}
+                                                                className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md"
+                                                            >
+                                                                {scheduleSaveStatus[block]}
+                                                            </motion.span>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
                                                 <div className="flex items-center gap-4">
                                                     <div className="flex-1">
                                                         <label className="block text-[9px] font-black text-zinc-500 uppercase mb-1">Início</label>
