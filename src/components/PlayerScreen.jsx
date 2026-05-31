@@ -32,25 +32,44 @@ const DynamicTicker = ({ ticker }) => {
 
 const NewsDisplay = ({ url, onError }) => {
     const [news, setNews] = useState(null);
+    const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
+        let isMounted = true;
         fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
             .then(res => res.json())
             .then(data => {
+                if (!isMounted) return;
                 if (data?.status === 'ok' && data.items?.length > 0) {
                     // Sorteia aleatoriamente uma das 5 últimas notícias recentes
                     const item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
                     setNews(item);
                 } else {
                     console.warn('RSS Feed sem itens', data);
-                    onError?.();
+                    setHasError(true);
+                    setTimeout(() => isMounted && onError?.(), 4000);
                 }
             })
             .catch(err => {
+                if (!isMounted) return;
                 console.error('Erro ao buscar RSS:', err);
-                onError?.();
+                setHasError(true);
+                setTimeout(() => isMounted && onError?.(), 4000);
             });
-    }, [url, onError]);
+            
+        return () => { isMounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [url]);
+
+    if (hasError) return (
+        <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-900 text-white">
+            <div className="flex flex-col items-center opacity-70 animate-fade">
+                <span className="text-5xl mb-4">⚠️</span>
+                <span className="text-sm font-bold tracking-widest uppercase text-red-400">Feed RSS Inválido</span>
+                <span className="text-[10px] mt-2 text-zinc-500 max-w-xs text-center">O link inserido não é um feed de notícias reconhecido.<br/>Verifique se é um link válido (ex: .xml ou /rss).</span>
+            </div>
+        </div>
+    );
 
     if (!news) return (
         <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-900 text-white">
