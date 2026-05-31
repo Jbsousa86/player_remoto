@@ -313,6 +313,9 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
     ========================== */
     const standbyImage = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop";
 
+    // Coloque o link direto da sua logo aqui (PNG com fundo transparente). Se deixar vazio, exibirá o ícone 📺.
+    const companyLogo = ""; // Ex: "https://seusite.com/sua_logo.png"
+
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">
             <div
@@ -332,7 +335,11 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-black">
                         <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-30" />
                         <div className="z-10 flex flex-col items-center text-center px-4">
-                            <span className="text-6xl mb-4">📺</span>
+                            {companyLogo ? (
+                                <img src={companyLogo} alt="Logo da Empresa" className="h-24 md:h-32 mb-6 object-contain drop-shadow-2xl" />
+                            ) : (
+                                <span className="text-6xl mb-6">📺</span>
+                            )}
                             <h1 className="text-3xl font-black uppercase tracking-widest">Totem em Espera</h1>
                             <p className="text-zinc-400 mt-2 text-sm uppercase tracking-widest">
                                 {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
