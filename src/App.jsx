@@ -128,8 +128,10 @@ function PlayerContainer() {
       }
 
       // Update Block Schedules
-      if (data.blockSchedules) {
+      if (data.blockSchedules !== undefined) {
         setBlockSchedules(data.blockSchedules);
+      } else {
+        setBlockSchedules({});
       }
 
       // 4. Check for Remote Commands (RELOAD)

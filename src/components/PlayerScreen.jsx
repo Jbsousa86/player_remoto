@@ -203,12 +203,15 @@ const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape'
     useEffect(() => {
         const updatePlayableItems = () => {
             const now = new Date();
-            const currentTimeStr = now.toLocaleTimeString('pt-BR', {
-                timeZone: 'America/Sao_Paulo',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            }).replace(/^24:/, '00:'); // Prevenção para alguns navegadores
+            
+            // Abordagem à prova de falhas para garantir formato "HH:MM" e fuso de SP
+            // mesmo em Android TV / WebViews antigos que bugam o toLocaleTimeString
+            const spTimeStr = now.toLocaleString("en-US", { timeZone: "America/Sao_Paulo" });
+            const spDate = new Date(spTimeStr);
+            
+            const currentHour = spDate.getHours().toString().padStart(2, '0');
+            const currentMinute = spDate.getMinutes().toString().padStart(2, '0');
+            const currentTimeStr = `${currentHour}:${currentMinute}`;
 
             const playable = playlist?.filter(item => {
                 if (item.isActive === false) return false;
