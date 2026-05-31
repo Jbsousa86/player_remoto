@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { syncService } from '../lib/syncService';
 import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone, Clock } from 'lucide-react';
@@ -24,6 +24,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
     const [localSchedules, setLocalSchedules] = useState({});
     const [scheduleSaveStatus, setScheduleSaveStatus] = useState({});
+    const scheduleTimeouts = useRef({});
 
     const uniqueBlocks = useMemo(() => {
         if (!playlist) return [];
@@ -361,7 +362,12 @@ const AdminPanel = ({ isPairing = false }) => {
             
             syncService.updateScreen(selectedScreen.id, { blockSchedules: newSchedules }).then(() => {
                 setScheduleSaveStatus(s => ({ ...s, [blockName]: 'Salvo!' }));
-                setTimeout(() => setScheduleSaveStatus(s => ({ ...s, [blockName]: null })), 2500);
+                if (scheduleTimeouts.current[blockName]) {
+                    clearTimeout(scheduleTimeouts.current[blockName]);
+                }
+                scheduleTimeouts.current[blockName] = setTimeout(() => {
+                    setScheduleSaveStatus(s => ({ ...s, [blockName]: null }));
+                }, 3000);
             }).catch(() => alert("Erro ao salvar agendamento."));
             
             return newSchedules;
@@ -678,9 +684,9 @@ const AdminPanel = ({ isPairing = false }) => {
                                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                 exit={{ opacity: 0, scale: 0.8 }}
-                                                                className="text-[9px] font-black uppercase tracking-widest text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-md"
+                                                                className="text-[10px] font-black uppercase tracking-widest text-white bg-emerald-500 px-3 py-1 rounded-lg shadow-lg shadow-emerald-500/20 z-10 relative"
                                                             >
-                                                                {scheduleSaveStatus[block]}
+                                                                ✅ {scheduleSaveStatus[block]}
                                                             </motion.span>
                                                         )}
                                                     </AnimatePresence>
