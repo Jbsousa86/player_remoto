@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { syncService } from '../lib/syncService';
 import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
-import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone } from 'lucide-react';
+import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminHeader from './AdminHeader';
 import AddItemForm from './AddItemForm';
@@ -22,6 +22,12 @@ const AdminPanel = ({ isPairing = false }) => {
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
+
+    const uniqueBlocks = useMemo(() => {
+        if (!playlist) return [];
+        const blocks = playlist.map(item => item.block).filter(Boolean);
+        return [...new Set(blocks)];
+    }, [playlist]);
 
     // Handle Quick Pairing from URL
     useEffect(() => {
@@ -334,6 +340,25 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleScheduleChange = async (blockName, field, value) => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const currentSchedules = selectedScreen.blockSchedules || {};
+        const blockSchedule = currentSchedules[blockName] || { startTime: '', endTime: '' };
+        const newSchedules = {
+            ...currentSchedules,
+            [blockName]: { ...blockSchedule, [field]: value }
+        };
+        
+        try {
+            await syncService.updateScreen(selectedScreen.id, { blockSchedules: newSchedules });
+        } catch (err) {
+            alert("Erro ao alterar agendamento.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const handleForceReload = async () => {
         if (!selectedScreen) return;
         if (!window.confirm(`Deseja forçar a atualização da tela "${selectedScreen.name}"? Isso fará a página recarregar lá no totem.`)) return;
@@ -624,6 +649,45 @@ const AdminPanel = ({ isPairing = false }) => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Block Scheduling Control */}
+                        {uniqueBlocks.length > 0 && (
+                            <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                                <h3 className="text-[10px] font-black text-zinc-500 uppercase mb-6 tracking-[0.2em] flex items-center gap-2">
+                                    <Clock className="w-4 h-4" /> Agendamento de Blocos
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {uniqueBlocks.map(block => {
+                                        const schedule = selectedScreen.blockSchedules?.[block] || { startTime: '', endTime: '' };
+                                        return (
+                                            <div key={block} className="bg-black/40 border border-white/10 p-4 rounded-2xl">
+                                                <h4 className="font-bold text-white mb-3 text-sm truncate" title={block}>📁 {block}</h4>
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex-1">
+                                                        <label className="block text-[9px] font-black text-zinc-500 uppercase mb-1">Início</label>
+                                                        <input 
+                                                            type="time" 
+                                                            value={schedule.startTime}
+                                                            onChange={(e) => handleScheduleChange(block, 'startTime', e.target.value)}
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <label className="block text-[9px] font-black text-zinc-500 uppercase mb-1">Fim</label>
+                                                        <input 
+                                                            type="time" 
+                                                            value={schedule.endTime}
+                                                            onChange={(e) => handleScheduleChange(block, 'endTime', e.target.value)}
+                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
 
                         {/* Playlist Header */}
                         <div className="flex items-center justify-between mb-8 px-2">

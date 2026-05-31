@@ -18,6 +18,7 @@ function PlayerContainer() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isStopped, setIsStopped] = useState(false);
   const [ticker, setTicker] = useState({ text: '', isActive: false });
+  const [blockSchedules, setBlockSchedules] = useState({});
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -124,6 +125,11 @@ function PlayerContainer() {
       // Update Ticker
       if (data.ticker) {
         setTicker(data.ticker);
+      }
+
+      // Update Block Schedules
+      if (data.blockSchedules) {
+        setBlockSchedules(data.blockSchedules);
       }
 
       // 4. Check for Remote Commands (RELOAD)
@@ -235,7 +241,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} />
+          <PlayerScreen playlist={playlist} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} />
         </ErrorBoundary>
       )}
     </div>

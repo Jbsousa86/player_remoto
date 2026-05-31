@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const DynamicTicker = ({ ticker }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -113,11 +114,59 @@ const NewsDisplay = ({ url, onError }) => {
     );
 };
 
-const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
+const StandbyClock = () => {
+    const [time, setTime] = useState(new Date());
+
+    useEffect(() => {
+        const interval = setInterval(() => setTime(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    return (
+        <div className="mt-12 flex flex-col items-center bg-white/5 px-12 py-8 rounded-[3rem] backdrop-blur-xl border border-white/10 shadow-2xl">
+            <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-white drop-shadow-lg">
+                {time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+            <span className="text-xs md:text-sm font-bold text-orange-500 uppercase tracking-[0.3em] mt-4 text-center">
+                {time.toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+        </div>
+    );
+};
+
+const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
-    const activePlaylist = useMemo(() => {
-        return playlist?.filter(item => item.isActive !== false) || [];
-    }, [playlist]);
+    const [activePlaylist, setActivePlaylist] = useState([]);
+
+    useEffect(() => {
+        const updatePlayableItems = () => {
+            const now = new Date();
+            const currentHour = now.getHours().toString().padStart(2, '0');
+            const currentMinute = now.getMinutes().toString().padStart(2, '0');
+            const currentTimeStr = `${currentHour}:${currentMinute}`;
+
+            const playable = playlist?.filter(item => {
+                if (item.isActive === false) return false;
+                if (item.block && blockSchedules[item.block]) {
+                    const { startTime, endTime } = blockSchedules[item.block];
+                    if (startTime && endTime) {
+                        if (startTime <= endTime) {
+                            if (currentTimeStr < startTime || currentTimeStr >= endTime) return false;
+                        } else {
+                            // Lógica de agendamento atravessando a madrugada (ex: 22:00 até 06:00)
+                            if (currentTimeStr < startTime && currentTimeStr >= endTime) return false;
+                        }
+                    }
+                }
+                return true;
+            }) || [];
+            setActivePlaylist(playable);
+        };
+
+        updatePlayableItems();
+        const interval = setInterval(updatePlayableItems, 10000); // Reavaliar e atualizar a cada 10 segundos
+        return () => clearInterval(interval);
+    }, [playlist, blockSchedules]);
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const advancedRef = useRef(false);
@@ -423,111 +472,133 @@ const PlayerScreen = ({ playlist, orientation = 'landscape', isMuted = true, vol
                     backgroundColor: '#000'
                 }}
             >
-                {(isStopped || !activePlaylist?.length) ? (
-                    <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-black">
-                        <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-30" />
-                        <div className="z-10 flex flex-col items-center text-center px-4">
-                            {companyLogo ? (
-                                <img src={companyLogo} alt="Logo da Empresa" className="h-24 md:h-32 mb-6 object-contain drop-shadow-2xl" />
-                            ) : (
-                                <span className="text-6xl mb-6">📺</span>
-                            )}
-                            <h1 className="text-3xl font-black uppercase tracking-widest">Totem em Espera</h1>
-                            <p className="text-zinc-400 mt-2 text-sm uppercase tracking-widest">
-                                {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none">
-                        <div className="relative w-full h-full flex items-center justify-center">
-                            {currentType === 'video' && (
-                            <video
-                                key={currentItem.id}
-                                ref={videoRef}
-                                src={currentUrl}
-                                autoPlay
-                                muted={isMuted}
-                                playsInline
-                                disablePictureInPicture
-                                className="pointer-events-none animate-fade"
-                                preload="auto"
-                                onEnded={next}
-                                onError={(e) => {
-                                    console.error('Video playback error, skipping:', e);
-                                next(true);
-                                }}
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit:
-                                        currentItem.fitMode === 'cover'
-                                            ? 'cover'
-                                            : 'contain'
-                                }}
-                            />
-                        )}
+                <AnimatePresence mode="wait">
+                    {(isStopped || !activePlaylist?.length) ? (
+                        <motion.div 
+                            key="standby"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 1 }}
+                            className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-zinc-950"
+                        >
+                            <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" />
+                            <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/80 to-black z-0" />
+                            <div className="z-10 flex flex-col items-center text-center px-4 w-full max-w-4xl">
+                                {companyLogo ? (
+                                    <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-2xl" />
+                                ) : (
+                                    <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/10 shadow-2xl">
+                                        <span className="text-5xl drop-shadow-lg">📺</span>
+                                    </div>
+                                )}
+                                
+                                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-widest mb-4 drop-shadow-xl">Totem em Espera</h1>
+                                <p className="text-zinc-400 text-sm md:text-base font-bold uppercase tracking-[0.2em] max-w-lg mb-4">
+                                    {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
+                                </p>
 
-                            {currentType === 'youtube' && (
-                            <iframe
-                                key={currentItem.id}
-                                id={`yt-player-${currentItem.id}`}
-                                src={getYoutubeEmbedUrl(currentUrl, isMuted)}
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    border: 'none'
-                                }}
-                                allow="autoplay; encrypted-media"
-                                title="YouTube Player"
-                                className="animate-fade"
-                            />
-                        )}
+                                <StandbyClock />
+                            </div>
+                        </motion.div>
+                    ) : (
+                        <motion.div 
+                            key="player"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 1 }}
+                            className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none bg-black"
+                        >
+                            <div className="relative w-full h-full flex items-center justify-center">
+                                <AnimatePresence>
+                                    {currentItem && (
+                                        <motion.div
+                                            key={currentItem.id}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            exit={{ opacity: 0 }}
+                                            transition={{ duration: 1, ease: "easeInOut" }}
+                                            className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
+                                        >
+                                            {currentItem.type === 'video' && (
+                                                <video
+                                                    ref={videoRef}
+                                                    src={currentItem.url}
+                                                    autoPlay
+                                                    muted={isMuted}
+                                                    playsInline
+                                                    disablePictureInPicture
+                                                    className="pointer-events-none"
+                                                    preload="auto"
+                                                    onEnded={next}
+                                                    onError={(e) => {
+                                                        console.error('Video playback error, skipping:', e);
+                                                        next(true);
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
+                                                    }}
+                                                />
+                                            )}
 
-                            {currentType === 'image' && (
-                            <img
-                                key={currentItem.id}
-                                src={currentUrl}
-                                alt=""
-                                onError={() => {
-                                    console.warn('Erro ao exibir imagem, pulando');
-                                next(true);
-                                }}
-                                className="animate-fade"
-                                style={{
-                                    width: '100%',
-                                    height: '100%',
-                                    objectFit:
-                                        currentItem.fitMode === 'cover'
-                                            ? 'cover'
-                                            : 'contain'
-                                }}
-                            />
-                        )}
+                                            {currentItem.type === 'youtube' && (
+                                                <iframe
+                                                    id={`yt-player-${currentItem.id}`}
+                                                    src={getYoutubeEmbedUrl(currentItem.url, isMuted)}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        inset: 0,
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        border: 'none'
+                                                    }}
+                                                    allow="autoplay; encrypted-media"
+                                                    title="YouTube Player"
+                                                />
+                                            )}
 
-                            {currentType === 'web' && (
-                            <iframe
-                                key={currentItem.id}
-                                src={currentUrl}
-                                className="animate-fade"
-                                style={{
-                                    position: 'absolute',
-                                    inset: 0,
-                                    width: '100%',
-                                    height: '100%',
-                                    border: 'none'
-                                }}
-                            />
-                        )}
+                                            {currentItem.type === 'image' && (
+                                                <img
+                                                    src={currentItem.url}
+                                                    alt=""
+                                                    onError={() => {
+                                                        console.warn('Erro ao exibir imagem, pulando');
+                                                        next(true);
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
+                                                    }}
+                                                />
+                                            )}
 
-                        {currentType === 'news' && (
-                            <NewsDisplay key={currentItem.id} url={currentUrl} onError={() => next(true)} />
-                        )}
-                        </div>
-                    </div>
-                )}
+                                            {currentItem.type === 'web' && (
+                                                <iframe
+                                                    src={currentItem.url}
+                                                    style={{
+                                                        position: 'absolute',
+                                                        inset: 0,
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        border: 'none'
+                                                    }}
+                                                />
+                                            )}
+
+                                            {currentItem.type === 'news' && (
+                                                <NewsDisplay url={currentItem.url} onError={() => next(true)} />
+                                            )}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 <DynamicTicker ticker={ticker} />
             </div>
