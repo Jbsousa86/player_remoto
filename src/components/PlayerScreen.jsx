@@ -82,6 +82,7 @@ const NewsDisplay = ({ url, onError }) => {
     );
 
     const image = news.enclosure?.link || news.thumbnail;
+    const newsUrl = news.link || news.guid;
 
     return (
         <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-black animate-fade">
@@ -97,10 +98,10 @@ const NewsDisplay = ({ url, onError }) => {
                     {news.description && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
 
-                {news.link && (
-                    <div className="hidden sm:flex flex-col items-center bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20 shadow-2xl shrink-0 animate-fade">
+                {newsUrl && (
+                    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20 shadow-2xl shrink-0 animate-fade">
                         <div className="bg-white p-3 rounded-2xl mb-3 shadow-inner">
-                            <QRCodeSVG value={news.link} size={120} level="Q" />
+                            <QRCodeSVG value={newsUrl} size={120} level="Q" />
                         </div>
                         <span className="text-[10px] font-black uppercase tracking-widest text-white text-center leading-tight">
                             Leia a matéria<br/>no celular
