@@ -311,7 +311,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             }
         };
 
-        preloadImages();
+        preloadMedia();
     }, [playlist]);
 
     /* =========================

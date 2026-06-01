@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX, Square } from 'lucide-react';
+import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX, Square, Trash2 } from 'lucide-react';
 
-const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, handleToggleStop, isSyncing }) => {
+const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleClearCache, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, handleToggleStop, isSyncing }) => {
     const [localVolume, setLocalVolume] = useState(selectedScreen?.volume ?? 100);
 
     useEffect(() => {
@@ -39,6 +39,14 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 >
                     <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
                     Reiniciar Player
+                </button>
+                <button
+                    onClick={handleClearCache}
+                    title="Limpar cache de mídias e recarregar o Totem"
+                    className="ml-2 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
+                >
+                    <Trash2 className="w-3 h-3" />
+                    Limpar Cache
                 </button>
                 <button
                     onClick={handleToggleOrientation}

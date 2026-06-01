@@ -90,6 +90,25 @@ function PlayerContainer() {
 
     console.log(`Connecting to Screen: ${screenId}`);
 
+    // 0. Carregar o Backup Offline imediatamente
+    try {
+      const backup = localStorage.getItem(`totem_data_backup_${screenId}`);
+      if (backup) {
+        const data = JSON.parse(backup);
+        if (data.playlist) setPlaylist(data.playlist.filter(item => item.isActive !== false));
+        if (data.orientation) setOrientation(data.orientation);
+        if (data.isMuted !== undefined) setIsMuted(data.isMuted);
+        if (data.isPlaying !== undefined) setIsPlaying(data.isPlaying);
+        if (data.isStopped !== undefined) setIsStopped(data.isStopped);
+        if (data.volume !== undefined) setVolume(data.volume);
+        if (data.ticker) setTicker(data.ticker);
+        if (data.standbyOptions) setStandbyOptions(data.standbyOptions);
+        if (data.blockSchedules !== undefined) setBlockSchedules(data.blockSchedules);
+      }
+    } catch (e) {
+      console.warn('Backup offline inválido');
+    }
+
     const unsubscribe = syncService.subscribeToScreen(screenId, (data) => {
       if (!data) return;
 
@@ -140,15 +159,34 @@ function PlayerContainer() {
         setBlockSchedules({});
       }
 
-      // 4. Check for Remote Commands (RELOAD)
-      if (data.command?.type === 'RELOAD') {
-        const cmdTime = data.command.timestamp;
-        const lastReload = parseInt(localStorage.getItem('last_reload_time') || '0');
+      // Manter o Backup Local sempre atualizado
+      localStorage.setItem(`totem_data_backup_${screenId}`, JSON.stringify(data));
 
-        if (cmdTime > lastReload) {
-          localStorage.setItem('last_reload_time', cmdTime.toString());
-          console.log('🔄 Remote RELOAD command received via direct listener!');
-          window.location.reload();
+      // 4. Check for Remote Commands (RELOAD / CLEAR_CACHE)
+      if (data.command) {
+        const cmdTime = data.command.timestamp;
+        
+        if (data.command.type === 'RELOAD') {
+          const lastReload = parseInt(localStorage.getItem('last_reload_time') || '0');
+          if (cmdTime > lastReload) {
+            localStorage.setItem('last_reload_time', cmdTime.toString());
+            console.log('🔄 Remote RELOAD command received via direct listener!');
+            window.location.reload();
+          }
+        } else if (data.command.type === 'CLEAR_CACHE') {
+          const lastClear = parseInt(localStorage.getItem('last_clear_cache_time') || '0');
+          if (cmdTime > lastClear) {
+            localStorage.setItem('last_clear_cache_time', cmdTime.toString());
+            console.log('🧹 Remote CLEAR_CACHE command received!');
+            if (window.caches) {
+              caches.keys().then((names) => {
+                Promise.all(names.map(name => caches.delete(name)))
+                  .then(() => window.location.reload());
+              });
+            } else {
+              window.location.reload();
+            }
+          }
         }
       }
     });

@@ -442,6 +442,22 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleClearCache = async () => {
+        if (!selectedScreen) return;
+        if (!window.confirm(`Deseja limpar o cache de mídias da tela "${selectedScreen.name}"? Isso apagará os vídeos e imagens baixados e forçará o Totem a recarregar tudo.`)) return;
+
+        setIsSyncing(true);
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                command: { type: 'CLEAR_CACHE', timestamp: Date.now() } 
+            });
+        } catch (err) {
+            alert("Erro ao enviar comando de limpeza.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const addItem = async (e) => {
         e.preventDefault();
         if (!newItem.url || !selectedScreen) return;
@@ -670,6 +686,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             selectedScreen={selectedScreen}
                             isScreenOnline={isScreenOnline}
                             handleForceReload={handleForceReload}
+                            handleClearCache={handleClearCache}
                             handleToggleOrientation={handleToggleOrientation}
                             handleToggleSound={handleToggleSound}
                             handleVolumeChange={handleVolumeChange}
