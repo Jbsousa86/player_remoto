@@ -942,7 +942,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                             placeholder="Digite a mensagem padrão do letreiro..."
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                         />
-                                        <p className="text-[10px] text-zinc-500 mt-2 ml-1">Use {{hora}} ou {{data}} para exibir horário e data automaticamente.</p>
+                                        <p className="text-[10px] text-zinc-500 mt-2 ml-1">Use {'{{hora}}'} ou {'{{data}}'} para exibir horário e data automaticamente.</p>
                                     </div>
                                     <button
                                         onClick={applyTickerToAllScreens}
