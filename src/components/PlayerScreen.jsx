@@ -603,8 +603,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             transition={{ duration: 1 }}
                             className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-zinc-950"
                         >
-                            <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-20 grayscale" />
-                            <div className="absolute inset-0 bg-linear-to-b from-black/30 via-black/80 to-black z-0" />
+                            <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-70 saturate-150 animate-standby-pan" />
+                            <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/70 z-0" />
                             <div className="z-10 flex flex-col items-center text-center px-4 w-full max-w-4xl">
                                 {companyLogo ? (
                                     <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-2xl" />
