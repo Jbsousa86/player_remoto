@@ -19,7 +19,6 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
-    const [globalTickerText, setGlobalTickerText] = useState(DEFAULT_TICKER.text);
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
@@ -402,30 +401,7 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
-    const applyTickerToAllScreens = async () => {
-        if (!selectedScreen) return;
-        if (!globalTickerText || !globalTickerText.trim()) {
-            alert('Digite a mensagem padrão do letreiro antes de aplicar.');
-            return;
-        }
-        setIsSyncing(true);
-        const ticker = {
-            text: globalTickerText,
-            isActive: selectedScreen.ticker?.isActive ?? true
-        };
 
-        try {
-            for (const screen of screens) {
-                await syncService.updateScreen(screen.id, { ticker });
-            }
-            alert('Mensagem do letreiro aplicada a todas as telas.');
-        } catch (err) {
-            console.error('Erro ao aplicar letreiro global:', err);
-            alert('Erro ao aplicar letreiro para todas as telas.');
-        } finally {
-            setIsSyncing(false);
-        }
-    };
 
     const applyRssToAllScreens = async () => {
         if (!globalRssUrl) {
@@ -945,26 +921,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                         Aplicar RSS para todas as telas
                                     </button>
                                 </div>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro Padrão para Todas as Telas</label>
-                                        <input
-                                            type="text"
-                                            value={globalTickerText}
-                                            onChange={(e) => setGlobalTickerText(e.target.value)}
-                                            placeholder="Digite a mensagem padrão do letreiro..."
-                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
-                                        />
-                                        <p className="text-[10px] text-zinc-500 mt-2 ml-1">Use {'{{hora}}'} ou {'{{data}}'} para exibir horário e data automaticamente.</p>
-                                    </div>
-                                    <button
-                                        onClick={applyTickerToAllScreens}
-                                        disabled={isSyncing}
-                                        className="w-full bg-emerald-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Aplicar letreiro para todas as telas
-                                    </button>
-                                </div>
+
                             </div>
                         </div>
 
