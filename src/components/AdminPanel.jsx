@@ -96,12 +96,20 @@ const AdminPanel = ({ isPairing = false }) => {
     }, [selectedScreen?.blockSchedules, selectedScreen?.id]);
 
     useEffect(() => {
+        if (!selectedScreen) {
+            setTickerText('');
+            setStandbyLogo('');
+            setStandbyBg('');
+            setGlobalRssUrl(DEFAULT_RSS_URL);
+            return;
+        }
+
         setTickerText(selectedScreen?.ticker?.text || DEFAULT_TICKER.text);
         setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
         const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
         setGlobalRssUrl(newsItem?.url || DEFAULT_RSS_URL);
-    }, [selectedScreen?.ticker?.text, selectedScreen?.standbyOptions?.logo, selectedScreen?.standbyOptions?.background, selectedScreen?.playlist]);
+    }, [selectedScreen?.id]);
 
     const handleAddScreen = async (e) => {
         e.preventDefault();
