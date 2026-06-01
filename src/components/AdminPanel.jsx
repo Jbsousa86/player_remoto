@@ -19,6 +19,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
+    const [globalTickerText, setGlobalTickerText] = useState(DEFAULT_TICKER.text);
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
@@ -403,9 +404,13 @@ const AdminPanel = ({ isPairing = false }) => {
 
     const applyTickerToAllScreens = async () => {
         if (!selectedScreen) return;
+        if (!globalTickerText || !globalTickerText.trim()) {
+            alert('Digite a mensagem padrão do letreiro antes de aplicar.');
+            return;
+        }
         setIsSyncing(true);
         const ticker = {
-            text: tickerText,
+            text: globalTickerText,
             isActive: selectedScreen.ticker?.isActive ?? true
         };
 
@@ -890,15 +895,23 @@ const AdminPanel = ({ isPairing = false }) => {
                                     value={tickerText}
                                     onChange={(e) => setTickerText(e.target.value)}
                                     onBlur={() => handleTickerTextSave(tickerText)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') handleTickerTextSave(tickerText); }}
                                     placeholder="Digite recados. Use {{hora}} ou {{data}} para exibir tempo real..."
                                     className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: A Hora, Clima e Cotação do Dólar são adicionados automaticamente ao final do letreiro.</p>
                             </div>
-                            <div className="shrink-0 w-full lg:w-auto flex items-end">
+                            <div className="shrink-0 w-full lg:w-auto flex flex-col gap-2 items-end">
+                                <button
+                                    onClick={() => handleTickerTextSave(tickerText)}
+                                    disabled={isSyncing}
+                                    className="w-full lg:w-auto mt-2 lg:mt-0 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs bg-blue-600 text-white border border-blue-600 hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Salvar Letreiro
+                                </button>
                                 <button
                                     onClick={handleTickerToggle}
-                                    className={`w-full lg:w-auto mt-2 lg:mt-0 px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
+                                    className={`w-full lg:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
                                         selectedScreen.ticker?.isActive 
                                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
                                             : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
@@ -937,8 +950,8 @@ const AdminPanel = ({ isPairing = false }) => {
                                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro Padrão para Todas as Telas</label>
                                         <input
                                             type="text"
-                                            value={tickerText}
-                                            onChange={(e) => setTickerText(e.target.value)}
+                                            value={globalTickerText}
+                                            onChange={(e) => setGlobalTickerText(e.target.value)}
                                             placeholder="Digite a mensagem padrão do letreiro..."
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                         />
