@@ -1,14 +1,16 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { Trash2, ChevronLeft, ChevronRight, Eye, EyeOff, Play } from 'lucide-react';
 
-const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYoutubeId }) => {
+const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYoutubeId, currentPlayingId }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <AnimatePresence mode="popLayout">
-                {playlist.map((item, index) => (
+                {playlist.map((item, index) => {
+                    const isPlayingNow = item.id === currentPlayingId;
+                    return (
                     <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id}
-                        className={`bg-white/5 border ${item.isActive === false ? 'border-white/5 opacity-40 grayscale' : 'border-white/10'} rounded-2xl overflow-hidden group shadow-xl transition-all`}
+                        className={`bg-white/5 border ${item.isActive === false ? 'border-white/5 opacity-40 grayscale' : (isPlayingNow ? 'border-orange-500 shadow-2xl shadow-orange-500/20 ring-1 ring-orange-500' : 'border-white/10')} rounded-2xl overflow-hidden group ${!isPlayingNow ? 'shadow-xl' : ''} transition-all`}
                     >
                         <div className="aspect-video bg-black relative">
                             {item.type === 'video' ? (
@@ -41,6 +43,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     📁 {item.block}
                                 </div>
                             )}
+                            {isPlayingNow && (
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-500/90 backdrop-blur-sm text-white text-[10px] font-black px-4 py-2 rounded-full shadow-2xl z-30 uppercase tracking-widest flex items-center gap-2 animate-pulse border border-orange-400">
+                                    <Play className="w-3 h-3" fill="currentColor" /> Reproduzindo
+                                </div>
+                            )}
                         </div>
                         <div className="p-5 flex flex-col gap-4">
                             <div className="truncate">
@@ -68,7 +75,8 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                             </div>
                         </div>
                     </motion.div>
-                ))}
+                    );
+                })}
             </AnimatePresence>
         </div>
     );

@@ -103,7 +103,7 @@ function PlayerContainer() {
         if (data.volume !== undefined) setVolume(data.volume);
         if (data.ticker) setTicker(data.ticker);
         if (data.standbyOptions) setStandbyOptions(data.standbyOptions);
-        if (data.blockSchedules !== undefined) setBlockSchedules(data.blockSchedules);
+        if (data.blockSchedules !== undefined) setBlockSchedules(data.blockSchedules || {});
       }
     } catch (e) {
       console.warn('Backup offline inválido');
@@ -154,7 +154,7 @@ function PlayerContainer() {
 
       // Update Block Schedules
       if (data.blockSchedules !== undefined) {
-        setBlockSchedules(data.blockSchedules);
+        setBlockSchedules(data.blockSchedules || {});
       } else {
         setBlockSchedules({});
       }

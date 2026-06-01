@@ -52,7 +52,7 @@ const DynamicTicker = ({ ticker }) => {
     const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     
     let displayText = '';
-    if (ticker.text) {
+    if (ticker.text && typeof ticker.text === 'string') {
         displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
     }
     displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
@@ -136,7 +136,7 @@ const NewsDisplay = ({ url, onError }) => {
                         <span className="text-white/50 font-bold text-xs uppercase tracking-widest">{news.author || 'Última Hora'}</span>
                     </div>
                     <h1 className="text-white font-black text-3xl md:text-6xl leading-tight drop-shadow-2xl mb-4">{news.title}</h1>
-                    {news.description && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
+                    {typeof news.description === 'string' && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
 
                 {newsUrl && (
@@ -257,7 +257,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
 
             const playable = playlist?.filter(item => {
                 if (item.isActive === false) return false;
-                if (item.block && blockSchedules[item.block]) {
+                if (item.block && blockSchedules?.[item.block]) {
                     const { startTime, endTime } = blockSchedules[item.block];
                     if (startTime && endTime) {
                         if (startTime <= endTime) {
@@ -635,7 +635,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 <AnimatePresence>
                                     {currentItem && (
                                         <motion.div
-                                            key={currentItem.id}
+                                            key={currentItem.id || currentItem.url || currentIndex}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
