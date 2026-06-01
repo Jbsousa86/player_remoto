@@ -43,7 +43,7 @@ const ScreenList = ({
 
                 <AnimatePresence>
                     {isAddingScreen && (
-                        <motion.form initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+                        <motion.form key="add-screen-form" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}
                         onSubmit={handleAddScreen} className="bg-white/5 p-4 rounded-2xl border border-orange-500/20 overflow-hidden"
                         >
                             <div className="space-y-3">

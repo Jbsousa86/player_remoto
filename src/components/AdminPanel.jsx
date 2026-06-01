@@ -805,6 +805,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                                     <AnimatePresence>
                                                         {scheduleSaveStatus[block] && (
                                                             <motion.span 
+                                                                key={`status-${block}`}
                                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                 exit={{ opacity: 0, scale: 0.8 }}

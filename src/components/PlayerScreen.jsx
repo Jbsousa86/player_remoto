@@ -362,8 +362,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             }
         };
 
-        preloadMedia();
-    }, [playlist]);
+        preloadImages();
+    }, [activePlaylist]);
 
     /* =========================
        YOUTUBE HELPERS
@@ -635,7 +635,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 <AnimatePresence>
                                     {currentItem && (
                                         <motion.div
-                                            key={currentItem.id ? `media-${currentItem.id}` : `media-idx-${currentIndex}`}
+                                            key={currentItem.id ? `media-${currentItem.id}-${currentIndex}` : `media-idx-${currentIndex}`}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}
