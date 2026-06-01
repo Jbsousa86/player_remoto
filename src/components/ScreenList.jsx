@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Plus, Trash2, LogOut, Smartphone, Monitor } from 'lucide-react';
+import { LayoutDashboard, Plus, Trash2, LogOut, Smartphone, Monitor, Play } from 'lucide-react';
 
 const ScreenList = ({
     screens,
@@ -61,18 +61,38 @@ const ScreenList = ({
                 </AnimatePresence>
 
                 <div className="flex flex-col gap-3">
-                    {screens.map(screen => (
-                        <button key={screen.id} onClick={() => handleSelectScreen(screen)}
-                        className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all group ${selectedScreen?.id === screen.id ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-zinc-500 hover:bg-white/5'}`}
-                        >
-                            <div className="flex items-center gap-3 truncate">
-                                <div className={`w-2 h-2 rounded-full shrink-0 ${isScreenOnline(screen.lastSeen) ? 'bg-emerald-500 shadow-md shadow-emerald-500/50' : 'bg-red-500'}`} />
-                                {screen.orientation === 'portrait' ? <Smartphone className="w-3 h-3 text-zinc-600" /> : <Monitor className="w-3 h-3 text-zinc-600" />}
-                                <span className="text-xs font-bold truncate">{screen.name}</span>
-                            </div>
-                            <Trash2 onClick={(e) => handleDeleteScreen(e, screen.id)} className={`w-3.5 h-3.5 ${selectedScreen?.id === screen.id ? 'text-white/40 hover:text-white' : 'text-zinc-800 hover:text-red-500'} transition-colors`} />
-                        </button>
-                    ))}
+                    {screens.map(screen => {
+                        const nowPlayingItem = screen.currentPlayingId && screen.currentPlayingId !== 'standby'
+                            ? screen.playlist?.find(item => item.id === screen.currentPlayingId)
+                            : null;
+                        const nowPlayingLabel = screen.currentPlayingId === 'standby'
+                            ? 'Standby'
+                            : nowPlayingItem
+                                ? `${nowPlayingItem.type === 'youtube' ? 'YouTube' : nowPlayingItem.type === 'video' ? 'Vídeo' : nowPlayingItem.type === 'image' ? 'Imagem' : nowPlayingItem.type} agora`
+                                : 'Sem mídia ativa';
+
+                        return (
+                            <button key={screen.id} onClick={() => handleSelectScreen(screen)}
+                                className={`w-full flex flex-col gap-2 items-start justify-between px-4 py-3 rounded-2xl transition-all group ${selectedScreen?.id === screen.id ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'text-zinc-500 hover:bg-white/5'}`}
+                            >
+                                <div className="w-full flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 truncate">
+                                        <div className={`w-2 h-2 rounded-full shrink-0 ${isScreenOnline(screen.lastSeen) ? 'bg-emerald-500 shadow-md shadow-emerald-500/50' : 'bg-red-500'}`} />
+                                        {screen.orientation === 'portrait' ? <Smartphone className="w-3 h-3 text-zinc-600" /> : <Monitor className="w-3 h-3 text-zinc-600" />}
+                                        <span className="text-xs font-bold truncate">{screen.name}</span>
+                                    </div>
+                                    <Trash2 onClick={(e) => handleDeleteScreen(e, screen.id)} className={`w-3.5 h-3.5 ${selectedScreen?.id === screen.id ? 'text-white/40 hover:text-white' : 'text-zinc-800 hover:text-red-500'} transition-colors`} />
+                                </div>
+                                <div className="w-full flex items-center gap-2 px-1">
+                                    <Play className="w-3 h-3 text-orange-400" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] uppercase tracking-[0.25em] text-zinc-500">Agora</p>
+                                        <p className="text-[11px] font-bold truncate text-white/90" title={nowPlayingItem?.url || nowPlayingLabel}>{nowPlayingItem ? nowPlayingItem.url : nowPlayingLabel}</p>
+                                    </div>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
