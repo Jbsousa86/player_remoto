@@ -19,6 +19,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
+    const [tickerStatus, setTickerStatus] = useState('');
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
@@ -402,6 +403,8 @@ const AdminPanel = ({ isPairing = false }) => {
             await syncService.updateScreen(selectedScreen.id, { 
                 ticker: { ...selectedScreen.ticker, text } 
             });
+            setTickerStatus('Texto salvo');
+            setTimeout(() => setTickerStatus(''), 2500);
         } catch (err) {
             alert("Erro ao alterar texto do letreiro.");
         } finally {
@@ -886,13 +889,11 @@ const AdminPanel = ({ isPairing = false }) => {
                                 <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: A Hora, Clima e Cotação do Dólar são adicionados automaticamente ao final do letreiro.</p>
                             </div>
                             <div className="shrink-0 w-full lg:w-auto flex flex-col gap-2 items-end">
-                                <button
-                                    onClick={() => handleTickerTextSave(tickerText)}
-                                    disabled={isSyncing}
-                                    className="w-full lg:w-auto mt-2 lg:mt-0 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs bg-blue-600 text-white border border-blue-600 hover:bg-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Salvar Letreiro
-                                </button>
+                                {tickerStatus && (
+                                    <span className="text-green-400 text-[11px] font-bold uppercase tracking-[0.2em] pb-1">
+                                        {tickerStatus}
+                                    </span>
+                                )}
                                 <button
                                     onClick={handleTickerToggle}
                                     className={`w-full lg:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
