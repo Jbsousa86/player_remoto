@@ -196,7 +196,7 @@ const StandbyClock = () => {
     );
 };
 
-const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
+const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
 
@@ -513,10 +513,10 @@ const PlayerScreen = ({ playlist, blockSchedules = {}, orientation = 'landscape'
     /* =========================
        RENDER
     ========================== */
-    const standbyImage = "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop";
+    const standbyImage = standbyOptions?.background || "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop";
 
-    // Coloque o link direto da sua logo aqui (PNG com fundo transparente). Se deixar vazio, exibirá o ícone 📺.
-    const companyLogo = ""; // Ex: "https://seusite.com/sua_logo.png"
+    // O link agora é puxado direto das configurações do painel Admin!
+    const companyLogo = standbyOptions?.logo || "";
 
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">

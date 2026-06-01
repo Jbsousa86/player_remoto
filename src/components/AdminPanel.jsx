@@ -18,6 +18,8 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
+    const [standbyLogo, setStandbyLogo] = useState('');
+    const [standbyBg, setStandbyBg] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
@@ -86,7 +88,9 @@ const AdminPanel = ({ isPairing = false }) => {
 
     useEffect(() => {
         setTickerText(selectedScreen?.ticker?.text || '');
-    }, [selectedScreen?.ticker?.text]);
+        setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
+        setStandbyBg(selectedScreen?.standbyOptions?.background || '');
+    }, [selectedScreen?.ticker?.text, selectedScreen?.standbyOptions?.logo, selectedScreen?.standbyOptions?.background]);
 
     const handleAddScreen = async (e) => {
         e.preventDefault();
@@ -257,6 +261,21 @@ const AdminPanel = ({ isPairing = false }) => {
             setIsUploading(false);
             setTimeout(() => setUploadProgress(0), 1000);
             e.target.value = ''; // Limpa o input
+        }
+    };
+
+    const handleStandbySave = async (field, value) => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const currentOptions = selectedScreen.standbyOptions || { logo: '', background: '' };
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                standbyOptions: { ...currentOptions, [field]: value } 
+            });
+        } catch (err) {
+            alert("Erro ao alterar as configurações de espera.");
+        } finally {
+            setIsSyncing(false);
         }
     };
 
@@ -636,6 +655,37 @@ const AdminPanel = ({ isPairing = false }) => {
                             broadcastItem={broadcastItem}
                             isSyncing={isSyncing}
                         />
+
+                        {/* Standby Customization Control */}
+                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                            <div className="flex-1 w-full space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">URL da Logo (Tela de Espera)</label>
+                                    <input 
+                                        type="text" 
+                                        value={standbyLogo}
+                                        onChange={(e) => setStandbyLogo(e.target.value)}
+                                        onBlur={() => handleStandbySave('logo', standbyLogo)}
+                                        placeholder="Cole a URL da sua logo (PNG transparente recomendado)"
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">URL do Background (Tela de Espera)</label>
+                                    <input 
+                                        type="text" 
+                                        value={standbyBg}
+                                        onChange={(e) => setStandbyBg(e.target.value)}
+                                        onBlur={() => handleStandbySave('background', standbyBg)}
+                                        placeholder="Cole a URL da imagem de fundo..."
+                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                    />
+                                </div>
+                            </div>
+                            <div className="shrink-0 w-full lg:w-48 flex items-center justify-center p-4 bg-black/40 rounded-2xl border border-white/10 h-full min-h-30">
+                                {standbyLogo ? <img src={standbyLogo} alt="Logo" className="max-h-20 object-contain drop-shadow-lg" /> : <span className="text-4xl opacity-50 drop-shadow-lg">📺</span>}
+                            </div>
+                        </div>
 
                         {/* Ticker Control */}
                         <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">

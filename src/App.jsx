@@ -18,6 +18,7 @@ function PlayerContainer() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isStopped, setIsStopped] = useState(false);
   const [ticker, setTicker] = useState({ text: '', isActive: false });
+  const [standbyOptions, setStandbyOptions] = useState({ logo: '', background: '' });
   const [blockSchedules, setBlockSchedules] = useState({});
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -125,6 +126,11 @@ function PlayerContainer() {
       // Update Ticker
       if (data.ticker) {
         setTicker(data.ticker);
+      }
+
+      // Update Standby Options
+      if (data.standbyOptions) {
+        setStandbyOptions(data.standbyOptions);
       }
 
       // Update Block Schedules
@@ -243,7 +249,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} />
+          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} />
         </ErrorBoundary>
       )}
     </div>
