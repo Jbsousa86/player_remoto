@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { syncService } from '../lib/syncService';
+import { syncService, DEFAULT_RSS_URL, DEFAULT_TICKER } from '../lib/syncService';
 import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,6 +19,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
+    const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -28,6 +29,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
     const [localSchedules, setLocalSchedules] = useState({});
     const [scheduleSaveStatus, setScheduleSaveStatus] = useState({});
+    const [hasAppliedGlobalDefaults, setHasAppliedGlobalDefaults] = useState(false);
     const scheduleTimeouts = useRef({});
 
     const uniqueBlocks = useMemo(() => {
@@ -94,10 +96,12 @@ const AdminPanel = ({ isPairing = false }) => {
     }, [selectedScreen?.blockSchedules, selectedScreen?.id]);
 
     useEffect(() => {
-        setTickerText(selectedScreen?.ticker?.text || '');
+        setTickerText(selectedScreen?.ticker?.text || DEFAULT_TICKER.text);
         setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
-    }, [selectedScreen?.ticker?.text, selectedScreen?.standbyOptions?.logo, selectedScreen?.standbyOptions?.background]);
+        const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
+        setGlobalRssUrl(newsItem?.url || DEFAULT_RSS_URL);
+    }, [selectedScreen?.ticker?.text, selectedScreen?.standbyOptions?.logo, selectedScreen?.standbyOptions?.background, selectedScreen?.playlist]);
 
     const handleAddScreen = async (e) => {
         e.preventDefault();
@@ -396,6 +400,122 @@ const AdminPanel = ({ isPairing = false }) => {
             setIsSyncing(false);
         }
     };
+
+    const applyTickerToAllScreens = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const ticker = {
+            text: tickerText,
+            isActive: selectedScreen.ticker?.isActive ?? true
+        };
+
+        try {
+            for (const screen of screens) {
+                await syncService.updateScreen(screen.id, { ticker });
+            }
+            alert('Mensagem do letreiro aplicada a todas as telas.');
+        } catch (err) {
+            console.error('Erro ao aplicar letreiro global:', err);
+            alert('Erro ao aplicar letreiro para todas as telas.');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const applyRssToAllScreens = async () => {
+        if (!globalRssUrl) {
+            alert('Digite a URL do RSS padrão antes de aplicar.');
+            return;
+        }
+
+        setIsSyncing(true);
+        try {
+            for (const screen of screens) {
+                const playlistToUpdate = Array.isArray(screen.playlist) ? [...screen.playlist] : [];
+                const newsIndex = playlistToUpdate.findIndex(item => item.type === 'news');
+
+                if (newsIndex > -1) {
+                    playlistToUpdate[newsIndex] = {
+                        ...playlistToUpdate[newsIndex],
+                        url: globalRssUrl,
+                        isActive: true
+                    };
+                } else {
+                    const id = `rss-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+                    playlistToUpdate.push({
+                        id,
+                        type: 'news',
+                        url: globalRssUrl,
+                        duration: 20,
+                        fitMode: 'cover',
+                        isActive: true,
+                        order: playlistToUpdate.length + 1
+                    });
+                }
+
+                await syncService.updatePlaylist(screen.id, playlistToUpdate);
+            }
+            alert('RSS padrão aplicado a todas as telas.');
+        } catch (err) {
+            console.error('Erro ao aplicar RSS global:', err);
+            alert('Erro ao aplicar o RSS padrão para todas as telas.');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const updateScreenWithDefaults = async (screen) => {
+        const playlist = Array.isArray(screen.playlist) ? [...screen.playlist] : [];
+        const hasNews = playlist.some(item => item?.type === 'news');
+        const hasTickerText = screen.ticker && typeof screen.ticker.text === 'string' && screen.ticker.text.trim() !== '';
+
+        const updatedScreen = {};
+
+        if (!hasNews) {
+            updatedScreen.playlist = [
+                ...playlist,
+                {
+                    id: `rss-default-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+                    type: 'news',
+                    url: DEFAULT_RSS_URL,
+                    duration: 20,
+                    fitMode: 'cover',
+                    isActive: true,
+                    order: playlist.length + 1
+                }
+            ];
+        }
+
+        if (!hasTickerText) {
+            updatedScreen.ticker = DEFAULT_TICKER;
+        }
+
+        if (Object.keys(updatedScreen).length > 0) {
+            await syncService.updateScreen(screen.id, updatedScreen);
+        }
+    };
+
+    const applyDefaultsToExistingScreens = async () => {
+        if (hasAppliedGlobalDefaults || screens.length === 0) return;
+
+        setIsSyncing(true);
+        try {
+            for (const screen of screens) {
+                await updateScreenWithDefaults(screen);
+            }
+            setHasAppliedGlobalDefaults(true);
+        } catch (err) {
+            console.error('Erro ao aplicar defaults globais:', err);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!loading && screens.length > 0 && !hasAppliedGlobalDefaults) {
+            applyDefaultsToExistingScreens();
+        }
+    }, [loading, screens, hasAppliedGlobalDefaults]);
 
     const handleToggleOrientation = async () => {
         if (!selectedScreen) return;
@@ -786,6 +906,52 @@ const AdminPanel = ({ isPairing = false }) => {
                                 >
                                     {selectedScreen.ticker?.isActive ? '✅ Letreiro Ativo' : '❌ Letreiro Inativo'}
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Global RSS and Ticker Defaults */}
+                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">RSS Padrão para Todas as Telas</label>
+                                        <input
+                                            type="text"
+                                            value={globalRssUrl}
+                                            onChange={(e) => setGlobalRssUrl(e.target.value)}
+                                            placeholder="Cole a URL do feed RSS padrão..."
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                        />
+                                        <p className="text-[10px] text-zinc-500 mt-2 ml-1">Esse RSS será aplicado como item de notícias em todas as telas.</p>
+                                    </div>
+                                    <button
+                                        onClick={applyRssToAllScreens}
+                                        disabled={isSyncing}
+                                        className="w-full bg-pink-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-pink-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Aplicar RSS para todas as telas
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro Padrão para Todas as Telas</label>
+                                        <input
+                                            type="text"
+                                            value={tickerText}
+                                            onChange={(e) => setTickerText(e.target.value)}
+                                            placeholder="Digite a mensagem padrão do letreiro..."
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                        />
+                                        <p className="text-[10px] text-zinc-500 mt-2 ml-1">Use {{hora}} ou {{data}} para exibir horário e data automaticamente.</p>
+                                    </div>
+                                    <button
+                                        onClick={applyTickerToAllScreens}
+                                        disabled={isSyncing}
+                                        className="w-full bg-emerald-500 text-white py-4 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Aplicar letreiro para todas as telas
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

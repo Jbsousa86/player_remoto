@@ -10,6 +10,23 @@ import {
     deleteDoc
 } from 'firebase/firestore';
 
+export const DEFAULT_TICKER = {
+    text: 'Bem-vindo ao Totem Digital! {{hora}} • {{data}}',
+    isActive: true
+};
+
+export const DEFAULT_RSS_URL = 'https://g1.globo.com/rss/g1/';
+
+const DEFAULT_RSS_ITEM = {
+    id: `default-news-${Date.now()}`,
+    type: 'news',
+    url: DEFAULT_RSS_URL,
+    duration: 20,
+    fitMode: 'cover',
+    isActive: true,
+    order: 1
+};
+
 export const syncService = {
     subscribeToScreen: (screenId, callback) => {
         const docRef = doc(db, 'screens', screenId);
@@ -44,13 +61,13 @@ export const syncService = {
         const docRef = doc(db, 'screens', screenId);
         await setDoc(docRef, { 
             name, 
-            playlist: [], 
+            playlist: [DEFAULT_RSS_ITEM], 
             lastSeen: Date.now(), 
             orientation: 'landscape', 
             isMuted: true,
             isPlaying: true,
             volume: 100,
-            ticker: { text: '', isActive: false }
+            ticker: DEFAULT_TICKER
         }, { merge: true });
         return screenId;
     },
