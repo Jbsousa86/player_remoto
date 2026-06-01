@@ -311,7 +311,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             }
         } else {
             setCurrentIndex((prev) => (prev + 1) % playlistRef.current.length);
-        }
+or        }
 
         setTimeout(() => {
             advancedRef.current = false;
