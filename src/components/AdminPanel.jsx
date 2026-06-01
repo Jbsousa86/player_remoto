@@ -12,6 +12,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [screens, setScreens] = useState([]);
     const [selectedScreen, setSelectedScreen] = useState(null);
     const [playlist, setPlaylist] = useState([]);
+    const [currentPlayingId, setCurrentPlayingId] = useState(null);
     const [newItem, setNewItem] = useState({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: '' });
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
@@ -20,6 +21,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [tickerText, setTickerText] = useState('');
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
+g    const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploadingStandby, setIsUploadingStandby] = useState({ logo: false, background: false });
 
@@ -74,6 +76,11 @@ const AdminPanel = ({ isPairing = false }) => {
         const unsubscribe = syncService.subscribeToScreen(selectedScreen.id, (data) => {
             if (data?.playlist) {
                 setPlaylist(data.playlist);
+            }
+            if (data?.currentPlayingId !== undefined) {
+                setCurrentPlayingId(data.currentPlayingId);
+            } else {
+                setCurrentPlayingId(null);
             }
             setIsSyncing(false);
         });
@@ -853,6 +860,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             moveItem={moveItem}
                             toggleItemActive={toggleItemActive}
                             getYoutubeId={getYoutubeId}
+                            currentPlayingId={isScreenOnline(selectedScreen?.lastSeen) ? currentPlayingId : null}
                         />
                     </div>
                 ) : (

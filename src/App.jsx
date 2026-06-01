@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PairingScreen from './components/PairingScreen';
 import PlayerScreen from './components/PlayerScreen';
@@ -244,6 +244,11 @@ function PlayerContainer() {
     };
   }, [isPaired]);
 
+  const handleMediaChange = useCallback((id) => {
+    if (!isPaired || !screenId) return;
+    syncService.updateScreen(screenId, { currentPlayingId: id }).catch(e => console.warn('Erro ao atualizar status de mídia:', e));
+  }, [isPaired, screenId]);
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -287,7 +292,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} />
+          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} onMediaChange={handleMediaChange} />
         </ErrorBoundary>
       )}
     </div>

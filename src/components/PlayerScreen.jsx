@@ -196,7 +196,7 @@ const StandbyClock = () => {
     );
 };
 
-const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null }) => {
+const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, onMediaChange }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
 
@@ -279,6 +279,17 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     }, []);
 
     const currentItem = activePlaylist?.length ? activePlaylist[currentIndex] : null;
+
+    useEffect(() => {
+        if (onMediaChange) {
+            if (isStopped || !activePlaylist?.length) {
+                onMediaChange('standby');
+            } else if (currentItem?.id) {
+                onMediaChange(currentItem.id);
+            }
+        }
+    }, [currentItem?.id, isStopped, activePlaylist?.length, onMediaChange]);
+
     const currentType = currentItem?.type;
     const currentUrl = currentItem?.url;
     const currentDuration = currentItem?.duration;
