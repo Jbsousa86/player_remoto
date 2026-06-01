@@ -635,7 +635,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 <AnimatePresence>
                                     {currentItem && (
                                         <motion.div
-                                            key={currentItem.id || currentItem.url || currentIndex}
+                                            key={currentItem.id ? `media-${currentItem.id}` : `media-idx-${currentIndex}`}
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
                                             exit={{ opacity: 0 }}

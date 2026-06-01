@@ -74,7 +74,7 @@ const AdminPanel = ({ isPairing = false }) => {
         setIsSyncing(true);
         const unsubscribe = syncService.subscribeToScreen(selectedScreen.id, (data) => {
             if (data?.playlist) {
-                setPlaylist(data.playlist);
+                setPlaylist(prev => JSON.stringify(prev) === JSON.stringify(data.playlist) ? prev : data.playlist);
             }
             if (data?.currentPlayingId !== undefined) {
                 setCurrentPlayingId(data.currentPlayingId);

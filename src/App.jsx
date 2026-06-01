@@ -114,7 +114,8 @@ function PlayerContainer() {
 
       // 1. Update Playlist
       if (data.playlist) {
-        setPlaylist(data.playlist.filter(item => item.isActive !== false));
+        const newPlaylist = data.playlist.filter(item => item.isActive !== false);
+        setPlaylist(prev => JSON.stringify(prev) === JSON.stringify(newPlaylist) ? prev : newPlaylist);
       }
 
       // 2. Update Orientation
@@ -154,9 +155,9 @@ function PlayerContainer() {
 
       // Update Block Schedules
       if (data.blockSchedules !== undefined) {
-        setBlockSchedules(data.blockSchedules || {});
+        setBlockSchedules(prev => JSON.stringify(prev) === JSON.stringify(data.blockSchedules) ? prev : (data.blockSchedules || {}));
       } else {
-        setBlockSchedules({});
+        setBlockSchedules(prev => Object.keys(prev).length === 0 ? prev : {});
       }
 
       // Manter o Backup Local sempre atualizado

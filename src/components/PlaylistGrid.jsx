@@ -7,9 +7,10 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             <AnimatePresence mode="popLayout">
                 {playlist.map((item, index) => {
-                    const isPlayingNow = item.id === currentPlayingId;
+                    if (!item) return null;
+                    const isPlayingNow = item.id && item.id === currentPlayingId;
                     return (
-                    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id}
+                    <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id ? `id-${item.id}` : `idx-${index}`}
                         className={`bg-white/5 border ${item.isActive === false ? 'border-white/5 opacity-40 grayscale' : (isPlayingNow ? 'border-orange-500 shadow-2xl shadow-orange-500/20 ring-1 ring-orange-500' : 'border-white/10')} rounded-2xl overflow-hidden group ${!isPlayingNow ? 'shadow-xl' : ''} transition-all`}
                     >
                         <div className="aspect-video bg-black relative">
