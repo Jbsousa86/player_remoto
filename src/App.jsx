@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PairingScreen from './components/PairingScreen';
 import PlayerScreen from './components/PlayerScreen';
 import AdminPanel from './components/AdminPanel';
@@ -309,14 +309,14 @@ function AdminRoute({ children }) {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<PlayerContainer />} />
           <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
           <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </ErrorBoundary>
   );
 }

@@ -8,7 +8,7 @@ import legacy from '@vitejs/plugin-legacy'
 export default defineConfig({
   plugins: [
     legacy({
-      targets: ['defaults', 'not IE 11', 'chrome 41'],
+      targets: ['defaults', 'not IE 11', 'safari 10', 'chrome 49'],
     }),
     react(),
     tailwindcss(),
@@ -86,14 +86,23 @@ export default defineConfig({
     })
   ],
   build: {
-    target: ['es2015', 'chrome41'],
-    cssTarget: 'chrome41',
+    target: ['es2015'],
+    cssTarget: 'chrome49',
     minify: 'esbuild',
     rollupOptions: {
       output: {
         assetFileNames: 'assets/[name]-[hash].[ext]',
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react')) return 'vendor_react';
+            if (id.includes('lucide-react') || id.includes('framer-motion')) return 'vendor_ui';
+            if (id.includes('firebase') || id.includes('@supabase')) return 'vendor_data';
+            if (id.includes('react-router-dom')) return 'vendor_router';
+            return 'vendor';
+          }
+        },
       },
     },
   }
