@@ -21,6 +21,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploadingStandby, setIsUploadingStandby] = useState({ logo: false, background: false });
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
@@ -276,6 +277,39 @@ const AdminPanel = ({ isPairing = false }) => {
             alert("Erro ao alterar as configurações de espera.");
         } finally {
             setIsSyncing(false);
+        }
+    };
+
+    const handleStandbyImageUpload = async (e, field) => {
+        const file = e.target.files?.[0];
+        if (!file || !selectedScreen) return;
+
+        setIsUploadingStandby(prev => ({ ...prev, [field]: true }));
+        try {
+            // Cria um nome de arquivo único para não sobrescrever
+            const fileName = `standby_${field}_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+            const { error } = await supabase.storage
+                .from('medias')
+                .upload(fileName, file, {
+                    cacheControl: '3600',
+                    upsert: false
+                });
+
+            if (error) throw error;
+
+            const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(fileName);
+            const newUrl = publicUrlData.publicUrl;
+            
+            if (field === 'logo') setStandbyLogo(newUrl);
+            if (field === 'background') setStandbyBg(newUrl);
+            
+            await handleStandbySave(field, newUrl);
+        } catch (error) {
+            console.error(`Erro no upload de ${field}:`, error);
+            alert(`Erro ao enviar a imagem de ${field}.`);
+        } finally {
+            setIsUploadingStandby(prev => ({ ...prev, [field]: false }));
+            e.target.value = ''; // Limpa o input
         }
     };
 
@@ -661,25 +695,41 @@ const AdminPanel = ({ isPairing = false }) => {
                             <div className="flex-1 w-full space-y-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">URL da Logo (Tela de Espera)</label>
-                                    <input 
-                                        type="text" 
-                                        value={standbyLogo}
-                                        onChange={(e) => setStandbyLogo(e.target.value)}
-                                        onBlur={() => handleStandbySave('logo', standbyLogo)}
-                                        placeholder="Cole a URL da sua logo (PNG transparente recomendado)"
-                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
-                                    />
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={standbyLogo}
+                                            onChange={(e) => setStandbyLogo(e.target.value)}
+                                            onBlur={() => handleStandbySave('logo', standbyLogo)}
+                                            placeholder="Cole a URL ou faça upload..."
+                                            className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                        />
+                                        <div className="shrink-0 flex">
+                                            <input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={(e) => handleStandbyImageUpload(e, 'logo')} disabled={isUploadingStandby.logo} />
+                                            <label htmlFor="logo-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.logo ? 'bg-white/5 border-white/10 text-zinc-500' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                                {isUploadingStandby.logo ? <Loader2 className="w-4 h-4 animate-spin" /> : '📁 Upload'}
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">URL do Background (Tela de Espera)</label>
-                                    <input 
-                                        type="text" 
-                                        value={standbyBg}
-                                        onChange={(e) => setStandbyBg(e.target.value)}
-                                        onBlur={() => handleStandbySave('background', standbyBg)}
-                                        placeholder="Cole a URL da imagem de fundo..."
-                                        className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
-                                    />
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={standbyBg}
+                                            onChange={(e) => setStandbyBg(e.target.value)}
+                                            onBlur={() => handleStandbySave('background', standbyBg)}
+                                            placeholder="Cole a URL ou faça upload..."
+                                            className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                        />
+                                        <div className="shrink-0 flex">
+                                            <input type="file" id="bg-upload" accept="image/*" className="hidden" onChange={(e) => handleStandbyImageUpload(e, 'background')} disabled={isUploadingStandby.background} />
+                                            <label htmlFor="bg-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.background ? 'bg-white/5 border-white/10 text-zinc-500' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                                {isUploadingStandby.background ? <Loader2 className="w-4 h-4 animate-spin" /> : '📁 Upload'}
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="shrink-0 w-full lg:w-48 flex items-center justify-center p-4 bg-black/40 rounded-2xl border border-white/10 h-full min-h-30">
