@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const DynamicTicker = ({ ticker }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
+    const [weather, setWeather] = useState(null);
+    const [dolar, setDolar] = useState(null);
 
     useEffect(() => {
         if (!ticker?.isActive) return;
@@ -11,11 +13,49 @@ const DynamicTicker = ({ ticker }) => {
         return () => clearInterval(interval);
     }, [ticker?.isActive]);
 
-    if (!ticker?.isActive || !ticker?.text) return null;
+    useEffect(() => {
+        if (!ticker?.isActive) return;
+
+        const fetchData = async () => {
+            try {
+                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                const { latitude, longitude, city } = await geoRes.json();
+
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+                const weatherData = await weatherRes.json();
+
+                setWeather({
+                    temp: Math.round(weatherData.current_weather.temperature),
+                    city: city || 'Local'
+                });
+            } catch (error) {
+                console.error("Erro ao buscar clima pro letreiro:", error);
+            }
+
+            try {
+                const dolarRes = await fetch('https://economia.awesomeapi.com.br/json/last/USD-BRL');
+                const dolarData = await dolarRes.json();
+                setDolar(parseFloat(dolarData.USDBRL.bid).toFixed(2).replace('.', ','));
+            } catch (error) {
+                console.error("Erro ao buscar dólar pro letreiro:", error);
+            }
+        };
+
+        fetchData();
+        const interval = setInterval(fetchData, 30 * 60 * 1000); // Atualiza a cada 30 minutos
+        return () => clearInterval(interval);
+    }, [ticker?.isActive]);
+
+    if (!ticker?.isActive) return null;
 
     const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
     const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr);
+    
+    let displayText = '';
+    if (ticker.text) {
+        displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
+    }
+    displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
 
     return (
         <div className="absolute bottom-0 left-0 w-full h-10 md:h-14 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">

@@ -21,7 +21,6 @@ const AdminPanel = ({ isPairing = false }) => {
     const [tickerText, setTickerText] = useState('');
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
-g    const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploadingStandby, setIsUploadingStandby] = useState({ logo: false, background: false });
 
@@ -773,7 +772,7 @@ g    const [uploadProgress, setUploadProgress] = useState(0);
                                     placeholder="Digite recados. Use {{hora}} ou {{data}} para exibir tempo real..."
                                     className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
-                                <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: Digite <strong className="text-orange-500">{"{{hora}}"}</strong> para mostrar a hora e <strong className="text-orange-500">{"{{data}}"}</strong> para a data atual.</p>
+                                <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: A Hora, Clima e Cotação do Dólar são adicionados automaticamente ao final do letreiro.</p>
                             </div>
                             <div className="shrink-0 w-full lg:w-auto flex items-end">
                                 <button
