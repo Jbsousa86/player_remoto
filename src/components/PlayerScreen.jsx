@@ -584,12 +584,14 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     };
 
     // Text to speech generator using Web Speech API
-    const speakTicket = (ticket, guiche, volPercent) => {
+    const speakTicket = (ticket, type, volPercent) => {
         try {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
 
-            const text = `Senha ${ticket.split('').join(' ')}, ${guiche}`;
+            const isPref = type === 'Preferencial' || ticket.toUpperCase().startsWith('P');
+            const typeText = isPref ? 'Atendimento Preferencial' : 'Atendimento Normal';
+            const text = `Senha ${ticket.split('').join(' ')}, ${typeText}`;
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'pt-BR';
             utterance.rate = 0.85;
@@ -613,7 +615,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         if (!isMuted) {
             playChime(volume);
             const speechTimeout = setTimeout(() => {
-                speakTicket(currentCall.ticket, currentCall.guiche, volume);
+                speakTicket(currentCall.ticket, currentCall.type, volume);
             }, 900);
             
             return () => {
@@ -1173,17 +1175,24 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 {calledTicket.ticket}
                             </motion.h1>
 
-                            {/* Station Location */}
-                            <motion.div 
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
-                                className="px-14 py-6 rounded-[2.5rem] bg-white/5 border border-white/10 shadow-2xl backdrop-blur-md"
-                            >
-                                <span className="text-[5vh] md:text-[7vh] font-black text-emerald-400 uppercase tracking-wider block leading-none">
-                                    {calledTicket.guiche}
-                                </span>
-                            </motion.div>
+                            {/* Ticket Type Display */}
+                            {(() => {
+                                const isPref = calledTicket.type === 'Preferencial' || calledTicket.ticket.toUpperCase().startsWith('P');
+                                const displayType = isPref ? 'ATENDIMENTO PREFERENCIAL ♿' : 'ATENDIMENTO NORMAL';
+                                const themeColorClass = isPref ? 'text-amber-400 border-amber-500/20' : 'text-emerald-400 border-emerald-500/20';
+                                return (
+                                    <motion.div 
+                                        initial={{ y: 50, opacity: 0 }}
+                                        animate={{ y: 0, opacity: 1 }}
+                                        transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+                                        className={`px-14 py-6 rounded-[2.5rem] bg-white/5 border shadow-2xl backdrop-blur-md ${themeColorClass}`}
+                                    >
+                                        <span className="text-[4vh] md:text-[6vh] font-black uppercase tracking-wider block leading-none">
+                                            {displayType}
+                                        </span>
+                                    </motion.div>
+                                );
+                            })()}
                         </div>
                     </motion.div>
                 )}

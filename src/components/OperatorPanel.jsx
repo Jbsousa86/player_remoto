@@ -149,6 +149,7 @@ export default function OperatorPanel() {
                 current: {
                     ticket: nextTicket.ticket,
                     guiche: stationName,
+                    type: nextTicket.type,
                     timestamp: Date.now()
                 },
                 pending,
@@ -179,6 +180,7 @@ export default function OperatorPanel() {
                 current: {
                     ticket: ticket.ticket,
                     guiche: stationName,
+                    type: ticket.type,
                     timestamp: Date.now()
                 },
                 pending,
@@ -228,11 +230,14 @@ export default function OperatorPanel() {
                 if (history.length > 5) history.pop();
             }
 
+            const ticketUpper = customTicket.trim().toUpperCase();
+            const inferredType = ticketUpper.startsWith('P') ? 'Preferencial' : 'Normal';
             const newState = {
                 ...state,
                 current: {
-                    ticket: customTicket.trim().toUpperCase(),
+                    ticket: ticketUpper,
                     guiche: stationName,
+                    type: inferredType,
                     timestamp: Date.now()
                 },
                 history
