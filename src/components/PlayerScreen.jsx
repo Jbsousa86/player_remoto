@@ -61,6 +61,8 @@ const DynamicTicker = ({ ticker, weatherLocation }) => {
         return () => clearInterval(interval);
     }, [ticker?.isActive]);
 
+    const weatherLocStr = JSON.stringify(weatherLocation);
+
     useEffect(() => {
         if (!ticker?.isActive) return;
 
@@ -84,7 +86,7 @@ const DynamicTicker = ({ ticker, weatherLocation }) => {
         fetchData();
         const interval = setInterval(fetchData, 30 * 60 * 1000); // Atualiza a cada 30 minutos
         return () => clearInterval(interval);
-    }, [ticker?.isActive]);
+    }, [ticker?.isActive, weatherLocStr]);
 
     if (!ticker?.isActive) return null;
 
@@ -230,6 +232,8 @@ const StandbyClock = ({ weatherLocation }) => {
     const [time, setTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
 
+    const weatherLocStr = JSON.stringify(weatherLocation);
+
     useEffect(() => {
         const fetchWeather = async () => {
             try {
@@ -243,7 +247,7 @@ const StandbyClock = ({ weatherLocation }) => {
         fetchWeather();
         const interval = setInterval(fetchWeather, 30 * 60 * 1000); // Atualiza a cada 30 minutos
         return () => clearInterval(interval);
-    }, [weatherLocation]);
+    }, [weatherLocStr]);
 
     useEffect(() => {
         const interval = setInterval(() => setTime(new Date()), 1000);

@@ -69,7 +69,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 <button onClick={() => toggleItemActive(item.id, item.isActive)} title={item.isActive === false ? "Ativar Mídia" : "Desativar Mídia"} className={`p-2.5 rounded-xl transition-all shrink-0 ${item.isActive === false ? 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}>
                                         {item.isActive === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
-                                    <button onClick={() => deleteItem(item.id)} title="Excluir Mídia" className="p-2.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all shrink-0">
+                                    <button 
+                                        onClick={() => { if (window.confirm('Tem certeza que deseja excluir esta mídia definitivamente da playlist?')) deleteItem(item.id); }} 
+                                        title="Excluir Mídia" 
+                                        className="p-2.5 bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white rounded-xl transition-all shrink-0 shadow-lg hover:shadow-red-500/50"
+                                    >
                                         <Trash2 className="w-4 h-4" />
                                     </button>
                                 </div>
