@@ -1,0 +1,187 @@
+/* Responsive Design System for Different TV Sizes */
+
+/* TV Size Breakpoints:
+   - 24": ~1366x768 (XS)
+   - 28-32": ~1920x1080 (SM) 
+   - 40-43": ~2560x1440 or 3840x2160 (MD)
+   - 50"+: ~4K or larger (LG)
+*/
+
+:root {
+  /* Default for 28-32" TV (1920x1080) */
+  --scale-factor: 1;
+  --base-font-size: 16px;
+  --spacing-unit: 1rem;
+  --border-radius: 0.75rem;
+  --shadow-blur: 10px;
+  
+  /* Grid settings */
+  --grid-gap: 1.5rem;
+  --item-padding: 1rem;
+  
+  /* Text sizes */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+}
+
+/* 24" TV - 1366x768 - XS Scale (0.85x) */
+@media (max-width: 1366px) {
+  :root {
+    --scale-factor: 0.85;
+    --base-font-size: 13.6px;
+    --spacing-unit: 0.85rem;
+    --border-radius: 0.6rem;
+    --shadow-blur: 8px;
+    --grid-gap: 1rem;
+    --item-padding: 0.75rem;
+  }
+}
+
+/* 28-32" TV - 1920x1080 - SM Scale (1x) */
+@media (min-width: 1367px) and (max-width: 2560px) {
+  :root {
+    --scale-factor: 1;
+    --base-font-size: 16px;
+    --spacing-unit: 1rem;
+    --border-radius: 0.75rem;
+    --shadow-blur: 10px;
+    --grid-gap: 1.5rem;
+    --item-padding: 1rem;
+  }
+}
+
+/* 40-43" TV - 2560x1440 or 3840x2160 - MD Scale (1.3x) */
+@media (min-width: 2561px) and (max-width: 3839px) {
+  :root {
+    --scale-factor: 1.3;
+    --base-font-size: 20.8px;
+    --spacing-unit: 1.3rem;
+    --border-radius: 0.975rem;
+    --shadow-blur: 13px;
+    --grid-gap: 1.95rem;
+    --item-padding: 1.3rem;
+  }
+}
+
+/* 50"+ TV - 4K or larger - LG Scale (1.6x) */
+@media (min-width: 3840px) {
+  :root {
+    --scale-factor: 1.6;
+    --base-font-size: 25.6px;
+    --spacing-unit: 1.6rem;
+    --border-radius: 1.2rem;
+    --shadow-blur: 16px;
+    --grid-gap: 2.4rem;
+    --item-padding: 1.6rem;
+  }
+}
+
+/* Apply scaling to base elements */
+html {
+  font-size: var(--base-font-size);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-size: var(--base-font-size);
+}
+
+/* Scale common spacing */
+.gap-2 { gap: calc(0.5rem * var(--scale-factor)) !important; }
+.gap-3 { gap: calc(0.75rem * var(--scale-factor)) !important; }
+.gap-4 { gap: calc(1rem * var(--scale-factor)) !important; }
+.gap-6 { gap: calc(1.5rem * var(--scale-factor)) !important; }
+.gap-8 { gap: calc(2rem * var(--scale-factor)) !important; }
+.gap-10 { gap: calc(2.5rem * var(--scale-factor)) !important; }
+
+.p-2 { padding: calc(0.5rem * var(--scale-factor)) !important; }
+.p-3 { padding: calc(0.75rem * var(--scale-factor)) !important; }
+.p-4 { padding: calc(1rem * var(--scale-factor)) !important; }
+.p-5 { padding: calc(1.25rem * var(--scale-factor)) !important; }
+.p-6 { padding: calc(1.5rem * var(--scale-factor)) !important; }
+.p-8 { padding: calc(2rem * var(--scale-factor)) !important; }
+
+.px-2 { padding-left: calc(0.5rem * var(--scale-factor)) !important; padding-right: calc(0.5rem * var(--scale-factor)) !important; }
+.px-3 { padding-left: calc(0.75rem * var(--scale-factor)) !important; padding-right: calc(0.75rem * var(--scale-factor)) !important; }
+.px-4 { padding-left: calc(1rem * var(--scale-factor)) !important; padding-right: calc(1rem * var(--scale-factor)) !important; }
+
+.py-2 { padding-top: calc(0.5rem * var(--scale-factor)) !important; padding-bottom: calc(0.5rem * var(--scale-factor)) !important; }
+.py-3 { padding-top: calc(0.75rem * var(--scale-factor)) !important; padding-bottom: calc(0.75rem * var(--scale-factor)) !important; }
+.py-4 { padding-top: calc(1rem * var(--scale-factor)) !important; padding-bottom: calc(1rem * var(--scale-factor)) !important; }
+
+/* Scale text sizes */
+.text-xs { font-size: calc(0.75rem * var(--scale-factor)) !important; }
+.text-sm { font-size: calc(0.875rem * var(--scale-factor)) !important; }
+.text-base { font-size: calc(1rem * var(--scale-factor)) !important; }
+.text-lg { font-size: calc(1.125rem * var(--scale-factor)) !important; }
+.text-xl { font-size: calc(1.25rem * var(--scale-factor)) !important; }
+.text-2xl { font-size: calc(1.5rem * var(--scale-factor)) !important; }
+.text-3xl { font-size: calc(1.875rem * var(--scale-factor)) !important; }
+.text-4xl { font-size: calc(2.25rem * var(--scale-factor)) !important; }
+.text-5xl { font-size: calc(3rem * var(--scale-factor)) !important; }
+.text-6xl { font-size: calc(3.75rem * var(--scale-factor)) !important; }
+.text-7xl { font-size: calc(4.5rem * var(--scale-factor)) !important; }
+
+/* Scale border radius */
+.rounded-lg { border-radius: calc(0.5rem * var(--scale-factor)) !important; }
+.rounded-xl { border-radius: calc(0.75rem * var(--scale-factor)) !important; }
+.rounded-2xl { border-radius: calc(1rem * var(--scale-factor)) !important; }
+.rounded-3xl { border-radius: calc(1.5rem * var(--scale-factor)) !important; }
+.rounded-full { border-radius: 9999px; }
+
+/* Scale shadows */
+.shadow-lg { box-shadow: 0 10px calc(15px * var(--scale-factor)) rgba(0, 0, 0, 0.1) !important; }
+.shadow-xl { box-shadow: 0 20px calc(25px * var(--scale-factor)) rgba(0, 0, 0, 0.1) !important; }
+.shadow-2xl { box-shadow: 0 25px calc(50px * var(--scale-factor)) rgba(0, 0, 0, 0.25) !important; }
+
+/* Scale width and height */
+.w-4 { width: calc(1rem * var(--scale-factor)) !important; }
+.w-5 { width: calc(1.25rem * var(--scale-factor)) !important; }
+.w-6 { width: calc(1.5rem * var(--scale-factor)) !important; }
+
+.h-4 { height: calc(1rem * var(--scale-factor)) !important; }
+.h-5 { height: calc(1.25rem * var(--scale-factor)) !important; }
+.h-6 { height: calc(1.5rem * var(--scale-factor)) !important; }
+
+/* Scale margins */
+.m-2 { margin: calc(0.5rem * var(--scale-factor)) !important; }
+.m-3 { margin: calc(0.75rem * var(--scale-factor)) !important; }
+.m-4 { margin: calc(1rem * var(--scale-factor)) !important; }
+.m-6 { margin: calc(1.5rem * var(--scale-factor)) !important; }
+
+.mx-2 { margin-left: calc(0.5rem * var(--scale-factor)) !important; margin-right: calc(0.5rem * var(--scale-factor)) !important; }
+.mx-3 { margin-left: calc(0.75rem * var(--scale-factor)) !important; margin-right: calc(0.75rem * var(--scale-factor)) !important; }
+.mx-4 { margin-left: calc(1rem * var(--scale-factor)) !important; margin-right: calc(1rem * var(--scale-factor)) !important; }
+
+/* Touch targets for TV remotes - should be at least 44x44px even on smaller scales */
+button, a, input[type="button"], input[type="submit"] {
+  min-height: calc(2.5rem * max(1, var(--scale-factor)));
+  min-width: calc(2.5rem * max(1, var(--scale-factor)));
+  padding: calc(0.5rem * var(--scale-factor)) calc(1rem * var(--scale-factor));
+}
+
+/* Adjust transition speeds for larger screens (easier to see movement) */
+@media (min-width: 2561px) {
+  * {
+    transition-duration: 300ms !important;
+  }
+}
+
+@media (min-width: 3840px) {
+  * {
+    transition-duration: 400ms !important;
+  }
+}
+
+/* Ensure proper viewport scaling */
+@viewport {
+  width: device-width;
+  zoom: 1;
+}

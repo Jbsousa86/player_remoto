@@ -6,9 +6,12 @@ import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
 import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary
 import { syncService } from './lib/syncService';
+import { useScreenSize } from './lib/useScreenSize';
+import { ScreenSizeProvider } from './lib/ScreenSizeContext';
 import { Maximize, WifiOff } from 'lucide-react';
 
 function PlayerContainer() {
+  const screenSize = useScreenSize();
   const [isPaired, setIsPaired] = useState(false);
   const [screenId, setScreenId] = useState('');
   const [playlist, setPlaylist] = useState([]);
@@ -269,7 +272,12 @@ function PlayerContainer() {
   }
 
   return (
-    <div className="absolute inset-0 bg-black overflow-hidden p-0 m-0">
+    <div 
+      className="absolute inset-0 bg-black overflow-hidden p-0 m-0 group"
+      data-screen-size={screenSize.scaleClass}
+      data-screen-diagonal={screenSize.diagonal}
+      style={{ '--scale-factor': screenSize.scale }}
+    >
       <div className="absolute top-0 left-0 right-0 p-4 z-50 flex justify-between items-center transition-opacity duration-500 opacity-0 group-hover:opacity-100">
         <div className="flex gap-2 text-white">
           {!isOnline && (
@@ -278,7 +286,7 @@ function PlayerContainer() {
             </div>
           )}
           <div className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-bold text-white/50 uppercase border border-white/5">
-            SCREEN ID: {screenId}
+            SCREEN ID: {screenId} ({screenSize.diagonal}")
           </div>
         </div>
         <button
@@ -309,14 +317,16 @@ function AdminRoute({ children }) {
 function App() {
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<PlayerContainer />} />
-          <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
-          <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <ScreenSizeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<PlayerContainer />} />
+            <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
+            <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </ScreenSizeProvider>
     </ErrorBoundary>
   );
 }
