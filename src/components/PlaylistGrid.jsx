@@ -4,7 +4,7 @@ import { Trash2, ChevronLeft, ChevronRight, Eye, EyeOff, Play } from 'lucide-rea
 
 const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYoutubeId, currentPlayingId }) => {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 xl:gap-8">
             <AnimatePresence mode="popLayout">
                 {playlist.map((item, index) => {
                     if (!item) return null;
@@ -55,7 +55,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 tracking-widest">Link da Mídia</p>
                                 <p className="text-xs text-zinc-300 truncate font-medium" title={item.url}>{item.url}</p>
                             </div>
-                        <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/5">
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/5">
                                 <button onClick={() => moveItem(index, -1)} disabled={index === 0} className={`p-1.5 rounded-lg transition-all ${index === 0 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-white/10 text-zinc-300 hover:text-white'}`}>
                                         <ChevronLeft className="w-4 h-4" />
