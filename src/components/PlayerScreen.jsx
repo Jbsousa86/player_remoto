@@ -36,13 +36,17 @@ const fetchWeatherAndLocation = async (manualLocation = null) => {
         }
     }
 
-    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=auto`);
     const weatherData = await weatherRes.json();
+
+    const tz = weatherData.timezone || 'America/Sao_Paulo';
+    window.playerTimeZone = tz; // Salva globalmente para os agendamentos de mídia respeitarem o fuso local
 
     return {
         temp: Math.round(weatherData.current_weather.temperature),
         city: city,
-        code: weatherData.current_weather.weathercode
+        code: weatherData.current_weather.weathercode,
+        timezone: tz
     };
 };
 
@@ -84,8 +88,9 @@ const DynamicTicker = ({ ticker, weatherLocation }) => {
 
     if (!ticker?.isActive) return null;
 
-    const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
-    const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+    const tz = weather?.timezone || window.playerTimeZone || 'America/Sao_Paulo';
+    const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
+    const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: tz });
     
     let displayText = '';
     if (ticker.text && typeof ticker.text === 'string') {
@@ -190,23 +195,7 @@ const NewsDisplay = ({ url, onError }) => {
     );
 };
 
-const StandbyWeather = ({ weatherLocation }) => {
-    const [weather, setWeather] = useState(null);
-
-    useEffect(() => {
-        const fetchWeather = async () => {
-            try {
-                const weatherData = await fetchWeatherAndLocation(weatherLocation);
-                setWeather(weatherData);
-            } catch (error) {
-                console.error("Erro ao buscar clima:", error);
-            }
-        };
-
-        fetchWeather();
-        const interval = setInterval(fetchWeather, 30 * 60 * 1000); // Atualiza a cada 30 minutos
-        return () => clearInterval(interval);
-    }, []);
+const StandbyWeather = ({ weather }) => {
 
     const getWeatherEmoji = (code) => {
         if (code === 0) return '☀️'; // Limpo
@@ -239,24 +228,42 @@ const StandbyWeather = ({ weatherLocation }) => {
 
 const StandbyClock = ({ weatherLocation }) => {
     const [time, setTime] = useState(new Date());
+    const [weather, setWeather] = useState(null);
+
+    useEffect(() => {
+        const fetchWeather = async () => {
+            try {
+                const weatherData = await fetchWeatherAndLocation(weatherLocation);
+                setWeather(weatherData);
+            } catch (error) {
+                console.error("Erro ao buscar clima:", error);
+            }
+        };
+
+        fetchWeather();
+        const interval = setInterval(fetchWeather, 30 * 60 * 1000); // Atualiza a cada 30 minutos
+        return () => clearInterval(interval);
+    }, [weatherLocation]);
 
     useEffect(() => {
         const interval = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(interval);
     }, []);
 
+    const tz = weather?.timezone || window.playerTimeZone || 'America/Sao_Paulo';
+
     return (
         <div className="mt-12 flex flex-row items-center justify-center bg-white/5 px-10 md:px-16 py-8 rounded-[3rem] backdrop-blur-xl border border-white/10 shadow-2xl">
             <div className="flex flex-col items-center">
                 <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-white drop-shadow-lg">
-                    {time.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })}
+                    {time.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' })}
                 </span>
                 <span className="text-[10px] md:text-sm font-bold text-orange-500 uppercase tracking-[0.3em] mt-4 text-center">
-                    {time.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    {time.toLocaleDateString('pt-BR', { timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
             </div>
             
-            <StandbyWeather weatherLocation={weatherLocation} />
+            <StandbyWeather weather={weather} />
         </div>
     );
 };
@@ -276,9 +283,24 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             if (spHour < 0) spHour += 24;
             const spMinute = now.getUTCMinutes();
             
-            const currentHour = spHour < 10 ? '0' + spHour : spHour.toString();
-            const currentMinute = spMinute < 10 ? '0' + spMinute : spMinute.toString();
-            const currentTimeStr = `${currentHour}:${currentMinute}`;
+            let currentTimeStr;
+            try {
+                const tz = window.playerTimeZone || 'America/Sao_Paulo';
+                currentTimeStr = new Intl.DateTimeFormat('pt-BR', {
+                    timeZone: tz,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).format(now);
+            } catch (e) {
+                // Fallback de segurança matemático via UTC puro caso a TV antiga não suporte a API de Intl.
+                let spHour = now.getUTCHours() - 3;
+                if (spHour < 0) spHour += 24;
+                const spMinute = now.getUTCMinutes();
+                const currentHour = spHour < 10 ? '0' + spHour : spHour.toString();
+                const currentMinute = spMinute < 10 ? '0' + spMinute : spMinute.toString();
+                currentTimeStr = `${currentHour}:${currentMinute}`;
+            }
 
             const playable = playlist?.filter(item => {
                 if (item.isActive === false) return false;

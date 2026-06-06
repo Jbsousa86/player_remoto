@@ -25,6 +25,8 @@ const AdminPanel = ({ isPairing = false }) => {
     const [standbyBg, setStandbyBg] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isUploadingStandby, setIsUploadingStandby] = useState({ logo: false, background: false });
+    const [locationQuery, setLocationQuery] = useState('');
+    const [weatherLocation, setWeatherLocation] = useState(null);
 
     const [isAddingScreen, setIsAddingScreen] = useState(isPairing);
     const [newScreenData, setNewScreenData] = useState({ id: '', name: '' });
@@ -102,6 +104,8 @@ const AdminPanel = ({ isPairing = false }) => {
             setStandbyLogo('');
             setStandbyBg('');
             setGlobalRssUrl(DEFAULT_RSS_URL);
+            setLocationQuery('');
+            setWeatherLocation(null);
             return;
         }
 
@@ -110,6 +114,8 @@ const AdminPanel = ({ isPairing = false }) => {
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
         const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
         setGlobalRssUrl(newsItem?.url || DEFAULT_RSS_URL);
+        setLocationQuery(selectedScreen?.weatherLocation?.city || '');
+        setWeatherLocation(selectedScreen?.weatherLocation || null);
     }, [selectedScreen?.id]);
 
     const handleAddScreen = async (e) => {
@@ -412,6 +418,58 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleSearchAndSaveLocation = async () => {
+        if (!selectedScreen) return;
+        if (!locationQuery) return alert("Por favor, digite uma cidade ou CEP.");
+        
+        setIsSyncing(true);
+        try {
+            let query = locationQuery;
+            let cityName = query;
+            const cepMatch = query.replace(/\D/g, ''); // Remove tudo que não for número
+            
+            if (cepMatch.length === 8) {
+                const viaCepRes = await fetch(`https://viacep.com.br/ws/${cepMatch}/json/`);
+                const viaCepData = await viaCepRes.json();
+                if (!viaCepData.erro) {
+                    cityName = viaCepData.localidade;
+                    query = `${viaCepData.logradouro}, ${viaCepData.localidade}, ${viaCepData.uf}, Brasil`;
+                }
+            }
+
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+            const geoData = await geoRes.json();
+
+            if (geoData && geoData.length > 0) {
+                const newLocation = { city: cityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) };
+                setWeatherLocation(newLocation);
+                await syncService.updateScreen(selectedScreen.id, { weatherLocation: newLocation });
+                alert("Localização do clima atualizada com sucesso!");
+            } else { 
+                alert("Localização não encontrada no mapa. Tente ser mais específico (ex: São Paulo, SP)."); 
+            }
+        } catch (e) { 
+            console.error(e); 
+            alert("Erro de conexão ao buscar a localização.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleClearLocation = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        try {
+            setWeatherLocation(null);
+            setLocationQuery('');
+            await syncService.updateScreen(selectedScreen.id, { weatherLocation: null });
+        } catch(e) {
+            console.error(e);
+            alert("Erro ao limpar localização");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
 
     const applyRssToAllScreens = async () => {
@@ -904,6 +962,48 @@ const AdminPanel = ({ isPairing = false }) => {
                                 >
                                     {selectedScreen.ticker?.isActive ? '✅ Letreiro Ativo' : '❌ Letreiro Inativo'}
                                 </button>
+                            </div>
+                        </div>
+
+                        {/* Configurações de Localização (Clima) */}
+                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                            <div className="flex-1 w-full">
+                                <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Localização Fixa para o Clima (Opcional)</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={locationQuery}
+                                        onChange={(e) => setLocationQuery(e.target.value)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') handleSearchAndSaveLocation(); }}
+                                        placeholder="Digite a Cidade ou CEP (Ex: São Paulo, SP ou 01000-000)..."
+                                        className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                    />
+                                    <button
+                                        onClick={handleSearchAndSaveLocation}
+                                        disabled={isSyncing}
+                                        className="px-6 py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-orange-600 transition-all disabled:opacity-50"
+                                    >
+                                        Buscar
+                                    </button>
+                                    {weatherLocation && (
+                                        <button
+                                            onClick={handleClearLocation}
+                                            disabled={isSyncing}
+                                            className="px-6 py-4 bg-red-500/10 text-red-500 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-red-500/20 transition-all disabled:opacity-50"
+                                        >
+                                            Limpar
+                                        </button>
+                                    )}
+                                </div>
+                                {weatherLocation ? (
+                                    <div className="flex flex-wrap gap-4 mt-3 ml-1 opacity-70">
+                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Cidade:</strong> {weatherLocation.city}</div>
+                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lat:</strong> {weatherLocation.lat}</div>
+                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lon:</strong> {weatherLocation.lon}</div>
+                                    </div>
+                                ) : (
+                                    <p className="text-[10px] text-zinc-500 mt-2 ml-1">Se não definido, o totem tentará usar o GPS ou IP para descobrir onde está.</p>
+                                )}
                             </div>
                         </div>
 
