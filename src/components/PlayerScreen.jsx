@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const fetchWeatherAndLocation = async () => {
+const fetchWeatherAndLocation = async (manualLocation = null) => {
     let latitude, longitude, city;
     
     const getExactPosition = () => new Promise((resolve, reject) => {
@@ -10,23 +10,30 @@ const fetchWeatherAndLocation = async () => {
         navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: true });
     });
 
-    try {
-        // 1. Tenta pegar a localização exata via hardware (Navegador/TV)
-        const pos = await getExactPosition();
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-        
-        // 2. Transforma as coordenadas exatas no nome da cidade (Geocodificação Reversa)
-        const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
-        const revData = await revRes.json();
-        city = revData.address?.city || revData.address?.town || revData.address?.municipality || revData.address?.village || 'Local';
-    } catch (e) {
-        // 3. Fallback: Se falhar ou não der permissão, volta para a busca por IP
-        const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
-        const geoData = await geoRes.json();
-        latitude = geoData.latitude;
-        longitude = geoData.longitude;
-        city = geoData.city || 'Local';
+    // Se a localização foi definida manualmente no painel, use-a!
+    if (manualLocation && manualLocation.lat && manualLocation.lon) {
+        latitude = manualLocation.lat;
+        longitude = manualLocation.lon;
+        city = manualLocation.city || 'Local';
+    } else {
+        try {
+            // 1. Tenta pegar a localização exata via hardware (Navegador/TV)
+            const pos = await getExactPosition();
+            latitude = pos.coords.latitude;
+            longitude = pos.coords.longitude;
+            
+            // 2. Transforma as coordenadas exatas no nome da cidade (Geocodificação Reversa)
+            const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+            const revData = await revRes.json();
+            city = revData.address?.city || revData.address?.town || revData.address?.municipality || revData.address?.village || 'Local';
+        } catch (e) {
+            // 3. Fallback: Se falhar ou não der permissão, volta para a busca por IP
+            const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            const geoData = await geoRes.json();
+            latitude = geoData.latitude;
+            longitude = geoData.longitude;
+            city = geoData.city || 'Local';
+        }
     }
 
     const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
@@ -39,7 +46,7 @@ const fetchWeatherAndLocation = async () => {
     };
 };
 
-const DynamicTicker = ({ ticker }) => {
+const DynamicTicker = ({ ticker, weatherLocation }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
     const [dolar, setDolar] = useState(null);
@@ -55,7 +62,7 @@ const DynamicTicker = ({ ticker }) => {
 
         const fetchData = async () => {
             try {
-                const weatherData = await fetchWeatherAndLocation();
+                const weatherData = await fetchWeatherAndLocation(weatherLocation);
                 setWeather(weatherData);
             } catch (error) {
                 console.error("Erro ao buscar clima pro letreiro:", error);
@@ -183,13 +190,13 @@ const NewsDisplay = ({ url, onError }) => {
     );
 };
 
-const StandbyWeather = () => {
+const StandbyWeather = ({ weatherLocation }) => {
     const [weather, setWeather] = useState(null);
 
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                const weatherData = await fetchWeatherAndLocation();
+                const weatherData = await fetchWeatherAndLocation(weatherLocation);
                 setWeather(weatherData);
             } catch (error) {
                 console.error("Erro ao buscar clima:", error);
@@ -230,7 +237,7 @@ const StandbyWeather = () => {
     );
 };
 
-const StandbyClock = () => {
+const StandbyClock = ({ weatherLocation }) => {
     const [time, setTime] = useState(new Date());
 
     useEffect(() => {
@@ -249,12 +256,12 @@ const StandbyClock = () => {
                 </span>
             </div>
             
-            <StandbyWeather />
+            <StandbyWeather weatherLocation={weatherLocation} />
         </div>
     );
 };
 
-const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, onMediaChange }) => {
+const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
 
@@ -637,7 +644,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                     {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
                                 </p>
 
-                                <StandbyClock />
+                                <StandbyClock weatherLocation={weatherLocation} />
                             </div>
                         </motion.div>
                     ) : (
@@ -739,7 +746,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     )}
                 </AnimatePresence>
 
-                <DynamicTicker ticker={ticker} />
+                <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} />
             </div>
         </div>
     );
