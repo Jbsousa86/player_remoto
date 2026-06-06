@@ -105,8 +105,8 @@ export default function OperatorPanel() {
         }
     };
 
-    // Call Next Ticket
-    const handleCallNext = async () => {
+    // Call Next Ticket (supports type filtering or auto prioritization)
+    const handleCallNext = async (type = 'Auto') => {
         try {
             const state = getQueueState();
             const pending = [...(state.pending || [])];
@@ -116,14 +116,26 @@ export default function OperatorPanel() {
                 return;
             }
 
-            // Prioritize Preferencial tickets
-            pending.sort((a, b) => {
-                if (a.type === 'Preferencial' && b.type !== 'Preferencial') return -1;
-                if (a.type !== 'Preferencial' && b.type === 'Preferencial') return 1;
-                return a.createdAt - b.createdAt;
-            });
+            let nextTicketIndex = -1;
 
-            const nextTicket = pending.shift();
+            if (type === 'Auto') {
+                // Prioritize Preferencial tickets
+                const sortedIndices = pending.map((t, idx) => ({ t, idx })).sort((a, b) => {
+                    if (a.t.type === 'Preferencial' && b.t.type !== 'Preferencial') return -1;
+                    if (a.t.type !== 'Preferencial' && b.t.type === 'Preferencial') return 1;
+                    return a.t.createdAt - b.t.createdAt;
+                });
+                nextTicketIndex = sortedIndices[0].idx;
+            } else {
+                // Find first ticket of the selected type (Normal or Preferencial)
+                nextTicketIndex = pending.findIndex(t => t.type === type);
+                if (nextTicketIndex === -1) {
+                    alert(`Não há senhas do tipo "${type}" aguardando.`);
+                    return;
+                }
+            }
+
+            const [nextTicket] = pending.splice(nextTicketIndex, 1);
 
             // Add current ticket to history if exists
             const history = [...(state.history || [])];
@@ -146,6 +158,36 @@ export default function OperatorPanel() {
             await updateQueueStateInDb(newState);
         } catch (e) {
             console.error('Erro ao chamar próxima senha:', e);
+        }
+    };
+
+    // Call Specific Ticket from the waitlist
+    const handleCallSpecific = async (ticket) => {
+        try {
+            const state = getQueueState();
+            const pending = (state.pending || []).filter(t => t.id !== ticket.id);
+            
+            // Add current ticket to history if exists
+            const history = [...(state.history || [])];
+            if (state.current) {
+                history.unshift(state.current);
+                if (history.length > 5) history.pop();
+            }
+
+            const newState = {
+                ...state,
+                current: {
+                    ticket: ticket.ticket,
+                    guiche: stationName,
+                    timestamp: Date.now()
+                },
+                pending,
+                history
+            };
+
+            await updateQueueStateInDb(newState);
+        } catch (e) {
+            console.error('Erro ao chamar senha específica:', e);
         }
     };
 
@@ -352,20 +394,37 @@ export default function OperatorPanel() {
 
                         <div className="grid grid-cols-2 gap-4 mt-6 border-t border-white/5 pt-6 relative z-10">
                             <button
-                                onClick={handleCallNext}
+                                onClick={() => handleCallNext('Auto')}
                                 disabled={pendingTickets.length === 0}
-                                className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/10 cursor-pointer"
+                                className="bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 disabled:from-zinc-800 disabled:to-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/10 cursor-pointer text-center"
                             >
-                                <ArrowRight className="w-5 h-5" />
-                                <span className="text-sm font-black uppercase tracking-wider">Chamar Próxima</span>
+                                <ArrowRight className="w-5 h-5 shrink-0" />
+                                <span className="text-xs sm:text-sm font-black uppercase tracking-wider">Próxima Geral (Auto)</span>
                             </button>
                             <button
                                 onClick={handleRecallCurrent}
                                 disabled={!currentCall}
                                 className="bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed text-white font-black py-4 px-6 rounded-xl flex items-center justify-center gap-3 border border-white/5 transition-all active:scale-[0.98] cursor-pointer"
                             >
-                                <RotateCcw className="w-5 h-5" />
-                                <span className="text-sm font-black uppercase tracking-wider">Rechamar</span>
+                                <RotateCcw className="w-5 h-5 shrink-0" />
+                                <span className="text-xs sm:text-sm font-black uppercase tracking-wider">Rechamar Atual</span>
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-4 relative z-10">
+                            <button
+                                onClick={() => handleCallNext('Normal')}
+                                disabled={!pendingTickets.some(t => t.type === 'Normal')}
+                                className="bg-zinc-800 hover:bg-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed text-zinc-300 hover:text-white font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-white/5 transition-all active:scale-[0.98] cursor-pointer text-xs uppercase tracking-wider"
+                            >
+                                Chamar Normal
+                            </button>
+                            <button
+                                onClick={() => handleCallNext('Preferencial')}
+                                disabled={!pendingTickets.some(t => t.type === 'Preferencial')}
+                                className="bg-amber-600/10 hover:bg-amber-600/20 disabled:bg-zinc-900 disabled:text-zinc-700 disabled:cursor-not-allowed text-amber-400 font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-amber-500/20 transition-all active:scale-[0.98] cursor-pointer text-xs uppercase tracking-wider"
+                            >
+                                ♿ Preferencial
                             </button>
                         </div>
                     </div>
@@ -467,13 +526,22 @@ export default function OperatorPanel() {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <button
-                                                onClick={() => handleRemovePending(t.id)}
-                                                className="opacity-0 group-hover/item:opacity-100 p-2 text-zinc-500 hover:text-red-400 rounded-lg hover:bg-white/5 transition-all cursor-pointer"
-                                                title="Remover senha"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => handleCallSpecific(t)}
+                                                    className="p-2 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                                                    title="Chamar esta senha agora"
+                                                >
+                                                    <Volume2 className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRemovePending(t.id)}
+                                                    className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all cursor-pointer flex items-center justify-center"
+                                                    title="Remover senha"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })
