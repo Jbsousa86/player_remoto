@@ -2,6 +2,43 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const fetchWeatherAndLocation = async () => {
+    let latitude, longitude, city;
+    
+    const getExactPosition = () => new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error('Geolocation not supported'));
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000, enableHighAccuracy: true });
+    });
+
+    try {
+        // 1. Tenta pegar a localização exata via hardware (Navegador/TV)
+        const pos = await getExactPosition();
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+        
+        // 2. Transforma as coordenadas exatas no nome da cidade (Geocodificação Reversa)
+        const revRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+        const revData = await revRes.json();
+        city = revData.address?.city || revData.address?.town || revData.address?.municipality || revData.address?.village || 'Local';
+    } catch (e) {
+        // 3. Fallback: Se falhar ou não der permissão, volta para a busca por IP
+        const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
+        const geoData = await geoRes.json();
+        latitude = geoData.latitude;
+        longitude = geoData.longitude;
+        city = geoData.city || 'Local';
+    }
+
+    const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+    const weatherData = await weatherRes.json();
+
+    return {
+        temp: Math.round(weatherData.current_weather.temperature),
+        city: city,
+        code: weatherData.current_weather.weathercode
+    };
+};
+
 const DynamicTicker = ({ ticker }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
@@ -18,16 +55,8 @@ const DynamicTicker = ({ ticker }) => {
 
         const fetchData = async () => {
             try {
-                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                const { latitude, longitude, city } = await geoRes.json();
-
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-                const weatherData = await weatherRes.json();
-
-                setWeather({
-                    temp: Math.round(weatherData.current_weather.temperature),
-                    city: city || 'Local'
-                });
+                const weatherData = await fetchWeatherAndLocation();
+                setWeather(weatherData);
             } catch (error) {
                 console.error("Erro ao buscar clima pro letreiro:", error);
             }
@@ -160,19 +189,8 @@ const StandbyWeather = () => {
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                // 1. Obter localização aproximada por IP
-                const geoRes = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                const { latitude, longitude, city } = await geoRes.json();
-
-                // 2. Obter clima (Open-Meteo é gratuito e sem API Key)
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
-                const weatherData = await weatherRes.json();
-
-                setWeather({
-                    temp: Math.round(weatherData.current_weather.temperature),
-                    city: city || 'Local',
-                    code: weatherData.current_weather.weathercode
-                });
+                const weatherData = await fetchWeatherAndLocation();
+                setWeather(weatherData);
             } catch (error) {
                 console.error("Erro ao buscar clima:", error);
             }
