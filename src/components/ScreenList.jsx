@@ -16,6 +16,40 @@ const ScreenList = ({
     handleLogout,
     isMobileMenuOpen
 }) => {
+
+    const handleSearchLocation = async () => {
+        if (!newScreenData.locationQuery) return alert("Por favor, digite uma cidade ou CEP.");
+        
+        try {
+            let query = newScreenData.locationQuery;
+            let cityName = query;
+            const cepMatch = query.replace(/\D/g, ''); // Remove tudo que não for número
+            
+            // 1. Se parecer um CEP válido (8 dígitos), busca o endereço completo no ViaCEP
+            if (cepMatch.length === 8) {
+                const viaCepRes = await fetch(`https://viacep.com.br/ws/${cepMatch}/json/`);
+                const viaCepData = await viaCepRes.json();
+                if (!viaCepData.erro) {
+                    cityName = viaCepData.localidade;
+                    query = `${viaCepData.logradouro}, ${viaCepData.localidade}, ${viaCepData.uf}, Brasil`;
+                }
+            }
+
+            // 2. Busca as coordenadas no Nominatim do OpenStreetMap
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`);
+            const geoData = await geoRes.json();
+
+            if (geoData && geoData.length > 0) {
+                setNewScreenData({ ...newScreenData, city: cityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) });
+            } else { 
+                alert("Localização não encontrada no mapa. Tente ser mais específico (ex: São Paulo, SP)."); 
+            }
+        } catch (e) { 
+            console.error(e); 
+            alert("Erro de conexão ao buscar a localização.");
+        }
+    };
+
     return (
         <aside className={`
             fixed md:relative top-0 left-0 z-50
@@ -51,6 +85,22 @@ const ScreenList = ({
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500 transition-all font-bold" required />
                                 <input type="text" placeholder="Nome da Tela" value={newScreenData.name} onChange={(e) => setNewScreenData({ ...newScreenData, name: e.target.value })}
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:border-orange-500 transition-all font-bold" required />
+                                
+                                <div className="p-3 bg-black/20 border border-white/5 rounded-xl space-y-2">
+                                    <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Localização do Clima (Opcional)</label>
+                                    <div className="flex gap-2">
+                                        <input type="text" placeholder="Cidade ou CEP (Ex: 01000-000)" value={newScreenData.locationQuery || ''} onChange={(e) => setNewScreenData({ ...newScreenData, locationQuery: e.target.value })}
+                                        className="flex-1 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-orange-500 transition-all font-bold" />
+                                        <button type="button" onClick={handleSearchLocation} className="bg-orange-500/20 text-orange-500 hover:bg-orange-500 hover:text-white px-3 rounded-lg text-[10px] font-black uppercase transition-all">Buscar</button>
+                                    </div>
+                                    {(newScreenData.lat && newScreenData.lon) && (
+                                        <div className="flex gap-2 pt-1 opacity-70">
+                                            <div className="flex-1 bg-white/5 rounded-lg px-2 py-1.5 text-xs text-emerald-400 font-mono truncate shadow-inner">Lat: {newScreenData.lat}</div>
+                                            <div className="flex-1 bg-white/5 rounded-lg px-2 py-1.5 text-xs text-emerald-400 font-mono truncate shadow-inner">Lon: {newScreenData.lon}</div>
+                                        </div>
+                                    )}
+                                </div>
+
                                 <div className="flex gap-2">
                                     <button type="submit" className="flex-1 bg-orange-500 text-white py-2 rounded-xl text-[10px] font-black uppercase">Salvar</button>
                                 <button type="button" onClick={() => setIsAddingScreen(false)} className="px-3 py-2 bg-white/10 hover:bg-white/20 text-zinc-400 rounded-xl text-[10px] font-black uppercase transition-all">X</button>
