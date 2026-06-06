@@ -584,6 +584,19 @@ const AdminPanel = ({ isPairing = false }) => {
         }
     };
 
+    const handleToggleQueue = async () => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        const nextVal = !selectedScreen.queueEnabled;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { queueEnabled: nextVal });
+        } catch (err) {
+            alert("Erro ao alterar módulo de fila.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const handleScheduleChange = (blockName, field, value) => {
         if (!selectedScreen) return;
         
@@ -1012,6 +1025,63 @@ const AdminPanel = ({ isPairing = false }) => {
                                 ) : (
                                     <p className="text-[10px] text-zinc-500 mt-2 ml-1">Se não definido, o totem tentará usar o GPS ou IP para descobrir onde está.</p>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Módulo de Fila de Atendimento */}
+                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                            <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
+                                <div className="flex-1 w-full">
+                                    <h3 className="text-base font-black text-white mb-1">Módulo de Fila de Atendimento</h3>
+                                    <p className="text-xs text-zinc-500 mb-4">
+                                        Habilite chamada de senhas por voz e gongo na TV. Ideal para estabelecimentos com atendimento presencial.
+                                    </p>
+                                    
+                                    {selectedScreen.queueEnabled && (
+                                        <div className="space-y-3">
+                                            <div>
+                                                <label className="block text-[9px] font-black text-zinc-500 uppercase mb-1.5 tracking-[0.25em]">Link do Painel do Operador (Atendente)</label>
+                                                <div className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        readOnly 
+                                                        value={`${window.location.origin}/operador/${selectedScreen.id}`}
+                                                        className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-xs text-emerald-400 font-bold select-all focus:outline-none"
+                                                    />
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(`${window.location.origin}/operador/${selectedScreen.id}`);
+                                                            alert('Link copiado!');
+                                                        }}
+                                                        className="px-5 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 active:scale-95 transition-all cursor-pointer"
+                                                    >
+                                                        Copiar
+                                                    </button>
+                                                    <a
+                                                        href={`/operador/${selectedScreen.id}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="px-5 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center active:scale-95 transition-all"
+                                                    >
+                                                        Abrir Painel
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="shrink-0 w-full lg:w-auto">
+                                    <button
+                                        onClick={handleToggleQueue}
+                                        className={`w-full lg:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
+                                            selectedScreen.queueEnabled 
+                                                ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
+                                                : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                    >
+                                        {selectedScreen.queueEnabled ? '✅ Fila Ativa' : '❌ Fila Inativa'}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 

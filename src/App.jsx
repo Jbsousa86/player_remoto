@@ -4,6 +4,7 @@ import PairingScreen from './components/PairingScreen';
 import PlayerScreen from './components/PlayerScreen';
 import AdminPanel from './components/AdminPanel';
 import AdminLogin from './components/AdminLogin';
+import OperatorPanel from './components/OperatorPanel';
 import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary
 import { syncService } from './lib/syncService';
 import { useScreenSize } from './lib/useScreenSize';
@@ -23,6 +24,8 @@ function PlayerContainer() {
   const [ticker, setTicker] = useState({ text: '', isActive: false });
   const [standbyOptions, setStandbyOptions] = useState({ logo: '', background: '' });
   const [blockSchedules, setBlockSchedules] = useState({});
+  const [queueEnabled, setQueueEnabled] = useState(false);
+  const [queueState, setQueueState] = useState(null);
   const [weatherLocation, setWeatherLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -156,6 +159,18 @@ function PlayerContainer() {
       // Update Standby Options
       if (data.standbyOptions) {
         setStandbyOptions(data.standbyOptions);
+      }
+
+      // Update Queue Configuration
+      if (data.queueEnabled !== undefined) {
+        setQueueEnabled(data.queueEnabled);
+      } else {
+        setQueueEnabled(false);
+      }
+      if (data.queueState !== undefined) {
+        setQueueState(data.queueState);
+      } else {
+        setQueueState(null);
       }
 
       // Update Block Schedules
@@ -308,7 +323,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} weatherLocation={weatherLocation} onMediaChange={handleMediaChange} />
+          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} weatherLocation={weatherLocation} onMediaChange={handleMediaChange} queueEnabled={queueEnabled} queueState={queueState} />
         </ErrorBoundary>
       )}
     </div>
@@ -330,6 +345,7 @@ function App() {
             <Route path="/" element={<PlayerContainer />} />
             <Route path="/admin" element={<AdminRoute><AdminPanel /></AdminRoute>} />
             <Route path="/admin/pair" element={<AdminRoute><AdminPanel isPairing={true} /></AdminRoute>} />
+            <Route path="/operador/:screenId" element={<OperatorPanel />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>

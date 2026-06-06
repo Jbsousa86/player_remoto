@@ -541,9 +541,96 @@ const StandbyClock = ({ weatherLocation }) => {
     );
 };
 
-const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange }) => {
+const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange, queueEnabled = false, queueState = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
+
+    const [calledTicket, setCalledTicket] = useState(null);
+    const [showQueueOverlay, setShowQueueOverlay] = useState(false);
+
+    // Audio chime generator using Web Audio API
+    const playChime = (volPercent) => {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            const gainNode = ctx.createGain();
+            gainNode.gain.setValueAtTime((volPercent / 100) * 0.5, ctx.currentTime);
+            gainNode.connect(ctx.destination);
+
+            const playNote = (freq, startTime, duration) => {
+                const osc = ctx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, startTime);
+                
+                const gainNodeLocal = ctx.createGain();
+                gainNodeLocal.gain.setValueAtTime(0.001, startTime);
+                gainNodeLocal.gain.exponentialRampToValueAtTime(1.0, startTime + 0.05);
+                gainNodeLocal.gain.exponentialRampToValueAtTime(0.001, startTime + duration - 0.05);
+                
+                osc.connect(gainNodeLocal);
+                gainNodeLocal.connect(gainNode);
+                
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+
+            playNote(523.25, ctx.currentTime, 0.2);
+            playNote(659.25, ctx.currentTime + 0.2, 0.2);
+            playNote(783.99, ctx.currentTime + 0.4, 0.4);
+        } catch (err) {
+            console.warn('Erro ao reproduzir chime:', err);
+        }
+    };
+
+    // Text to speech generator using Web Speech API
+    const speakTicket = (ticket, guiche, volPercent) => {
+        try {
+            if (!window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+
+            const text = `Senha ${ticket.split('').join(' ')}, ${guiche}`;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'pt-BR';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
+            utterance.volume = volPercent / 100;
+
+            window.speechSynthesis.speak(utterance);
+        } catch (err) {
+            console.warn('Erro na síntese de voz:', err);
+        }
+    };
+
+    // Listen to queue state changes
+    useEffect(() => {
+        if (!queueEnabled || !queueState?.current) return;
+
+        const currentCall = queueState.current;
+        setShowQueueOverlay(true);
+        setCalledTicket(currentCall);
+
+        if (!isMuted) {
+            playChime(volume);
+            const speechTimeout = setTimeout(() => {
+                speakTicket(currentCall.ticket, currentCall.guiche, volume);
+            }, 900);
+            
+            return () => {
+                clearTimeout(speechTimeout);
+            };
+        }
+    }, [queueState?.current?.timestamp, queueEnabled, isMuted, volume]);
+
+    // Timeout to hide queue overlay
+    useEffect(() => {
+        if (showQueueOverlay) {
+            const timer = setTimeout(() => {
+                setShowQueueOverlay(false);
+            }, 10000); // Hide after 10 seconds
+            return () => clearTimeout(timer);
+        }
+    }, [showQueueOverlay, queueState?.current?.timestamp]);
 
     useEffect(() => {
         const updatePlayableItems = () => {
@@ -1047,6 +1134,60 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
 
                 <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} />
             </div>
+
+            {/* Chamada de Senha Overlay */}
+            <AnimatePresence>
+                {showQueueOverlay && calledTicket && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[100] p-8"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/20 via-zinc-950/50 to-teal-950/20" />
+                        
+                        {/* Pulsing Decorative Glow */}
+                        <div className="absolute w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse" />
+
+                        <div className="relative flex flex-col items-center text-center max-w-4xl w-full">
+                            
+                            {/* Header Badge */}
+                            <motion.div 
+                                initial={{ y: -50, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
+                                className="inline-flex items-center gap-4 bg-emerald-500 text-black px-10 py-4 rounded-full shadow-2xl shadow-emerald-500/30 mb-8 border-2 border-white/20"
+                            >
+                                <span className="text-[2.5vh] md:text-[3.5vh] font-black uppercase tracking-[0.3em] leading-none">
+                                    Atendimento
+                                </span>
+                            </motion.div>
+
+                            {/* Ticket Code */}
+                            <motion.h1 
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.2, type: "spring", stiffness: 80 }}
+                                className="text-[14vh] md:text-[20vh] font-black text-white leading-none tracking-tighter drop-shadow-[0_10px_25px_rgba(255,255,255,0.15)] mb-6 uppercase"
+                            >
+                                {calledTicket.ticket}
+                            </motion.h1>
+
+                            {/* Station Location */}
+                            <motion.div 
+                                initial={{ y: 50, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.3, type: "spring", stiffness: 100 }}
+                                className="px-14 py-6 rounded-[2.5rem] bg-white/5 border border-white/10 shadow-2xl backdrop-blur-md"
+                            >
+                                <span className="text-[5vh] md:text-[7vh] font-black text-emerald-400 uppercase tracking-wider block leading-none">
+                                    {calledTicket.guiche}
+                                </span>
+                            </motion.div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
