@@ -40,7 +40,11 @@ const ScreenList = ({
             const geoData = await geoRes.json();
 
             if (geoData && geoData.length > 0) {
-                setNewScreenData({ ...newScreenData, city: cityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) });
+                // Pega o nome oficial formatado (ex: transforma "ananas" em "Ananás")
+                const niceCityName = geoData[0].name || geoData[0].display_name.split(',')[0] || cityName;
+                const finalCityName = cepMatch.length === 8 ? cityName : niceCityName;
+                
+                setNewScreenData({ ...newScreenData, city: finalCityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) });
             } else { 
                 alert("Localização não encontrada no mapa. Tente ser mais específico (ex: São Paulo, SP)."); 
             }

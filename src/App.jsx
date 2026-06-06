@@ -23,6 +23,7 @@ function PlayerContainer() {
   const [ticker, setTicker] = useState({ text: '', isActive: false });
   const [standbyOptions, setStandbyOptions] = useState({ logo: '', background: '' });
   const [blockSchedules, setBlockSchedules] = useState({});
+  const [weatherLocation, setWeatherLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -107,6 +108,7 @@ function PlayerContainer() {
         if (data.ticker) setTicker(data.ticker);
         if (data.standbyOptions) setStandbyOptions(data.standbyOptions);
         if (data.blockSchedules !== undefined) setBlockSchedules(data.blockSchedules || {});
+        if (data.weatherLocation !== undefined) setWeatherLocation(data.weatherLocation);
       }
     } catch (e) {
       console.warn('Backup offline inválido');
@@ -161,6 +163,11 @@ function PlayerContainer() {
         setBlockSchedules(prev => JSON.stringify(prev) === JSON.stringify(data.blockSchedules) ? prev : (data.blockSchedules || {}));
       } else {
         setBlockSchedules(prev => Object.keys(prev).length === 0 ? prev : {});
+      }
+
+      // Update Weather Location
+      if (data.weatherLocation !== undefined) {
+        setWeatherLocation(prev => JSON.stringify(prev) === JSON.stringify(data.weatherLocation) ? prev : data.weatherLocation);
       }
 
       // Manter o Backup Local sempre atualizado
@@ -301,7 +308,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} onMediaChange={handleMediaChange} />
+          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} weatherLocation={weatherLocation} onMediaChange={handleMediaChange} />
         </ErrorBoundary>
       )}
     </div>

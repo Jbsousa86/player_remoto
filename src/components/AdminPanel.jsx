@@ -441,7 +441,11 @@ const AdminPanel = ({ isPairing = false }) => {
             const geoData = await geoRes.json();
 
             if (geoData && geoData.length > 0) {
-                const newLocation = { city: cityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) };
+                // Pega o nome oficial formatado (ex: transforma "ananas" em "Ananás")
+                const niceCityName = geoData[0].name || geoData[0].display_name.split(',')[0] || cityName;
+                const finalCityName = cepMatch.length === 8 ? cityName : niceCityName;
+                
+                const newLocation = { city: finalCityName, lat: parseFloat(geoData[0].lat), lon: parseFloat(geoData[0].lon) };
                 setWeatherLocation(newLocation);
                 await syncService.updateScreen(selectedScreen.id, { weatherLocation: newLocation });
                 alert("Localização do clima atualizada com sucesso!");
