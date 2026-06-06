@@ -242,9 +242,19 @@ const LoteriasDisplay = ({ url, onError }) => {
                 if (loteriasCache[key] && loteriasCache.lastFetched[key] && (now - loteriasCache.lastFetched[key] < oneHour)) {
                     gameData = loteriasCache[key];
                 } else {
-                    const res = await fetch(`https://raw.githubusercontent.com/maickon/free-apiloterias/refs/heads/master/database/${key}/_ultimo.json`);
+                    const res = await fetch(`https://loteriascaixa-api.herokuapp.com/api/${key}/latest`);
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    gameData = await res.json();
+                    const rawData = await res.json();
+                    gameData = {
+                        listaDezenas: rawData.dezenas || [],
+                        numero: rawData.concurso,
+                        dataApuracao: rawData.data,
+                        numeroConcursoProximo: rawData.proximoConcurso,
+                        dataProximoConcurso: rawData.dataProximoConcurso,
+                        acumulado: rawData.acumulou,
+                        valorEstimadoProximoConcurso: rawData.valorEstimadoProximoConcurso,
+                        nomeMunicipioUFSorteio: rawData.local
+                    };
                     loteriasCache[key] = gameData;
                     loteriasCache.lastFetched[key] = now;
                 }
