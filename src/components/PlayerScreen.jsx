@@ -58,14 +58,14 @@ const DynamicTicker = ({ ticker }) => {
     displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
 
     return (
-        <div className="absolute bottom-0 left-0 w-full h-10 md:h-14 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
+        <div className="absolute bottom-0 left-0 w-full h-[6vh] min-h-10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
             <style>{`
                 @keyframes marquee-scroll {
                     0% { transform: translateX(0%); }
                     100% { transform: translateX(-100%); }
                 }
             `}</style>
-            <div className="whitespace-nowrap font-semibold text-lg md:text-2xl text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
+            <div className="whitespace-nowrap font-semibold text-[3vh] text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
                 {displayText}
             </div>
         </div>
@@ -129,22 +129,22 @@ const NewsDisplay = ({ url, onError }) => {
         <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-black animate-fade">
             {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
             <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-transparent" />
-            <div className="relative z-10 p-8 md:p-16 w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-8">
-                <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-6">
-                        <span className="bg-pink-600 text-white font-black px-4 py-2 rounded-xl uppercase tracking-widest text-xs md:text-sm shadow-lg shadow-pink-500/50">📰 Notícias</span>
-                        <span className="text-white/50 font-bold text-xs uppercase tracking-widest">{news.author || 'Última Hora'}</span>
+            <div className="relative z-10 p-[4vw] md:p-[6vw] w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-[3vw]">
+                <div className="flex-1 max-w-[75vw]">
+                    <div className="flex items-center gap-[1vw] mb-[2vh]">
+                        <span className="bg-pink-600 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.8vh] md:text-[2vh] shadow-lg shadow-pink-500/50">📰 Notícias</span>
+                        <span className="text-white/50 font-bold text-[1.8vh] md:text-[2vh] uppercase tracking-widest">{news.author || 'Última Hora'}</span>
                     </div>
-                    <h1 className="text-white font-black text-3xl md:text-6xl leading-tight drop-shadow-2xl mb-4">{news.title}</h1>
-                    {typeof news.description === 'string' && <p className="text-zinc-300 font-medium text-lg md:text-2xl line-clamp-3 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
+                    <h1 className="text-white font-black text-[4vh] md:text-[6vh] leading-tight drop-shadow-2xl mb-[2vh]">{news.title}</h1>
+                    {typeof news.description === 'string' && <p className="text-zinc-300 font-medium text-[2.5vh] md:text-[3vh] line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
 
                 {newsUrl && (
-                    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20 shadow-2xl shrink-0 animate-fade">
-                        <div className="bg-white p-3 rounded-2xl mb-3 shadow-inner">
-                            <QRCodeSVG value={newsUrl} size={120} level="Q" />
+                    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md p-[1.5vw] rounded-[2vw] border border-white/20 shadow-2xl shrink-0 animate-fade">
+                        <div className="bg-white p-[1vw] rounded-[1vw] mb-[1.5vh] shadow-inner flex items-center justify-center">
+                            <QRCodeSVG value={newsUrl} size={150} level="Q" className="w-[12vw] h-[12vw] max-w-37.5 max-h-37.5" />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white text-center leading-tight">
+                        <span className="text-[1.5vh] md:text-[1.8vh] font-black uppercase tracking-widest text-white text-center leading-tight">
                             Leia a matéria<br/>no celular
                         </span>
                     </div>
