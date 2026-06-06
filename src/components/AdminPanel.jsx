@@ -644,22 +644,24 @@ const AdminPanel = ({ isPairing = false }) => {
         if (!newItem.url || !selectedScreen) return;
         setIsSyncing(true);
 
-        const youtubeId = getYoutubeId(newItem.url);
-        const finalUrl = convertToDirectLink(newItem.url);
+        const youtubeId = newItem.type === 'loterias' ? null : getYoutubeId(newItem.url);
+        const finalUrl = newItem.type === 'loterias' ? newItem.url : convertToDirectLink(newItem.url);
         let finalType = newItem.type;
         let finalDuration = newItem.duration;
 
-        if (youtubeId) {
-            finalType = 'youtube';
-            // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
-            if (newItem.type === 'image') {
-                finalDuration = 0;
-            }
-        } else if (isVideoUrl(finalUrl)) {
-            finalType = 'video';
-            // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
-            if (newItem.type === 'image') {
-                finalDuration = 0;
+        if (newItem.type !== 'loterias') {
+            if (youtubeId) {
+                finalType = 'youtube';
+                // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
+                if (newItem.type === 'image') {
+                    finalDuration = 0;
+                }
+            } else if (isVideoUrl(finalUrl)) {
+                finalType = 'video';
+                // Auto-detect: if type was image (default), reset duration to 0 so it plays fully
+                if (newItem.type === 'image') {
+                    finalDuration = 0;
+                }
             }
         }
 
@@ -705,17 +707,19 @@ const AdminPanel = ({ isPairing = false }) => {
 
         setIsSyncing(true);
 
-        const youtubeId = getYoutubeId(newItem.url);
-        const finalUrl = convertToDirectLink(newItem.url);
+        const youtubeId = newItem.type === 'loterias' ? null : getYoutubeId(newItem.url);
+        const finalUrl = newItem.type === 'loterias' ? newItem.url : convertToDirectLink(newItem.url);
         let finalType = newItem.type;
         let finalDuration = newItem.duration;
 
-        if (youtubeId) {
-            finalType = 'youtube';
-            if (newItem.type === 'image') finalDuration = 0;
-        } else if (isVideoUrl(finalUrl)) {
-            finalType = 'video';
-            if (newItem.type === 'image') finalDuration = 0;
+        if (newItem.type !== 'loterias') {
+            if (youtubeId) {
+                finalType = 'youtube';
+                if (newItem.type === 'image') finalDuration = 0;
+            } else if (isVideoUrl(finalUrl)) {
+                finalType = 'video';
+                if (newItem.type === 'image') finalDuration = 0;
+            }
         }
 
         try {

@@ -17,6 +17,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
         newItem.type === 'youtube' ? 'border-purple-500/50' :
         newItem.type === 'web' ? 'border-teal-500/50' :
         newItem.type === 'news' ? 'border-pink-500/50' :
+        newItem.type === 'loterias' ? 'border-emerald-500/50' :
         'border-white/10'
     );
     return (
@@ -24,20 +25,43 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
             <form onSubmit={addItem} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
                     <div className="lg:col-span-12">
-                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Link da Mídia ou Upload</label>
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">
+                            {newItem.type === 'loterias' ? 'Jogo da Caixa' : 'Link da Mídia ou Upload'}
+                        </label>
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
-                                placeholder="Cole a URL da Imagem, Vídeo, Web ou RSS de Notícias"
-                                className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
-                                required={!isUploading} 
-                                disabled={isUploading} 
-                            />
-                            <div className="shrink-0 flex">
-                                <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} multiple />
-                                <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
-                                    {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
-                                </label>
-                            </div>
+                            {newItem.type === 'loterias' ? (
+                                <select 
+                                    value={newItem.url} 
+                                    onChange={(e) => {
+                                        const selectedUrl = e.target.value;
+                                        const dur = selectedUrl === 'todas' ? 32 : 10;
+                                        setNewItem({ ...newItem, url: selectedUrl, duration: dur });
+                                    }}
+                                    className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-bold appearance-none cursor-pointer`}
+                                    required
+                                >
+                                    <option value="todas">🔄 Todas (Mega-Sena, Lotofácil, Quina, Lotomania)</option>
+                                    <option value="megasena">🟢 Mega-Sena</option>
+                                    <option value="lotofacil">🟣 Lotofácil</option>
+                                    <option value="quina">🔵 Quina</option>
+                                    <option value="lotomania">🟠 Lotomania</option>
+                                </select>
+                            ) : (
+                                <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
+                                    placeholder="Cole a URL da Imagem, Vídeo, Web ou RSS de Notícias"
+                                    className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
+                                    required={!isUploading} 
+                                    disabled={isUploading} 
+                                />
+                            )}
+                            {newItem.type !== 'loterias' && (
+                                <div className="shrink-0 flex">
+                                    <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} multiple />
+                                    <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                        {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
+                                    </label>
+                                </div>
+                            )}
                         </div>
                         <div className="mt-2 flex items-center gap-2">
                             <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-bold ${
@@ -46,6 +70,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                                 newItem.type === 'youtube' ? 'bg-purple-600 text-white' :
                                 newItem.type === 'web' ? 'bg-teal-600 text-white' :
                                 newItem.type === 'news' ? 'bg-pink-600 text-white' :
+                                newItem.type === 'loterias' ? 'bg-emerald-600 text-white' :
                                 'bg-gray-600 text-white'
                             }`}>Tipo: {newItem.type}</span>
                             {newItem.duration === 0 && (
@@ -58,13 +83,16 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Tipo</label>
                         <select value={newItem.type} onChange={(e) => {
                             const val = e.target.value;
-                            setNewItem({ ...newItem, type: val, duration: (val === 'video' || val === 'youtube') ? 0 : 10 });
+                            const defaultUrl = val === 'loterias' ? 'todas' : '';
+                            const defaultDuration = val === 'loterias' ? 32 : ((val === 'video' || val === 'youtube') ? 0 : 10);
+                            setNewItem({ ...newItem, type: val, url: defaultUrl, duration: defaultDuration });
                         }} className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white appearance-none cursor-pointer">
                             <option value="image">🖼️ Imagem</option>
                             <option value="video">🎥 Vídeo Direto</option>
                             <option value="youtube">📺 YouTube</option>
                             <option value="web">🌐 Página da Web</option>
                             <option value="news">📰 Notícias (RSS)</option>
+                            <option value="loterias">🎰 Loterias Caixa</option>
                         </select>
                     </div>
 

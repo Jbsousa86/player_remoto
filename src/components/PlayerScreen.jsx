@@ -197,6 +197,265 @@ const NewsDisplay = ({ url, onError }) => {
     );
 };
 
+const loteriasCache = {
+    megasena: null,
+    lotofacil: null,
+    quina: null,
+    lotomania: null,
+    lastFetched: {}
+};
+
+const LoteriasDisplay = ({ url, onError }) => {
+    const isRotating = url === 'todas';
+    const gamesList = useMemo(() => isRotating ? ['megasena', 'lotofacil', 'quina', 'lotomania'] : [url], [isRotating, url]);
+    const [gameIndex, setGameIndex] = useState(0);
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+
+    const activeGameKey = gamesList[gameIndex];
+
+    // Sub-rotation effect inside the slide
+    useEffect(() => {
+        if (!isRotating) return;
+        const interval = setInterval(() => {
+            setGameIndex((prev) => (prev + 1) % gamesList.length);
+        }, 8000); // Change game every 8 seconds
+        return () => clearInterval(interval);
+    }, [isRotating, gamesList.length]);
+
+    // Fetch lottery data
+    useEffect(() => {
+        let isMounted = true;
+        setLoading(true);
+        setHasError(false);
+
+        const fetchData = async () => {
+            try {
+                const now = Date.now();
+                const oneHour = 60 * 60 * 1000;
+                
+                const validGames = ['megasena', 'lotofacil', 'quina', 'lotomania'];
+                const key = validGames.includes(activeGameKey) ? activeGameKey : 'megasena';
+
+                let gameData;
+                if (loteriasCache[key] && loteriasCache.lastFetched[key] && (now - loteriasCache.lastFetched[key] < oneHour)) {
+                    gameData = loteriasCache[key];
+                } else {
+                    const res = await fetch(`https://raw.githubusercontent.com/maickon/free-apiloterias/refs/heads/master/database/${key}/_ultimo.json`);
+                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                    gameData = await res.json();
+                    loteriasCache[key] = gameData;
+                    loteriasCache.lastFetched[key] = now;
+                }
+
+                if (isMounted) {
+                    setData(gameData);
+                    setLoading(false);
+                }
+            } catch (err) {
+                console.error('Erro ao buscar dados da loteria:', err);
+                if (isMounted) {
+                    setHasError(true);
+                    setLoading(false);
+                    if (!isRotating) {
+                        setTimeout(() => isMounted && onError?.(), 4000);
+                    }
+                }
+            }
+        };
+
+        fetchData();
+        return () => { isMounted = false; };
+    }, [activeGameKey, isRotating, onError]);
+
+    const getGameConfig = (key) => {
+        switch (key) {
+            case 'megasena':
+                return {
+                    name: 'Mega-Sena',
+                    bg: 'from-emerald-950 via-zinc-950 to-black border-emerald-500/20',
+                    badge: 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/30',
+                    glow: 'shadow-emerald-500/20'
+                };
+            case 'lotofacil':
+                return {
+                    name: 'Lotofácil',
+                    bg: 'from-purple-950 via-zinc-950 to-black border-purple-500/20',
+                    badge: 'bg-purple-600 text-white shadow-lg shadow-purple-500/30',
+                    glow: 'shadow-purple-500/20'
+                };
+            case 'quina':
+                return {
+                    name: 'Quina',
+                    bg: 'from-blue-950 via-zinc-950 to-black border-blue-500/20',
+                    badge: 'bg-blue-600 text-white shadow-lg shadow-blue-500/30',
+                    glow: 'shadow-blue-500/20'
+                };
+            case 'lotomania':
+                return {
+                    name: 'Lotomania',
+                    bg: 'from-orange-950 via-zinc-950 to-black border-orange-500/20',
+                    badge: 'bg-orange-600 text-white shadow-lg shadow-orange-500/30',
+                    glow: 'shadow-orange-500/20'
+                };
+            default:
+                return {
+                    name: 'Loterias',
+                    bg: 'from-zinc-900 via-zinc-950 to-black border-white/10',
+                    badge: 'bg-zinc-600 text-white',
+                    glow: 'shadow-white/5'
+                };
+        }
+    };
+
+    const getBallStyle = (key) => {
+        switch (key) {
+            case 'megasena':
+                return {
+                    background: 'radial-gradient(circle at 30% 30%, #34d399 0%, #065f46 80%)',
+                    color: '#ffffff'
+                };
+            case 'lotofacil':
+                return {
+                    background: 'radial-gradient(circle at 30% 30%, #c084fc 0%, #581c87 80%)',
+                    color: '#ffffff'
+                };
+            case 'quina':
+                return {
+                    background: 'radial-gradient(circle at 30% 30%, #60a5fa 0%, #1e3a8a 80%)',
+                    color: '#ffffff'
+                };
+            case 'lotomania':
+                return {
+                    background: 'radial-gradient(circle at 30% 30%, #fb923c 0%, #7c2d12 80%)',
+                    color: '#1e293b' // slate-900 for high contrast
+                };
+            default:
+                return {
+                    background: 'radial-gradient(circle at 30% 30%, #a1a1aa 0%, #3f3f46 80%)',
+                    color: '#ffffff'
+                };
+        }
+    };
+
+    const config = getGameConfig(activeGameKey);
+
+    const formatCurrency = (val) => {
+        if (val === undefined || val === null) return 'R$ --,--';
+        return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    if (loading) {
+        return (
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-950 text-white">
+                <div className="animate-pulse flex flex-col items-center">
+                    <span className="text-5xl mb-4 animate-bounce">🎰</span>
+                    <span className="text-sm font-bold tracking-widest uppercase text-zinc-500">Buscando Resultados Caixa...</span>
+                </div>
+            </div>
+        );
+    }
+
+    if (hasError || !data) {
+        return (
+            <div className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-950 text-white">
+                <div className="flex flex-col items-center opacity-70 animate-fade">
+                    <span className="text-5xl mb-4">⚠️</span>
+                    <span className="text-sm font-bold tracking-widest uppercase text-red-400">Falha ao buscar dados</span>
+                    <span className="text-xs mt-2 text-zinc-500 text-center">Não foi possível carregar os resultados da Caixa.</span>
+                </div>
+            </div>
+        );
+    }
+
+    const dezenas = data.listaDezenas || [];
+    const loteriasUrl = 'https://loterias.caixa.gov.br';
+
+    return (
+        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-gradient-to-b ${config.bg} animate-fade p-[4vw] md:p-[5vw]`}>
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/10 pb-[2vh] z-10 shrink-0">
+                <div className="flex items-center gap-[2vw]">
+                    <span className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh] shadow-lg shadow-orange-500/20">
+                        🎰 Loterias Caixa
+                    </span>
+                    <span className={`${config.badge} font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh]`}>
+                        {config.name}
+                    </span>
+                </div>
+                <span className="text-white/60 font-bold text-[1.8vh] md:text-[2.2vh] uppercase tracking-widest">
+                    Concurso {data.numero} • {data.dataApuracao}
+                </span>
+            </div>
+
+            {/* Ball area */}
+            <div className="flex-1 flex flex-col justify-center items-center gap-[2vh] z-10 min-h-0">
+                <p className="text-zinc-400 font-bold text-[1.5vh] md:text-[1.8vh] uppercase tracking-[0.2em] mb-[1vh] shrink-0">
+                    Números Sorteados
+                </p>
+                <div className="w-full flex flex-wrap justify-center items-center gap-[1.5vw] max-w-[90%] overflow-y-auto py-2">
+                    {dezenas.map((dez, idx) => {
+                        // Sizing depending on amount of numbers
+                        const sizeClass = dezenas.length > 15 
+                            ? 'w-[7vw] h-[7vw] md:w-[4.8vw] md:h-[4.8vw] text-[2.5vh] md:text-[3vh]' 
+                            : dezenas.length > 6 
+                                ? 'w-[8.5vw] h-[8.5vw] md:w-[6.2vw] md:h-[6.2vw] text-[3.2vh] md:text-[3.8vh]' 
+                                : 'w-[12vw] h-[12vw] md:w-[8.5vw] md:h-[8.5vw] text-[5vh] md:text-[6vh]';
+                        return (
+                            <div
+                                key={idx}
+                                className={`${sizeClass} rounded-full flex items-center justify-center font-black shadow-lg relative border border-white/20 shrink-0`}
+                                style={getBallStyle(activeGameKey)}
+                            >
+                                <div className="absolute top-[10%] left-[15%] w-[30%] h-[30%] bg-white/30 rounded-full blur-[1px]" />
+                                <span className="relative drop-shadow-[0_2px_3px_rgba(0,0,0,0.6)] z-10">
+                                    {dez}
+                                </span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Bottom Panel */}
+            <div className="flex flex-row items-center justify-between gap-[3vw] bg-white/5 backdrop-blur-md p-[2vw] rounded-[2.5vw] border border-white/10 shadow-2xl z-10 shrink-0">
+                <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-[2vw]">
+                    <div className="flex flex-col justify-center">
+                        <div className="flex items-center gap-[1vw] mb-[0.5vh]">
+                            <span className="text-zinc-400 font-bold text-[1.4vh] md:text-[1.8vh] uppercase tracking-wider">
+                                Próximo Concurso {data.numeroConcursoProximo} ({data.dataProximoConcurso})
+                            </span>
+                            {data.acumulado && (
+                                <span className="bg-amber-500 text-zinc-950 font-black px-[1vw] py-[0.2vh] rounded-[0.5vw] uppercase text-[1.2vh] md:text-[1.5vh] animate-bounce">
+                                    Acumulou!
+                                </span>
+                            )}
+                        </div>
+                        <h2 className="text-yellow-400 font-black text-[3.5vh] md:text-[5vh] leading-none tracking-tight drop-shadow-[0_2px_5px_rgba(234,179,8,0.2)]">
+                            {formatCurrency(data.valorEstimadoProximoConcurso)}
+                        </h2>
+                    </div>
+                    
+                    <div className="hidden sm:block text-right shrink-0">
+                        <span className="text-zinc-500 font-semibold text-[1.4vh] md:text-[1.8vh] block uppercase tracking-widest">
+                            Espaço da Sorte
+                        </span>
+                        <span className="text-zinc-400 font-bold text-[1.6vh] md:text-[2vh] block uppercase">
+                            {data.nomeMunicipioUFSorteio}
+                        </span>
+                    </div>
+                </div>
+
+                {/* QR Code */}
+                <div className="flex flex-col items-center bg-white p-[1vw] rounded-[1.5vw] shadow-lg shrink-0">
+                    <QRCodeSVG value={loteriasUrl} size={100} level="Q" className="w-[8vw] h-[8vw] max-w-20 max-h-20" />
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const StandbyWeather = ({ weather }) => {
 
     const getWeatherEmoji = (code) => {
@@ -581,7 +840,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
        WEB PAGE & NEWS TIMER
     ========================== */
     useEffect(() => {
-        if ((currentType !== 'web' && currentType !== 'news') || !isPlaying || isStopped) return;
+        if ((currentType !== 'web' && currentType !== 'news' && currentType !== 'loterias') || !isPlaying || isStopped) return;
 
         if (currentDuration === 0) return;
 
@@ -763,6 +1022,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
 
                                             {currentItem.type === 'news' && (
                                                 <NewsDisplay url={currentItem.url} onError={() => next(true)} />
+                                            )}
+
+                                            {currentItem.type === 'loterias' && (
+                                                <LoteriasDisplay url={currentItem.url} onError={() => next(true)} />
                                             )}
                                         </motion.div>
                                     )}

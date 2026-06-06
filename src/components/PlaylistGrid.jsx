@@ -28,6 +28,11 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     <span className="text-4xl mb-2">📰</span>
                                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Notícias</span>
                                 </div>
+                            ) : item.type === 'loterias' ? (
+                                <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-emerald-500">
+                                    <span className="text-4xl mb-2">🎰</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Loterias Caixa</span>
+                                </div>
                             ) : (
                                 <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} alt="" />
                             )}
@@ -52,8 +57,18 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                         </div>
                         <div className="p-5 flex flex-col gap-4">
                             <div className="truncate">
-                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 tracking-widest">Link da Mídia</p>
-                                <p className="text-xs text-zinc-300 truncate font-medium" title={item.url}>{item.url}</p>
+                                <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 tracking-widest">
+                                    {item.type === 'loterias' ? 'Jogo da Caixa' : 'Link da Mídia'}
+                                </p>
+                                <p className="text-xs text-zinc-300 truncate font-medium" title={item.url}>
+                                    {item.type === 'loterias' ? (
+                                        item.url === 'todas' ? '🔄 Todas as Loterias' :
+                                        item.url === 'megasena' ? '🟢 Mega-Sena' :
+                                        item.url === 'lotofacil' ? '🟣 Lotofácil' :
+                                        item.url === 'quina' ? '🔵 Quina' :
+                                        item.url === 'lotomania' ? '🟠 Lotomania' : item.url
+                                    ) : item.url}
+                                </p>
                             </div>
                         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/5">
