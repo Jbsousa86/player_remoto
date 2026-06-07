@@ -162,7 +162,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                     100% { transform: translateX(-100%); }
                 }
             `}</style>
-            <div className="whitespace-nowrap font-semibold text-[3vh] text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: 'marquee-scroll 25s linear infinite' }}>
+            <div className="whitespace-nowrap font-semibold text-[3vh] text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
                 {displayText}
             </div>
         </div>

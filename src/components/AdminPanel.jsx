@@ -19,6 +19,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
+    const [tickerSpeed, setTickerSpeed] = useState(25);
     const [tickerStatus, setTickerStatus] = useState('');
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
@@ -110,6 +111,7 @@ const AdminPanel = ({ isPairing = false }) => {
         }
 
         setTickerText(selectedScreen?.ticker?.text || DEFAULT_TICKER.text);
+        setTickerSpeed(selectedScreen?.ticker?.speed !== undefined ? selectedScreen.ticker.speed : 25);
         setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
         const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
@@ -413,6 +415,23 @@ const AdminPanel = ({ isPairing = false }) => {
             setTimeout(() => setTickerStatus(''), 2500);
         } catch (err) {
             alert("Erro ao alterar texto do letreiro.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleTickerSpeedSave = async (speedVal) => {
+        if (!selectedScreen) return;
+        const speed = parseInt(speedVal) || 25;
+        setIsSyncing(true);
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { ...selectedScreen.ticker, speed } 
+            });
+            setTickerStatus('Velocidade salva');
+            setTimeout(() => setTickerStatus(''), 2500);
+        } catch (err) {
+            alert("Erro ao alterar velocidade do letreiro.");
         } finally {
             setIsSyncing(false);
         }
@@ -966,6 +985,30 @@ const AdminPanel = ({ isPairing = false }) => {
                                     className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: A Hora, Clima e Cotação do Dólar são adicionados automaticamente ao final do letreiro.</p>
+                                
+                                <div className="mt-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                                    <div className="flex-1 w-full">
+                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">Velocidade do Letreiro (Tempo de Rolagem)</label>
+                                        <div className="flex items-center gap-3">
+                                            <input 
+                                                type="range" 
+                                                min="10" 
+                                                max="60" 
+                                                value={tickerSpeed}
+                                                onChange={(e) => setTickerSpeed(parseInt(e.target.value))}
+                                                onMouseUp={() => handleTickerSpeedSave(tickerSpeed)}
+                                                onTouchEnd={() => handleTickerSpeedSave(tickerSpeed)}
+                                                className="flex-1 accent-orange-500 h-2 bg-black/40 rounded-lg appearance-none cursor-pointer"
+                                            />
+                                            <span className="text-xs font-mono font-bold bg-white/5 px-3 py-1.5 rounded-lg text-white border border-white/5 w-16 text-center">
+                                                {tickerSpeed}s
+                                            </span>
+                                        </div>
+                                        <p className="text-[9px] text-zinc-500 mt-1 ml-1">
+                                            Menos segundos = Mais rápido. Mais segundos = Mais lento. (Padrão: 25s)
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                             <div className="shrink-0 w-full lg:w-auto flex flex-col gap-2 items-end">
                                 {tickerStatus && (
