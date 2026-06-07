@@ -155,14 +155,14 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     }
 
     return (
-        <div className="absolute bottom-0 left-0 w-full h-[6vh] min-h-10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
+        <div className="absolute bottom-0 left-0 w-full h-[5%] min-h-10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
             <style>{`
                 @keyframes marquee-scroll {
                     0% { transform: translateX(0%); }
                     100% { transform: translateX(-100%); }
                 }
             `}</style>
-            <div className="whitespace-nowrap font-semibold text-[3vh] text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
+            <div className="whitespace-nowrap font-semibold text-[2.2vh] text-white/90 uppercase tracking-widest pl-[100vw]" style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
                 {displayText}
             </div>
         </div>
@@ -1190,6 +1190,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     // O link agora é puxado direto das configurações do painel Admin!
     const companyLogo = standbyOptions?.logo || "";
 
+    const isTickerShown = !!(ticker?.isActive || queueEnabled);
+
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">
             <style>{`
@@ -1250,7 +1252,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none select-none bg-black"
+                            className={`absolute top-0 left-0 w-full ${isTickerShown ? 'h-[95%]' : 'h-full'} overflow-hidden pointer-events-none select-none bg-black`}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
