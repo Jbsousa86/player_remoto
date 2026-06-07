@@ -679,6 +679,13 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             const text = `Senha ${ticket.split('').join(' ')}, ${typeText}`;
             const volume = volPercent / 100;
 
+            // 0. SUPORTE PARA FULLY KIOSK BROWSER (DIRETO NO ANDROID)
+            if (typeof fully !== 'undefined' && typeof fully.textToSpeech === 'function') {
+                console.log("🔊 Usando TTS nativo do Fully Kiosk Browser:", text);
+                fully.textToSpeech(text, 'pt_BR');
+                return;
+            }
+
             // 1. TENTA USAR A VOZ NATIVA DA TV/PC
             if ('speechSynthesis' in window) {
                 const voices = window.speechSynthesis.getVoices();
