@@ -589,6 +589,16 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             }
         };
         checkAudio();
+
+        // Inicializa o TTS nativo do Fully Kiosk se disponível (Versão 1.55+)
+        if (typeof fully !== 'undefined' && typeof fully.initTts === 'function') {
+            try {
+                fully.initTts();
+                console.log('🔊 Fully Kiosk TTS inicializado');
+            } catch (e) {
+                console.warn('Erro ao inicializar TTS no Fully Kiosk:', e);
+            }
+        }
     }, [queueEnabled]);
 
     useEffect(() => {
