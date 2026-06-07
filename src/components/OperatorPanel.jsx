@@ -98,7 +98,7 @@ export default function OperatorPanel() {
 
             await updateQueueStateInDb(newState);
             setNewTicketDispensed(newTicket);
-            setTimeout(() => setNewTicketDispensed(null), 5000);
+            setTimeout(() => setNewTicketDispensed(null), 8000);
         } catch (e) {
             console.error('Erro ao dispensar senha:', e);
             alert('Falha ao gerar senha no servidor.');
@@ -334,7 +334,7 @@ export default function OperatorPanel() {
     const currentCall = queueState.current;
 
     return (
-        <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500 selection:text-black">
+        <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-emerald-500 selection:text-black print:hidden">
             
             {/* Header */}
             <header className="bg-zinc-900/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-40 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -626,6 +626,74 @@ export default function OperatorPanel() {
                             </button>
                         </div>
                     </form>
+                </div>
+            )}
+
+            {/* Modal de Senha Gerada */}
+            {newTicketDispensed && (
+                <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[150] p-4 print:hidden">
+                    <div className="bg-zinc-900 border border-white/10 p-8 rounded-3xl max-w-sm w-full text-center shadow-2xl relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl" />
+                        
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+                            <PlusCircle className="w-6 h-6 animate-bounce" />
+                        </div>
+                        
+                        <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">Sua Senha foi Gerada</h3>
+                        
+                        <div className="text-6xl font-black text-white tracking-tighter my-6 select-all font-mono">
+                            {newTicketDispensed.ticket}
+                        </div>
+                        
+                        <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-6 ${
+                            newTicketDispensed.type === 'Preferencial' 
+                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' 
+                                : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                        }`}>
+                            {newTicketDispensed.type === 'Preferencial' ? 'Atendimento Preferencial ♿' : 'Atendimento Normal'}
+                        </span>
+                        
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={() => window.print()}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-600/20 text-sm uppercase tracking-wider"
+                            >
+                                Imprimir Senha 🖨️
+                            </button>
+                            <button
+                                onClick={() => setNewTicketDispensed(null)}
+                                className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-3 px-6 rounded-xl transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
+                            >
+                                Fechar
+                            </button>
+                        </div>
+                        
+                        <div className="mt-6 text-[10px] text-zinc-500">
+                            Este aviso fechará automaticamente em breve.
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Elemento Oculto para Impressão */}
+            {newTicketDispensed && (
+                <div className="hidden print:block print:fixed print:inset-0 print:bg-white print:text-black print:p-6 print:text-center print:font-mono">
+                    <div style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '10px' }}>FILA DE ATENDIMENTO</div>
+                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '20px' }}>{screenData?.name}</div>
+                    <hr style={{ borderTop: '1px dashed #000', margin: '15px 0' }} />
+                    <div style={{ fontSize: '48px', fontWeight: '900', margin: '20px 0', letterSpacing: '-2px' }}>
+                        {newTicketDispensed.ticket}
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', marginBottom: '20px' }}>
+                        {newTicketDispensed.type === 'Preferencial' ? 'ATENDIMENTO PREFERENCIAL' : 'ATENDIMENTO NORMAL'}
+                    </div>
+                    <hr style={{ borderTop: '1px dashed #000', margin: '15px 0' }} />
+                    <div style={{ fontSize: '11px', marginTop: '15px' }}>
+                        Emissão: {new Date(newTicketDispensed.createdAt).toLocaleString('pt-BR')}
+                    </div>
+                    <div style={{ fontSize: '10px', marginTop: '10px', color: '#333' }}>
+                        Acompanhe no painel de TV quando sua senha for chamada.
+                    </div>
                 </div>
             )}
 
