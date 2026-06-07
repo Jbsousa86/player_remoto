@@ -54,6 +54,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const [currentTime, setCurrentTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
     const [dolar, setDolar] = useState(null);
+    const [localNews, setLocalNews] = useState('');
 
     useEffect(() => {
         if (!ticker?.isActive && !queueEnabled) return;
@@ -80,6 +81,31 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 setDolar(parseFloat(dolarData.USDBRL.bid).toFixed(2).replace('.', ','));
             } catch (error) {
                 console.error("Erro ao buscar dólar pro letreiro:", error);
+            }
+
+            // Busca notícias locais de Ananás para o letreiro
+            try {
+                const targetUrl = 'https://www.ananas.to.gov.br/';
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                const html = await res.text();
+                const newsTitles = [];
+                const cardRegex = /<a href="([^"]*\/blog\/artigo\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+                let match;
+                while ((match = cardRegex.exec(html)) !== null) {
+                    const cardHtml = match[2];
+                    const titleMatch = cardHtml.match(/<h3[^>]*>([\s\S]*?)<\/h3>/);
+                    if (titleMatch) {
+                        const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                        if (title && !newsTitles.includes(title)) {
+                            newsTitles.push(title);
+                        }
+                    }
+                }
+                if (newsTitles.length > 0) {
+                    setLocalNews(newsTitles.slice(0, 4).join('  •  '));
+                }
+            } catch (error) {
+                console.error("Erro ao buscar notícias locais para o letreiro:", error);
             }
         };
 
@@ -120,6 +146,9 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         if (ticker.text && typeof ticker.text === 'string') {
             displayText += ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
         }
+        if (localNews) {
+            displayText += `📰 ANANÁS NOTÍCIAS: ${localNews}  •  `;
+        }
         displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
     } else {
         displayText += `🕒 HORA: ${timeStr}`;
@@ -146,26 +175,81 @@ const NewsDisplay = ({ url, onError }) => {
 
     useEffect(() => {
         let isMounted = true;
-        fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
-            .then(res => res.json())
-            .then(data => {
-                if (!isMounted) return;
-                if (data?.status === 'ok' && data.items?.length > 0) {
-                    // Sorteia aleatoriamente uma das 5 últimas notícias recentes
-                    const item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
-                    setNews(item);
-                } else {
-                    console.warn('RSS Feed sem itens', data);
+
+        if (url && (url.includes('ananas.to.gov.br') || url === 'ananas')) {
+            const targetUrl = 'https://www.ananas.to.gov.br/';
+            fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Erro HTTP na requisição de Ananás');
+                    return res.text();
+                })
+                .then(html => {
+                    if (!isMounted) return;
+                    const newsItems = [];
+                    const cardRegex = /<a href="([^"]*\/blog\/artigo\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
+                    
+                    let match;
+                    while ((match = cardRegex.exec(html)) !== null) {
+                        const link = match[1].trim();
+                        const cardHtml = match[2];
+                        
+                        const titleMatch = cardHtml.match(/<h3[^>]*>([\s\S]*?)<\/h3>/);
+                        if (!titleMatch) continue;
+                        const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+                        
+                        const descMatch = cardHtml.match(/<p class="text-gray-600 dark:text-slate-400 text-sm mb-4[^>]*>([\s\S]*?)<\/p>/);
+                        const desc = descMatch ? descMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+                        
+                        const imgMatch = cardHtml.match(/<img[^>]+src="([^"]+)"/);
+                        const img = imgMatch ? imgMatch[1].trim() : '';
+                        
+                        newsItems.push({
+                            title,
+                            description: desc,
+                            thumbnail: img ? (img.startsWith('http') ? img : `https://www.ananas.to.gov.br/${img}`) : '',
+                            link: link.startsWith('http') ? link : `https://www.ananas.to.gov.br/${link}`,
+                            author: 'Prefeitura de Ananás'
+                        });
+                    }
+                    
+                    if (newsItems.length > 0) {
+                        // Sorteia aleatoriamente uma das 5 últimas notícias recentes
+                        const item = newsItems[Math.floor(Math.random() * Math.min(5, newsItems.length))];
+                        setNews(item);
+                    } else {
+                        console.warn('HTML scrape de Ananás sem itens');
+                        setHasError(true);
+                        setTimeout(() => isMounted && onError?.(), 4000);
+                    }
+                })
+                .catch(err => {
+                    if (!isMounted) return;
+                    console.error('Erro ao buscar notícias do site de Ananás:', err);
                     setHasError(true);
                     setTimeout(() => isMounted && onError?.(), 4000);
-                }
-            })
-            .catch(err => {
-                if (!isMounted) return;
-                console.error('Erro ao buscar RSS:', err);
-                setHasError(true);
-                setTimeout(() => isMounted && onError?.(), 4000);
-            });
+                });
+        } else {
+            fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(url)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!isMounted) return;
+                    if (data?.status === 'ok' && data.items?.length > 0) {
+                        // Sorteia aleatoriamente uma das 5 últimas notícias recentes
+                        const item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
+                        setNews(item);
+                    } else {
+                        console.warn('RSS Feed sem itens', data);
+                        setHasError(true);
+                        setTimeout(() => isMounted && onError?.(), 4000);
+                    }
+                })
+                .catch(err => {
+                    if (!isMounted) return;
+                    console.error('Erro ao buscar RSS:', err);
+                    setHasError(true);
+                    setTimeout(() => isMounted && onError?.(), 4000);
+                });
+        }
             
         return () => { isMounted = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
