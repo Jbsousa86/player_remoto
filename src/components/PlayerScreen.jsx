@@ -408,11 +408,11 @@ const LoteriasDisplay = ({ url, onError }) => {
     const loteriasUrl = 'https://loterias.caixa.gov.br';
 
     return (
-        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-gradient-to-b ${config.bg} animate-fade p-[4vw] md:p-[5vw]`}>
+        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-linear-to-b ${config.bg} animate-fade p-[4vw] md:p-[5vw]`}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-white/10 pb-[2vh] z-10 shrink-0">
                 <div className="flex items-center gap-[2vw]">
-                    <span className="bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh] shadow-lg shadow-orange-500/20">
+                    <span className="bg-linear-to-r from-orange-500 to-yellow-500 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh] shadow-lg shadow-orange-500/20">
                         🎰 Loterias Caixa
                     </span>
                     <span className={`${config.badge} font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh]`}>
@@ -674,19 +674,33 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     // Text to speech generator using Web Speech API
     const speakTicket = (ticket, type, volPercent) => {
         try {
-            if (!window.speechSynthesis) return;
-            window.speechSynthesis.cancel();
-
             const isPref = type === 'Preferencial' || ticket.toUpperCase().startsWith('P');
             const typeText = isPref ? 'Atendimento Preferencial' : 'Atendimento Normal';
             const text = `Senha ${ticket.split('').join(' ')}, ${typeText}`;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'pt-BR';
-            utterance.rate = 0.85;
-            utterance.pitch = 1.0;
-            utterance.volume = volPercent / 100;
+            const volume = volPercent / 100;
 
-            window.speechSynthesis.speak(utterance);
+            // 1. TENTA USAR A VOZ NATIVA DA TV/PC
+            if ('speechSynthesis' in window) {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length > 0) {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'pt-BR';
+                    utterance.rate = 0.85;
+                    utterance.pitch = 1.0;
+                    utterance.volume = volume;
+                    window.speechSynthesis.speak(utterance);
+                    return;
+                }
+            }
+
+            // 2. PLANO B (FALLBACK): Nuvem do Google
+            const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+            const audioFallback = new Audio(googleTtsUrl);
+            audioFallback.volume = volume;
+            audioFallback.play().catch(err => {
+                console.warn("Erro ao reproduzir TTS em nuvem no Fire TV:", err);
+            });
         } catch (err) {
             console.warn('Erro na síntese de voz:', err);
         }
@@ -1232,12 +1246,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[100] p-8"
+                        className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-100 p-8"
                     >
-                        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950/20 via-zinc-950/50 to-teal-950/20" />
+                        <div className="absolute inset-0 bg-linear-to-tr from-emerald-950/20 via-zinc-950/50 to-teal-950/20" />
                         
                         {/* Pulsing Decorative Glow */}
-                        <div className="absolute w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse" />
+                        <div className="absolute w-[80vw] h-[80vw] max-w-200 max-h-200 bg-emerald-500/10 rounded-full blur-[120px] animate-pulse" />
 
                         <div className="relative flex flex-col items-center text-center max-w-4xl w-full">
                             
@@ -1290,7 +1304,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             {queueEnabled && !audioUnlocked && (
                 <div 
                     onClick={() => setAudioUnlocked(true)}
-                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-full shadow-2xl z-[120] text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2 animate-bounce border-2 border-white/20"
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-full shadow-2xl z-120 text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2 animate-bounce border-2 border-white/20"
                 >
                     <span>⚠️ Toque na tela para ativar o som das senhas</span>
                 </div>
