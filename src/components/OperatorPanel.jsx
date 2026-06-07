@@ -708,7 +708,11 @@ export default function OperatorPanel() {
                                     e.preventDefault();
                                     const formattedPhone = whatsappPhone.replace(/\D/g, '');
                                     if (!formattedPhone) return;
-                                    const message = `Olá! Sua senha de atendimento é *${newTicketDispensed.ticket}* (${newTicketDispensed.type === 'Preferencial' ? 'Preferencial' : 'Normal'}). Acompanhe no painel de TV quando for chamado!`;
+                                    const emoji = newTicketDispensed.type === 'Preferencial' ? '♿ Preferencial' : 'Normal';
+                                    const dateStr = new Date(newTicketDispensed.createdAt).toLocaleString('pt-BR');
+                                    const localName = screenData?.name || 'Recepção';
+
+                                    const message = `━━━━━━━━━━━━━━━━━━━━━━━━\n🎫  *COMPROVANTE DE SENHA*  🎫\n━━━━━━━━━━━━━━━━━━━━━━━━\n\n*Senha:*  *${newTicketDispensed.ticket}*\n*Atendimento:*  ${emoji}\n\n*Emissão:*  ${dateStr}\n*Local:*  ${localName}\n\n━━━━━━━━━━━━━━━━━━━━━━━━\n_Acompanhe no painel de TV quando sua senha for chamada!_`;
                                     const whatsappUrl = `https://api.whatsapp.com/send?phone=55${formattedPhone}&text=${encodeURIComponent(message)}`;
                                     window.open(whatsappUrl, '_blank');
                                     setNewTicketDispensed(null);
