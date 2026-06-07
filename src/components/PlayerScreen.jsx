@@ -1246,7 +1246,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 initial={{ y: -50, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1, type: "spring", stiffness: 100 }}
-                                className="inline-flex items-center gap-4 bg-emerald-500 text-black px-10 py-4 rounded-full shadow-2xl shadow-emerald-500/30 mb-8 border-2 border-white/20"
+                                className="inline-flex items-center gap-4 bg-white/5 text-white px-10 py-4 rounded-full shadow-2xl border-2 border-white/20 mb-8"
                             >
                                 <span className="text-[2.5vh] md:text-[3.5vh] font-black uppercase tracking-[0.3em] leading-none">
                                     Atendimento
@@ -1266,7 +1266,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             {/* Ticket Type Display */}
                             {(() => {
                                 const isPref = calledTicket.type === 'Preferencial' || calledTicket.ticket.toUpperCase().startsWith('P');
-                                const displayType = isPref ? 'ATENDIMENTO PREFERENCIAL ♿' : 'ATENDIMENTO NORMAL';
+                                const displayType = isPref ? 'PREFERENCIAL ♿' : 'NORMAL';
                                 const themeColorClass = isPref ? 'text-amber-400 border-amber-500/20' : 'text-emerald-400 border-emerald-500/20';
                                 return (
                                     <motion.div 
