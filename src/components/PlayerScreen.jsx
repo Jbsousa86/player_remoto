@@ -682,15 +682,24 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             // 1. TENTA USAR A VOZ NATIVA DA TV/PC
             if ('speechSynthesis' in window) {
                 const voices = window.speechSynthesis.getVoices();
-                if (voices.length > 0) {
+                
+                // Procura especificamente por uma voz em português
+                const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
+                
+                if (ptVoice) {
                     window.speechSynthesis.cancel();
                     const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.voice = ptVoice;
                     utterance.lang = 'pt-BR';
                     utterance.rate = 0.85;
                     utterance.pitch = 1.0;
                     utterance.volume = volume;
                     window.speechSynthesis.speak(utterance);
                     return;
+                } else if (voices.length > 0) {
+                    // A TV tem motor de voz, mas NÃO tem o pacote Português instalado.
+                    // Ignora a TV e vai forçar a voz em nuvem do Google abaixo.
+                    console.warn("Voz em português não encontrada na TV. Usando nuvem...");
                 }
             }
 
