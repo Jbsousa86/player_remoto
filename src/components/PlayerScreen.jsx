@@ -50,21 +50,21 @@ const fetchWeatherAndLocation = async (manualLocation = null) => {
     };
 };
 
-const DynamicTicker = ({ ticker, weatherLocation }) => {
+const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueState = null }) => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
     const [dolar, setDolar] = useState(null);
 
     useEffect(() => {
-        if (!ticker?.isActive) return;
+        if (!ticker?.isActive && !queueEnabled) return;
         const interval = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(interval);
-    }, [ticker?.isActive]);
+    }, [ticker?.isActive, queueEnabled]);
 
     const weatherLocStr = JSON.stringify(weatherLocation);
 
     useEffect(() => {
-        if (!ticker?.isActive) return;
+        if (!ticker?.isActive && !queueEnabled) return;
 
         const fetchData = async () => {
             try {
@@ -86,19 +86,44 @@ const DynamicTicker = ({ ticker, weatherLocation }) => {
         fetchData();
         const interval = setInterval(fetchData, 30 * 60 * 1000); // Atualiza a cada 30 minutos
         return () => clearInterval(interval);
-    }, [ticker?.isActive, weatherLocStr]);
+    }, [ticker?.isActive, queueEnabled, weatherLocStr]);
 
-    if (!ticker?.isActive) return null;
+    if (!ticker?.isActive && !queueEnabled) return null;
 
     const tz = weather?.timezone || window.playerTimeZone || 'America/Sao_Paulo';
     const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
     const dateStr = currentTime.toLocaleDateString('pt-BR', { timeZone: tz });
     
-    let displayText = '';
-    if (ticker.text && typeof ticker.text === 'string') {
-        displayText = ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
+    // Construct last tickets string
+    let queueStr = '';
+    if (queueEnabled && queueState) {
+        const currentTicket = queueState.current?.ticket;
+        const pastTickets = (queueState.history || []).map(h => h.ticket);
+        const ticketsList = [];
+        if (currentTicket) {
+            ticketsList.push(`🔔 ${currentTicket}`);
+        }
+        pastTickets.forEach(t => {
+            ticketsList.push(t);
+        });
+        if (ticketsList.length > 0) {
+            queueStr = `📢 ÚLTIMAS SENHAS: ${ticketsList.join('  •  ')}   |   `;
+        }
     }
-    displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
+
+    let displayText = '';
+    if (queueStr) {
+        displayText += queueStr;
+    }
+    
+    if (ticker?.isActive) {
+        if (ticker.text && typeof ticker.text === 'string') {
+            displayText += ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
+        }
+        displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
+    } else {
+        displayText += `🕒 HORA: ${timeStr}`;
+    }
 
     return (
         <div className="absolute bottom-0 left-0 w-full h-[6vh] min-h-10 bg-black/40 backdrop-blur-md flex items-center overflow-hidden border-t border-white/10 z-50">
@@ -1134,7 +1159,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     )}
                 </AnimatePresence>
 
-                <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} />
+                <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} queueEnabled={queueEnabled} queueState={queueState} />
             </div>
 
             {/* Chamada de Senha Overlay */}
