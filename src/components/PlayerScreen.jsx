@@ -572,6 +572,69 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
 
     const [calledTicket, setCalledTicket] = useState(null);
     const [showQueueOverlay, setShowQueueOverlay] = useState(false);
+    const [audioUnlocked, setAudioUnlocked] = useState(false);
+
+    // Auto-detect and unlock audio on interaction
+    useEffect(() => {
+        if (!queueEnabled) return;
+
+        const checkAudio = () => {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            if (AudioContextClass) {
+                const ctx = new AudioContextClass();
+                if (ctx.state === 'running') {
+                    setAudioUnlocked(true);
+                }
+                ctx.close();
+            }
+        };
+        checkAudio();
+    }, [queueEnabled]);
+
+    useEffect(() => {
+        if (!queueEnabled || audioUnlocked) return;
+
+        const unlock = () => {
+            try {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    const ctx = new AudioContextClass();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0, ctx.currentTime);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(0);
+                    osc.stop(0.1);
+                    if (ctx.state === 'suspended') {
+                        ctx.resume();
+                    }
+                }
+                if (window.speechSynthesis) {
+                    const u = new SpeechSynthesisUtterance('');
+                    window.speechSynthesis.speak(u);
+                }
+                setAudioUnlocked(true);
+                console.log('🔊 Audio unlocked by interaction');
+            } catch (e) {
+                console.warn('Erro ao desbloquear áudio:', e);
+            }
+        };
+
+        const handleInteraction = () => {
+            unlock();
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+        };
+
+        window.addEventListener('click', handleInteraction);
+        window.addEventListener('touchstart', handleInteraction);
+
+        return () => {
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+        };
+    }, [queueEnabled, audioUnlocked]);
 
     // Audio chime generator using Web Audio API
     const playChime = (volPercent) => {
@@ -637,7 +700,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         setShowQueueOverlay(true);
         setCalledTicket(currentCall);
 
-        if (!isMuted) {
+        if (volume > 0) {
             playChime(volume);
             const speechTimeout = setTimeout(() => {
                 speakTicket(currentCall.ticket, currentCall.type, volume);
@@ -647,7 +710,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 clearTimeout(speechTimeout);
             };
         }
-    }, [queueState?.current?.timestamp, queueEnabled, isMuted, volume]);
+    }, [queueState?.current?.timestamp, queueEnabled, volume]);
 
     // Timeout to hide queue overlay
     useEffect(() => {
@@ -1222,6 +1285,16 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Audio Unlock Request Banner */}
+            {queueEnabled && !audioUnlocked && (
+                <div 
+                    onClick={() => setAudioUnlocked(true)}
+                    className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-500 hover:bg-amber-400 text-black font-black px-6 py-2.5 rounded-full shadow-2xl z-[120] text-xs uppercase tracking-widest cursor-pointer flex items-center gap-2 animate-bounce border-2 border-white/20"
+                >
+                    <span>⚠️ Toque na tela para ativar o som das senhas</span>
+                </div>
+            )}
         </div>
     );
 };
