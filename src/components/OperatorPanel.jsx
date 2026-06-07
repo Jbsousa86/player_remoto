@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { db } from '../lib/firebase';
@@ -26,6 +26,9 @@ export default function OperatorPanel() {
     const [customTicket, setCustomTicket] = useState('');
     const [showCustomModal, setShowCustomModal] = useState(false);
     const [newTicketDispensed, setNewTicketDispensed] = useState(null);
+    const [whatsappPhone, setWhatsappPhone] = useState('');
+    const [showWhatsappInput, setShowWhatsappInput] = useState(false);
+    const dispenseTimeoutRef = useRef(null);
 
     // Save station name to localStorage on change
     const handleStationChange = (e) => {
@@ -51,7 +54,12 @@ export default function OperatorPanel() {
             setLoading(false);
         });
 
-        return () => unsubscribe();
+        return () => {
+            unsubscribe();
+            if (dispenseTimeoutRef.current) {
+                clearTimeout(dispenseTimeoutRef.current);
+            }
+        };
     }, [screenId]);
 
     // Initial state for queue if not present
@@ -96,9 +104,17 @@ export default function OperatorPanel() {
                 pending
             };
 
+            if (dispenseTimeoutRef.current) {
+                clearTimeout(dispenseTimeoutRef.current);
+            }
+            setShowWhatsappInput(false);
+            setWhatsappPhone('');
+
             await updateQueueStateInDb(newState);
             setNewTicketDispensed(newTicket);
-            setTimeout(() => setNewTicketDispensed(null), 8000);
+            dispenseTimeoutRef.current = setTimeout(() => {
+                setNewTicketDispensed(null);
+            }, 12000);
         } catch (e) {
             console.error('Erro ao dispensar senha:', e);
             alert('Falha ao gerar senha no servidor.');
@@ -639,38 +655,100 @@ export default function OperatorPanel() {
                             <PlusCircle className="w-6 h-6 animate-bounce" />
                         </div>
                         
-                        <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">Sua Senha foi Gerada</h3>
-                        
-                        <div className="text-6xl font-black text-white tracking-tighter my-6 select-all font-mono">
-                            {newTicketDispensed.ticket}
-                        </div>
-                        
-                        <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-6 ${
-                            newTicketDispensed.type === 'Preferencial' 
-                                ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' 
-                                : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                        }`}>
-                            {newTicketDispensed.type === 'Preferencial' ? 'Atendimento Preferencial ♿' : 'Atendimento Normal'}
-                        </span>
-                        
-                        <div className="flex flex-col gap-3">
-                            <button
-                                onClick={() => window.print()}
-                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-600/20 text-sm uppercase tracking-wider"
+                        {!showWhatsappInput ? (
+                            <>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-1">Sua Senha foi Gerada</h3>
+                                
+                                <div className="text-6xl font-black text-white tracking-tighter my-6 select-all font-mono">
+                                    {newTicketDispensed.ticket}
+                                </div>
+                                
+                                <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-6 ${
+                                    newTicketDispensed.type === 'Preferencial' 
+                                        ? 'bg-amber-500/10 border border-amber-500/20 text-amber-400' 
+                                        : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                                }`}>
+                                    {newTicketDispensed.type === 'Preferencial' ? 'Atendimento Preferencial ♿' : 'Atendimento Normal'}
+                                </span>
+                                
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={() => window.print()}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer shadow-lg shadow-emerald-600/20 text-sm uppercase tracking-wider"
+                                    >
+                                        Imprimir Senha 🖨️
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (dispenseTimeoutRef.current) {
+                                                clearTimeout(dispenseTimeoutRef.current);
+                                                dispenseTimeoutRef.current = null;
+                                            }
+                                            setShowWhatsappInput(true);
+                                        }}
+                                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
+                                    >
+                                        Enviar por WhatsApp 💬
+                                    </button>
+                                    <button
+                                        onClick={() => setNewTicketDispensed(null)}
+                                        className="w-full bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-300 font-bold py-3 px-6 rounded-xl transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
+                                    >
+                                        Fechar
+                                    </button>
+                                </div>
+
+                                <div className="mt-6 text-[10px] text-zinc-500">
+                                    Este aviso fechará automaticamente em breve.
+                                </div>
+                            </>
+                        ) : (
+                            <form
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formattedPhone = whatsappPhone.replace(/\D/g, '');
+                                    if (!formattedPhone) return;
+                                    const message = `Olá! Sua senha de atendimento é *${newTicketDispensed.ticket}* (${newTicketDispensed.type === 'Preferencial' ? 'Preferencial' : 'Normal'}). Acompanhe no painel de TV quando for chamado!`;
+                                    const whatsappUrl = `https://api.whatsapp.com/send?phone=55${formattedPhone}&text=${encodeURIComponent(message)}`;
+                                    window.open(whatsappUrl, '_blank');
+                                    setNewTicketDispensed(null);
+                                    setShowWhatsappInput(false);
+                                    setWhatsappPhone('');
+                                }}
+                                className="flex flex-col items-center"
                             >
-                                Imprimir Senha 🖨️
-                            </button>
-                            <button
-                                onClick={() => setNewTicketDispensed(null)}
-                                className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-3 px-6 rounded-xl transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
-                            >
-                                Fechar
-                            </button>
-                        </div>
-                        
-                        <div className="mt-6 text-[10px] text-zinc-500">
-                            Este aviso fechará automaticamente em breve.
-                        </div>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 mb-2">Enviar por WhatsApp</h3>
+                                <p className="text-[11px] text-zinc-500 mb-6 text-center leading-normal">
+                                    Insira o número do celular do cliente para enviar a senha <strong className="text-white font-black">{newTicketDispensed.ticket}</strong>.
+                                </p>
+                                
+                                <input
+                                    type="tel"
+                                    autoFocus
+                                    value={whatsappPhone}
+                                    onChange={(e) => setWhatsappPhone(e.target.value)}
+                                    placeholder="Ex: 11999999999"
+                                    className="w-full bg-zinc-950 border border-white/10 rounded-xl p-3.5 text-lg font-black text-center text-white focus:outline-none focus:border-emerald-500 mb-6"
+                                />
+                                
+                                <div className="flex flex-col gap-3 w-full">
+                                    <button
+                                        type="submit"
+                                        disabled={!whatsappPhone.replace(/\D/g, '')}
+                                        className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-600 disabled:cursor-not-allowed text-white font-black py-3.5 px-6 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
+                                    >
+                                        Enviar Mensagem 🚀
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowWhatsappInput(false)}
+                                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold py-3 px-6 rounded-xl transition-all active:scale-[0.98] cursor-pointer text-sm uppercase tracking-wider"
+                                    >
+                                        Voltar
+                                    </button>
+                                </div>
+                            </form>
+                        )}
                     </div>
                 </div>
             )}
