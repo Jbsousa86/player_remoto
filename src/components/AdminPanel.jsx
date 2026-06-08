@@ -20,6 +20,8 @@ const AdminPanel = ({ isPairing = false }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [tickerText, setTickerText] = useState('');
     const [tickerSpeed, setTickerSpeed] = useState(25);
+    const [tickerBgColor, setTickerBgColor] = useState('rgba(0, 0, 0, 0.8)');
+    const [tickerTextColor, setTickerTextColor] = useState('text-white');
     const [tickerStatus, setTickerStatus] = useState('');
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
@@ -112,6 +114,8 @@ const AdminPanel = ({ isPairing = false }) => {
 
         setTickerText(selectedScreen?.ticker?.text || DEFAULT_TICKER.text);
         setTickerSpeed(selectedScreen?.ticker?.speed !== undefined ? selectedScreen.ticker.speed : 25);
+        setTickerBgColor(selectedScreen?.ticker?.bgColor || 'rgba(0, 0, 0, 0.8)');
+        setTickerTextColor(selectedScreen?.ticker?.textColor || 'text-white');
         setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
         const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
@@ -433,6 +437,26 @@ const AdminPanel = ({ isPairing = false }) => {
             setTimeout(() => setTickerStatus(''), 2500);
         } catch (err) {
             alert("Erro ao alterar velocidade do letreiro.");
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+    const handleTickerColorsSave = async (bgColor, textColor) => {
+        if (!selectedScreen) return;
+        setIsSyncing(true);
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { 
+                    ...selectedScreen.ticker, 
+                    bgColor: bgColor !== undefined ? bgColor : tickerBgColor,
+                    textColor: textColor !== undefined ? textColor : tickerTextColor
+                } 
+            });
+            setTickerStatus('Cores salvas');
+            setTimeout(() => setTickerStatus(''), 2500);
+        } catch (err) {
+            alert("Erro ao alterar cores do letreiro.");
         } finally {
             setIsSyncing(false);
         }
@@ -1021,6 +1045,47 @@ const AdminPanel = ({ isPairing = false }) => {
                                         <p className="text-[9px] text-zinc-500 mt-1 ml-1">
                                             Menos segundos = Mais rápido. Mais segundos = Mais lento. (Padrão: 25s)
                                         </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">Fundo do Letreiro</label>
+                                        <select 
+                                            value={tickerBgColor} 
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setTickerBgColor(val);
+                                                handleTickerColorsSave(val, tickerTextColor);
+                                            }}
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                        >
+                                            <option value="rgba(0, 0, 0, 0.8)">🖤 Preto Escuro (Padrão)</option>
+                                            <option value="rgba(15, 23, 42, 0.9)">💙 Azul Escuro Slate</option>
+                                            <option value="rgba(22, 101, 52, 0.9)">💚 Verde Caixa / Loterias</option>
+                                            <option value="rgba(153, 27, 27, 0.9)">❤️ Vermelho Alerta</option>
+                                            <option value="rgba(234, 88, 12, 0.9)">🧡 Laranja Vibrante</option>
+                                            <option value="rgba(88, 28, 135, 0.9)">💜 Roxo Moderno</option>
+                                            <option value="rgba(255, 255, 255, 0.95)">🤍 Branco Clean</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">Cor do Texto</label>
+                                        <select 
+                                            value={tickerTextColor} 
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setTickerTextColor(val);
+                                                handleTickerColorsSave(tickerBgColor, val);
+                                            }}
+                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                        >
+                                            <option value="text-white">🤍 Branco (Padrão)</option>
+                                            <option value="text-yellow-400">💛 Amarelo Contraste</option>
+                                            <option value="text-zinc-900">🖤 Preto Slate</option>
+                                            <option value="text-emerald-400">💚 Verde Neon</option>
+                                            <option value="text-red-400">❤️ Vermelho Neon</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>

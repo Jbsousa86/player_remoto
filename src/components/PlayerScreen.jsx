@@ -154,15 +154,21 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         displayText += `🕒 HORA: ${timeStr}`;
     }
 
+    const bgColor = ticker?.bgColor || 'rgba(0, 0, 0, 0.8)';
+    const textColor = ticker?.textColor || 'text-white';
+
     return (
-        <div className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 bg-black/80 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl">
+        <div 
+            style={{ backgroundColor: bgColor }}
+            className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl"
+        >
             <style>{`
                 @keyframes marquee-scroll {
                     0% { transform: translateX(0%); }
                     100% { transform: translateX(-100%); }
                 }
             `}</style>
-            <div className="whitespace-nowrap font-semibold text-[2.2vh] text-white/90 uppercase tracking-widest pl-[100%]" style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
+            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
                 {displayText}
             </div>
         </div>
