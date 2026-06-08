@@ -1206,13 +1206,11 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             <div
                 style={{
                     position: 'absolute',
-                    top: '50%',
-                    left: '50%',
+                    top: needsRotation ? '50%' : '0',
+                    left: needsRotation ? '50%' : '0',
                     width: needsRotation ? `${screenSize.h}px` : '100%',
                     height: needsRotation ? `${screenSize.w}px` : '100%',
-                    transform: `translate(-50%, -50%) ${
-                        needsRotation ? 'rotate(90deg)' : ''
-                    }`,
+                    transform: needsRotation ? `translate(-50%, -50%) rotate(90deg)` : 'none',
                     backgroundColor: '#000'
                 }}
             >
@@ -1231,7 +1229,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             <div className="z-10 flex flex-col items-center text-center px-4 w-full max-w-4xl">
                                 {companyLogo ? (
                                     <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-2xl" />
-                                ) : (
+                               ) : (
                                     <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/10 shadow-2xl">
                                         <span className="text-5xl drop-shadow-lg">📺</span>
                                     </div>
@@ -1241,7 +1239,6 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                 <p className="text-zinc-400 text-sm md:text-base font-bold uppercase tracking-[0.2em] max-w-lg mb-4">
                                     {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
                                 </p>
-
                                 <StandbyClock weatherLocation={weatherLocation} />
                             </div>
                         </motion.div>
@@ -1266,26 +1263,38 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                             className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
                                         >
                                             {currentItem.type === 'video' && (
-                                                <video
-                                                    ref={videoRef}
-                                                    src={currentItem.url}
-                                                    autoPlay
-                                                    muted={isMuted}
-                                                    playsInline
-                                                    disablePictureInPicture
-                                                    className="pointer-events-none"
-                                                    preload="auto"
-                                                    onEnded={next}
-                                                    onError={(e) => {
-                                                        console.error('Video playback error, skipping:', e);
-                                                        next(true);
-                                                    }}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
-                                                    }}
-                                                />
+                                                <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                                                    {currentItem.fitMode === 'smart' && (
+                                                        <video
+                                                            src={currentItem.url}
+                                                            autoPlay
+                                                            muted
+                                                            loop
+                                                            playsInline
+                                                            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                        />
+                                                    )}
+                                                    <video
+                                                        ref={videoRef}
+                                                        src={currentItem.url}
+                                                        autoPlay
+                                                        muted={isMuted}
+                                                        playsInline
+                                                        disablePictureInPicture
+                                                        className="pointer-events-none relative z-10"
+                                                        preload="auto"
+                                                        onEnded={next}
+                                                        onError={(e) => {
+                                                            console.error('Video playback error, skipping:', e);
+                                                            next(true);
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
+                                                        }}
+                                                    />
+                                                </div>
                                             )}
 
                                             {currentItem.type === 'youtube' && (
@@ -1305,19 +1314,30 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                             )}
 
                                             {currentItem.type === 'image' && (
-                                                <img
-                                                    src={currentItem.url}
-                                                    alt=""
-                                                    onError={() => {
-                                                        console.warn('Erro ao exibir imagem, pulando');
-                                                        next(true);
-                                                    }}
-                                                    style={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
-                                                    }}
-                                                />
+                                                <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                                                    {currentItem.fitMode === 'smart' && (
+                                                        <img
+                                                            src={currentItem.url}
+                                                            alt=""
+                                                            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                        />
+                                                    )}
+                                                    <img
+                                                        src={currentItem.url}
+                                                        alt=""
+                                                        onError={() => {
+                                                            console.warn('Erro ao exibir imagem, pulando');
+                                                            next(true);
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain',
+                                                            position: 'relative',
+                                                            zIndex: 10
+                                                        }}
+                                                    />
+                                                </div>
                                             )}
 
                                             {currentItem.type === 'web' && (
