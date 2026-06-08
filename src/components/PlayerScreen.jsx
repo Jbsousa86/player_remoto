@@ -155,7 +155,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     }
 
     return (
-        <div className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 bg-black/60 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl">
+        <div className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 bg-black/80 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl">
             <style>{`
                 @keyframes marquee-scroll {
                     0% { transform: translateX(0%); }
@@ -1424,6 +1424,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     )}
                 </AnimatePresence>
 
+                {isTickerShown && (
+                    <div className="absolute bottom-0 left-0 w-full h-[12%] bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-40" />
+                )}
                 <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} queueEnabled={queueEnabled} queueState={queueState} />
             </div>
 
