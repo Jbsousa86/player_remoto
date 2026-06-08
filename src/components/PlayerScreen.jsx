@@ -1372,14 +1372,6 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                         <motion.img
                                                             src={currentItem.url}
                                                             alt=""
-                                                            initial={{ scale: 1 }}
-                                                            animate={{ scale: 1.04 }}
-                                                            transition={{ 
-                                                                duration: currentDuration > 0 ? currentDuration : 20, 
-                                                                ease: "linear",
-                                                                repeat: currentDuration === 0 ? Infinity : 0,
-                                                                repeatType: "reverse"
-                                                            }}
                                                             onError={() => {
                                                                 console.warn('Erro ao exibir imagem, pulando');
                                                                 next(true);
