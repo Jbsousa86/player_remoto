@@ -27,6 +27,7 @@ function PlayerContainer() {
   const [queueEnabled, setQueueEnabled] = useState(false);
   const [queueState, setQueueState] = useState(null);
   const [weatherLocation, setWeatherLocation] = useState(null);
+  const [screenTransition, setScreenTransition] = useState('fade-zoom');
   const [loading, setLoading] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -112,6 +113,7 @@ function PlayerContainer() {
         if (data.standbyOptions) setStandbyOptions(data.standbyOptions);
         if (data.blockSchedules !== undefined) setBlockSchedules(data.blockSchedules || {});
         if (data.weatherLocation !== undefined) setWeatherLocation(data.weatherLocation);
+        if (data.transition) setScreenTransition(data.transition);
       }
     } catch (e) {
       console.warn('Backup offline inválido');
@@ -129,6 +131,11 @@ function PlayerContainer() {
       // 2. Update Orientation
       if (data.orientation) {
         setOrientation(data.orientation);
+      }
+
+      // Update Screen Transition
+      if (data.transition) {
+        setScreenTransition(data.transition);
       }
 
       // 3. Update Muted State
@@ -323,7 +330,7 @@ function PlayerContainer() {
         <PairingScreen onPair={handleManualPair} />
       ) : (
         <ErrorBoundary>
-          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} weatherLocation={weatherLocation} onMediaChange={handleMediaChange} queueEnabled={queueEnabled} queueState={queueState} />
+          <PlayerScreen playlist={playlist} standbyOptions={standbyOptions} blockSchedules={blockSchedules} orientation={orientation} isMuted={isMuted} volume={volume} isPlaying={isPlaying} isStopped={isStopped} ticker={ticker} weatherLocation={weatherLocation} onMediaChange={handleMediaChange} queueEnabled={queueEnabled} queueState={queueState} screenTransition={screenTransition} />
         </ErrorBoundary>
       )}
     </div>

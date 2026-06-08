@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Monitor, Smartphone, Play, Pause, Volume2, VolumeX, Square, Trash2 } from 'lucide-react';
 
-const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleClearCache, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, handleToggleStop, isSyncing }) => {
+const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handleClearCache, handleToggleOrientation, handleToggleSound, handleVolumeChange, handleTogglePlayPause, handleToggleStop, handleTransitionChange, isSyncing }) => {
     const [localVolume, setLocalVolume] = useState(selectedScreen?.volume ?? 100);
 
     useEffect(() => {
@@ -99,6 +99,22 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                     <Square className="w-3 h-3" />
                     {selectedScreen.isStopped ? 'INICIAR' : 'PARAR'}
                 </button>
+                <div className="ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 border border-white/10 text-zinc-400 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
+                    <span className="text-zinc-500">🎬 Transição Global:</span>
+                    <select 
+                        value={selectedScreen.transition || 'fade-zoom'} 
+                        onChange={(e) => handleTransitionChange && handleTransitionChange(e.target.value)}
+                        className="bg-transparent text-white outline-none cursor-pointer font-black border-none py-0 pr-6 uppercase"
+                    >
+                        <option value="fade-zoom" className="bg-zinc-950 text-white">Cinematic Zoom</option>
+                        <option value="fade" className="bg-zinc-950 text-white">Dissolver Suave</option>
+                        <option value="slide-left" className="bg-zinc-950 text-white">Slide Esquerda</option>
+                        <option value="slide-right" className="bg-zinc-950 text-white">Slide Direita</option>
+                        <option value="slide-up" className="bg-zinc-950 text-white">Slide Cima</option>
+                        <option value="slide-down" className="bg-zinc-950 text-white">Slide Baixo</option>
+                        <option value="none" className="bg-zinc-950 text-white">Sem Efeito</option>
+                    </select>
+                </div>
                 <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
                     Gerenciar <span className="text-orange-500">Mídias</span>
                 </h2>

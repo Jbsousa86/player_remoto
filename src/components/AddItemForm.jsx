@@ -116,9 +116,10 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
 
                     <div className="lg:col-span-6">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Transição</label>
-                        <select value={newItem.transition || 'fade-zoom'} onChange={(e) => setNewItem({ ...newItem, transition: e.target.value })}
+                        <select value={newItem.transition || 'default'} onChange={(e) => setNewItem({ ...newItem, transition: e.target.value })}
                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
                         >
+                            <option value="default">🌐 Usar Transição do Totem (Herdar)</option>
                             <option value="fade-zoom">🎬 Cinematic Zoom (Fade + Zoom)</option>
                             <option value="fade">💨 Dissolver Suave (Fade)</option>
                             <option value="slide-left">⬅️ Deslizar para Esquerda</option>

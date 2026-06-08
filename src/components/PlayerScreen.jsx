@@ -688,7 +688,7 @@ const transitionVariants = {
     }
 };
 
-const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange, queueEnabled = false, queueState = null }) => {
+const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange, queueEnabled = false, queueState = null, screenTransition = 'fade-zoom' }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
 
@@ -1292,7 +1292,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
                                     {currentItem && (() => {
-                                        const transitionType = currentItem.transition || 'fade-zoom';
+                                        const transitionType = (currentItem.transition && currentItem.transition !== 'default') 
+                                            ? currentItem.transition 
+                                            : (screenTransition || 'fade-zoom');
                                         const variant = transitionVariants[transitionType] || transitionVariants['fade-zoom'];
                                         const isNone = transitionType === 'none';
                                         return (

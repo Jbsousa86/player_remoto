@@ -79,13 +79,13 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 </span>
                                 <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
                                     🎬 {
+                                        item.transition === 'default' || !item.transition ? 'Padrão' :
                                         item.transition === 'fade-zoom' ? 'Cinematic' :
                                         item.transition === 'fade' ? 'Suave' :
                                         item.transition === 'slide-left' ? 'Slide Esq' :
                                         item.transition === 'slide-right' ? 'Slide Dir' :
                                         item.transition === 'slide-up' ? 'Slide Cima' :
-                                        item.transition === 'slide-down' ? 'Slide Baixo' :
-                                        item.transition === 'none' ? 'Sem Efeito' : 'Cinematic'
+                                        item.transition === 'slide-down' ? 'Slide Baixo' : 'Sem Efeito'
                                     }
                                 </span>
                             </div>
