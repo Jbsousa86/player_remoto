@@ -1256,10 +1256,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                     {currentItem && (
                                         <motion.div
                                             key={currentItem.id ? `media-${currentItem.id}-${currentIndex}` : `media-idx-${currentIndex}`}
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                            transition={{ duration: 1, ease: "easeInOut" }}
+                                            initial={{ opacity: 0, scale: 1.02 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.98 }}
+                                            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
                                             className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
                                         >
                                             {currentItem.type === 'video' && (
@@ -1322,9 +1322,17 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                             className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
                                                         />
                                                     )}
-                                                    <img
+                                                    <motion.img
                                                         src={currentItem.url}
                                                         alt=""
+                                                        initial={{ scale: 1 }}
+                                                        animate={{ scale: 1.04 }}
+                                                        transition={{ 
+                                                            duration: currentDuration > 0 ? currentDuration : 20, 
+                                                            ease: "linear",
+                                                            repeat: currentDuration === 0 ? Infinity : 0,
+                                                            repeatType: "reverse"
+                                                        }}
                                                         onError={() => {
                                                             console.warn('Erro ao exibir imagem, pulando');
                                                             next(true);
