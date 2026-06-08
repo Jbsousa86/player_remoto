@@ -77,17 +77,6 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
                                     📐 {item.fitMode === 'cover' ? 'Preencher' : item.fitMode === 'contain' ? 'Ajustar' : item.fitMode === 'smart' ? 'Inteligente' : 'Esticar'}
                                 </span>
-                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
-                                    🎬 {
-                                        item.transition === 'default' || !item.transition ? 'Padrão' :
-                                        item.transition === 'fade-zoom' ? 'Cinematic' :
-                                        item.transition === 'fade' ? 'Suave' :
-                                        item.transition === 'slide-left' ? 'Slide Esq' :
-                                        item.transition === 'slide-right' ? 'Slide Dir' :
-                                        item.transition === 'slide-up' ? 'Slide Cima' :
-                                        item.transition === 'slide-down' ? 'Slide Baixo' : 'Sem Efeito'
-                                    }
-                                </span>
                             </div>
                         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/5">
