@@ -1291,7 +1291,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                         style={{
                                                             width: '100%',
                                                             height: '100%',
-                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain'
+                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain')
                                                         }}
                                                     />
                                                 </div>
@@ -1332,7 +1332,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                         style={{
                                                             width: '100%',
                                                             height: '100%',
-                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : 'contain',
+                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain'),
                                                             position: 'relative',
                                                             zIndex: 10
                                                         }}

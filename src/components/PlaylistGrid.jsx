@@ -15,7 +15,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                     >
                         <div className="aspect-video bg-black relative">
                             {item.type === 'video' ? (
-                                <video src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} muted />
+                                <video src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : (item.fitMode === 'fill' ? 'object-fill' : 'object-contain')}`} muted />
                             ) : item.type === 'youtube' ? (
                                 <img src={`https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
                             ) : item.type === 'web' ? (
@@ -34,7 +34,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Loterias Caixa</span>
                                 </div>
                             ) : (
-                                <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : 'object-contain'}`} alt="" />
+                                <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : (item.fitMode === 'fill' ? 'object-fill' : 'object-contain')}`} alt="" />
                             )}
                             <div className="absolute top-4 left-4 flex gap-2">
                                 <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/10 uppercase tracking-widest">

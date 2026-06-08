@@ -110,6 +110,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             <option value="cover">✂️ Preencher (Cortar)</option>
                             <option value="contain">🖼️ Ajustar (Inteira)</option>
                             <option value="smart">🚀 Preenchimento Inteligente</option>
+                            <option value="fill">↔️ Esticar (Sem Cortes/Distorcer)</option>
                         </select>
                     </div>
 
