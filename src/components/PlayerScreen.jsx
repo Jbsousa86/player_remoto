@@ -1287,7 +1287,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full ${isTickerShown ? 'h-[93%]' : 'h-full'} overflow-hidden pointer-events-none select-none bg-black`}
+                            className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none select-none bg-black"
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
