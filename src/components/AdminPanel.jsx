@@ -13,7 +13,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [selectedScreen, setSelectedScreen] = useState(null);
     const [playlist, setPlaylist] = useState([]);
     const [currentPlayingId, setCurrentPlayingId] = useState(null);
-    const [newItem, setNewItem] = useState({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: '' });
+    const [newItem, setNewItem] = useState({ url: '', type: 'image', duration: 10, fitMode: 'cover', transition: 'fade-zoom', block: '' });
     const [loading, setLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -273,6 +273,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         type: isVideo ? 'video' : 'image',
                         duration: isVideo ? 0 : (newItem.duration || 10),
                         fitMode: newItem.fitMode || 'cover',
+                        transition: newItem.transition || 'fade-zoom',
                         block: newItem.block || 'Lote de Upload',
                         isActive: true,
                         id,
@@ -714,7 +715,7 @@ const AdminPanel = ({ isPairing = false }) => {
 
         try {
             await syncService.updatePlaylist(selectedScreen.id, updatedPlaylist);
-            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: prev.block || '' }));
+            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', transition: 'fade-zoom', block: prev.block || '' }));
         } catch (err) {
             console.error("Erro ao adicionar item:", err);
             alert("Erro ao salvar no Firebase.");
@@ -777,7 +778,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 await syncService.updatePlaylist(screen.id, updatedPlaylist);
             }
 
-            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', block: prev.block || '' }));
+            setNewItem(prev => ({ url: '', type: 'image', duration: 10, fitMode: 'cover', transition: 'fade-zoom', block: prev.block || '' }));
             alert("Sucesso! A Live/Mídia foi adicionada em todos os totens.");
         } catch (err) {
             console.error("Erro ao transmitir para todos:", err);

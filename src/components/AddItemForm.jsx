@@ -79,7 +79,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         </div>
                     </div>
 
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-4">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Tipo</label>
                         <select value={newItem.type} onChange={(e) => {
                             const val = e.target.value;
@@ -96,13 +96,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         </select>
                     </div>
 
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-4">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Exibição (Seg)</label>
                         <input type="number" value={newItem.duration} onChange={(e) => setNewItem({ ...newItem, duration: parseInt(e.target.value) || 0 })}
-                            className={`w-full bg-black/40 border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-white/10 text-white'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
+                             className={`w-full bg-black/40 border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-white/10 text-white'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
                     </div>
 
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-4">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Encaixe</label>
                         <select value={newItem.fitMode} onChange={(e) => setNewItem({ ...newItem, fitMode: e.target.value })}
                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
@@ -114,7 +114,22 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         </select>
                     </div>
 
-                    <div className="lg:col-span-3">
+                    <div className="lg:col-span-6">
+                        <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Transição</label>
+                        <select value={newItem.transition || 'fade-zoom'} onChange={(e) => setNewItem({ ...newItem, transition: e.target.value })}
+                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
+                        >
+                            <option value="fade-zoom">🎬 Cinematic Zoom (Fade + Zoom)</option>
+                            <option value="fade">💨 Dissolver Suave (Fade)</option>
+                            <option value="slide-left">⬅️ Deslizar para Esquerda</option>
+                            <option value="slide-right">➡️ Deslizar para Direita</option>
+                            <option value="slide-up">⬆️ Deslizar para Cima</option>
+                            <option value="slide-down">⬇️ Deslizar para Baixo</option>
+                            <option value="none">⏹️ Sem Efeito (Seco)</option>
+                        </select>
+                    </div>
+
+                    <div className="lg:col-span-6">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Grupo / Bloco (Opcional)</label>
                         <input type="text" value={newItem.block || ''} onChange={(e) => setNewItem({ ...newItem, block: e.target.value })}
                             placeholder="Ex: Promoções..."

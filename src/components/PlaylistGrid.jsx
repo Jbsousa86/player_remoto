@@ -70,6 +70,25 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                     ) : item.url}
                                 </p>
                             </div>
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                    ⏱️ {item.duration === 0 ? 'ILIMITADO' : `${item.duration}s`}
+                                </span>
+                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                    📐 {item.fitMode === 'cover' ? 'Preencher' : item.fitMode === 'contain' ? 'Ajustar' : item.fitMode === 'smart' ? 'Inteligente' : 'Esticar'}
+                                </span>
+                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                    🎬 {
+                                        item.transition === 'fade-zoom' ? 'Cinematic' :
+                                        item.transition === 'fade' ? 'Suave' :
+                                        item.transition === 'slide-left' ? 'Slide Esq' :
+                                        item.transition === 'slide-right' ? 'Slide Dir' :
+                                        item.transition === 'slide-up' ? 'Slide Cima' :
+                                        item.transition === 'slide-down' ? 'Slide Baixo' :
+                                        item.transition === 'none' ? 'Sem Efeito' : 'Cinematic'
+                                    }
+                                </span>
+                            </div>
                         <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
                             <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/5">
                                 <button onClick={() => moveItem(index, -1)} disabled={index === 0} className={`p-1.5 rounded-lg transition-all ${index === 0 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-white/10 text-zinc-300 hover:text-white'}`}>

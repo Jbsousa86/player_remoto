@@ -650,6 +650,44 @@ const StandbyClock = ({ weatherLocation }) => {
     );
 };
 
+const transitionVariants = {
+    'fade-zoom': {
+        initial: { opacity: 0, scale: 1.02 },
+        animate: { opacity: 1, scale: 1 },
+        exit: { opacity: 0, scale: 0.98 }
+    },
+    'fade': {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 }
+    },
+    'slide-left': {
+        initial: { opacity: 0, x: 60 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: -60 }
+    },
+    'slide-right': {
+        initial: { opacity: 0, x: -60 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 60 }
+    },
+    'slide-up': {
+        initial: { opacity: 0, y: 60 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: -60 }
+    },
+    'slide-down': {
+        initial: { opacity: 0, y: -60 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: 60 }
+    },
+    'none': {
+        initial: { opacity: 1 },
+        animate: { opacity: 1 },
+        exit: { opacity: 1 }
+    }
+};
+
 const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange, queueEnabled = false, queueState = null }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
@@ -1253,123 +1291,131 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
-                                    {currentItem && (
-                                        <motion.div
-                                            key={currentItem.id ? `media-${currentItem.id}-${currentIndex}` : `media-idx-${currentIndex}`}
-                                            initial={{ opacity: 0, scale: 1.02 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            exit={{ opacity: 0, scale: 0.98 }}
-                                            transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-                                            className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
-                                        >
-                                            {currentItem.type === 'video' && (
-                                                <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
-                                                    {currentItem.fitMode === 'smart' && (
+                                    {currentItem && (() => {
+                                        const transitionType = currentItem.transition || 'fade-zoom';
+                                        const variant = transitionVariants[transitionType] || transitionVariants['fade-zoom'];
+                                        const isNone = transitionType === 'none';
+                                        return (
+                                            <motion.div
+                                                key={currentItem.id ? `media-${currentItem.id}-${currentIndex}` : `media-idx-${currentIndex}`}
+                                                initial={variant.initial}
+                                                animate={variant.animate}
+                                                exit={variant.exit}
+                                                transition={{ 
+                                                    duration: isNone ? 0 : 0.8, 
+                                                    ease: isNone ? "linear" : [0.25, 0.1, 0.25, 1] 
+                                                }}
+                                                className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
+                                            >
+                                                {currentItem.type === 'video' && (
+                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                                                        {currentItem.fitMode === 'smart' && (
+                                                            <video
+                                                                src={currentItem.url}
+                                                                autoPlay
+                                                                muted
+                                                                loop
+                                                                playsInline
+                                                                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                            />
+                                                        )}
                                                         <video
+                                                            ref={videoRef}
                                                             src={currentItem.url}
                                                             autoPlay
-                                                            muted
-                                                            loop
+                                                            muted={isMuted}
                                                             playsInline
-                                                            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                            disablePictureInPicture
+                                                            className="pointer-events-none relative z-10"
+                                                            preload="auto"
+                                                            onEnded={next}
+                                                            onError={(e) => {
+                                                                console.error('Video playback error, skipping:', e);
+                                                                next(true);
+                                                            }}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain')
+                                                            }}
                                                         />
-                                                    )}
-                                                    <video
-                                                        ref={videoRef}
-                                                        src={currentItem.url}
-                                                        autoPlay
-                                                        muted={isMuted}
-                                                        playsInline
-                                                        disablePictureInPicture
-                                                        className="pointer-events-none relative z-10"
-                                                        preload="auto"
-                                                        onEnded={next}
-                                                        onError={(e) => {
-                                                            console.error('Video playback error, skipping:', e);
-                                                            next(true);
-                                                        }}
+                                                    </div>
+                                                )}
+
+                                                {currentItem.type === 'youtube' && (
+                                                    <iframe
+                                                        id={`yt-player-${currentItem.id}`}
+                                                        src={getYoutubeEmbedUrl(currentItem.url, isMuted)}
                                                         style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
                                                             width: '100%',
                                                             height: '100%',
-                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain')
+                                                            border: 'none'
                                                         }}
+                                                        allow="autoplay; encrypted-media"
+                                                        title="YouTube Player"
                                                     />
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {currentItem.type === 'youtube' && (
-                                                <iframe
-                                                    id={`yt-player-${currentItem.id}`}
-                                                    src={getYoutubeEmbedUrl(currentItem.url, isMuted)}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        inset: 0,
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        border: 'none'
-                                                    }}
-                                                    allow="autoplay; encrypted-media"
-                                                    title="YouTube Player"
-                                                />
-                                            )}
-
-                                            {currentItem.type === 'image' && (
-                                                <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
-                                                    {currentItem.fitMode === 'smart' && (
-                                                        <img
+                                                {currentItem.type === 'image' && (
+                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                                                        {currentItem.fitMode === 'smart' && (
+                                                            <img
+                                                                src={currentItem.url}
+                                                                alt=""
+                                                                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                            />
+                                                        )}
+                                                        <motion.img
                                                             src={currentItem.url}
                                                             alt=""
-                                                            className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                            initial={{ scale: 1 }}
+                                                            animate={{ scale: 1.04 }}
+                                                            transition={{ 
+                                                                duration: currentDuration > 0 ? currentDuration : 20, 
+                                                                ease: "linear",
+                                                                repeat: currentDuration === 0 ? Infinity : 0,
+                                                                repeatType: "reverse"
+                                                            }}
+                                                            onError={() => {
+                                                                console.warn('Erro ao exibir imagem, pulando');
+                                                                next(true);
+                                                            }}
+                                                            style={{
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain'),
+                                                                position: 'relative',
+                                                                zIndex: 10
+                                                            }}
                                                         />
-                                                    )}
-                                                    <motion.img
+                                                    </div>
+                                                )}
+
+                                                {currentItem.type === 'web' && (
+                                                    <iframe
                                                         src={currentItem.url}
-                                                        alt=""
-                                                        initial={{ scale: 1 }}
-                                                        animate={{ scale: 1.04 }}
-                                                        transition={{ 
-                                                            duration: currentDuration > 0 ? currentDuration : 20, 
-                                                            ease: "linear",
-                                                            repeat: currentDuration === 0 ? Infinity : 0,
-                                                            repeatType: "reverse"
-                                                        }}
-                                                        onError={() => {
-                                                            console.warn('Erro ao exibir imagem, pulando');
-                                                            next(true);
-                                                        }}
                                                         style={{
+                                                            position: 'absolute',
+                                                            inset: 0,
                                                             width: '100%',
                                                             height: '100%',
-                                                            objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain'),
-                                                            position: 'relative',
-                                                            zIndex: 10
+                                                            border: 'none'
                                                         }}
                                                     />
-                                                </div>
-                                            )}
+                                                )}
 
-                                            {currentItem.type === 'web' && (
-                                                <iframe
-                                                    src={currentItem.url}
-                                                    style={{
-                                                        position: 'absolute',
-                                                        inset: 0,
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        border: 'none'
-                                                    }}
-                                                />
-                                            )}
+                                                {currentItem.type === 'news' && (
+                                                    <NewsDisplay url={currentItem.url} onError={() => next(true)} />
+                                                )}
 
-                                            {currentItem.type === 'news' && (
-                                                <NewsDisplay url={currentItem.url} onError={() => next(true)} />
-                                            )}
-
-                                            {currentItem.type === 'loterias' && (
-                                                <LoteriasDisplay url={currentItem.url} onError={() => next(true)} />
-                                            )}
-                                        </motion.div>
-                                    )}
+                                                {currentItem.type === 'loterias' && (
+                                                    <LoteriasDisplay url={currentItem.url} onError={() => next(true)} />
+                                                )}
+                                            </motion.div>
+                                        );
+                                    })()}
                                 </AnimatePresence>
                             </div>
                         </motion.div>
