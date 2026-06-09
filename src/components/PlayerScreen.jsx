@@ -184,7 +184,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             `}</style>
             
             {/* Texto Deslizante */}
-            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] pr-[30%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
+            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
                 {displayText}
             </div>
 
