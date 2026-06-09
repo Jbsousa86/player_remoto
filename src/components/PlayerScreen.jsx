@@ -1068,7 +1068,13 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     useEffect(() => {
         if (currentType !== 'youtube' || !isPlaying || isStopped) return;
 
-        // Se for live ou vídeo com duração definida, respeita. Senão, limite longo (10 min).
+        // Se a URL for uma playlist do YouTube e o usuário NÃO definiu uma duração explícita,
+        // não usamos o safety timer — o próprio YouTube avança os vídeos via onStateChange(ENDED).
+        const isPlaylist = currentUrl && /[?&]list=/.test(currentUrl);
+        if (isPlaylist && !(currentDuration && currentDuration > 0)) return;
+
+        // Se o usuário definiu uma duração explícita: respeita (limita o tempo da playlist/vídeo).
+        // Se for um vídeo avulso sem duração: 10 minutos de segurança para não travar.
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 
         const timer = setTimeout(() => {
