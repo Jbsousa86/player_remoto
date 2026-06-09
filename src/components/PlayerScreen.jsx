@@ -59,7 +59,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const [cycleCount, setCycleCount] = useState(0);
 
     useEffect(() => {
-        if (!ticker?.isActive && !queueEnabled) return;
+        if (!queueEnabled) return;
         const interval = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(interval);
     }, [ticker?.isActive, queueEnabled]);
@@ -67,7 +67,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const weatherLocStr = JSON.stringify(weatherLocation);
 
     useEffect(() => {
-        if (!ticker?.isActive && !queueEnabled) return;
+        if (!queueEnabled) return;
 
         const fetchData = async () => {
             try {
@@ -128,7 +128,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         return () => clearInterval(interval);
     }, [ticker?.isActive, queueEnabled, weatherLocStr]);
 
-    if (!ticker?.isActive && !queueEnabled) return null;
+    // Continue rendering even if ticker is inactive
 
     const tz = weather?.timezone || window.playerTimeZone || 'America/Sao_Paulo';
     const timeStr = currentTime.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' });
@@ -156,7 +156,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         displayText += queueStr;
     }
     
-    if (ticker?.isActive) {
+    if (ticker) {
         let displayBlocks = [];
 
         if (ticker.text && typeof ticker.text === 'string') {
