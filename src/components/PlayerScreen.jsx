@@ -56,6 +56,8 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const [dolar, setDolar] = useState(null);
     const [localNews, setLocalNews] = useState('');
 
+    const [sportsNews, setSportsNews] = useState('');
+
     useEffect(() => {
         if (!ticker?.isActive && !queueEnabled) return;
         const interval = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -107,6 +109,18 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             } catch (error) {
                 console.error("Erro ao buscar notícias locais para o letreiro:", error);
             }
+
+            // Busca notícias de Esportes (Globo Esporte)
+            try {
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://ge.globo.com/rss/ge/')}`);
+                const data = await res.json();
+                if (data?.status === 'ok' && data.items?.length > 0) {
+                    const sportsTitles = data.items.slice(0, 4).map(item => item.title);
+                    setSportsNews(sportsTitles.join('  •  '));
+                }
+            } catch (error) {
+                console.error("Erro ao buscar esportes pro letreiro:", error);
+            }
         };
 
         fetchData();
@@ -148,6 +162,9 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         }
         if (localNews) {
             displayText += `📰 ANANÁS NOTÍCIAS: ${localNews}  •  `;
+        }
+        if (sportsNews) {
+            displayText += `⚽ GE ESPORTES: ${sportsNews}  •  `;
         }
         displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
     } else {
