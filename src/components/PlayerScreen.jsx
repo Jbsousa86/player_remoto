@@ -188,14 +188,14 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 {displayText}
             </div>
 
-            {/* Bloco Fixo (Hora, Clima, Dólar) ultra comprimido */}
-            <div className={`absolute right-0 top-0 h-full flex items-center px-[0.8vw] md:px-[1vw] bg-black/80 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-tight z-10 gap-[1vw] shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
-                <div className="flex items-center gap-[0.2vw]">
+            {/* Bloco Fixo (Hora, Clima, Dólar) extremamente comprimido */}
+            <div className={`absolute right-0 top-0 h-full flex items-center px-2 md:px-3 bg-black/80 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-tight z-10 gap-2 md:gap-3 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
+                <div className="flex items-center gap-1">
                     <span className="opacity-70 text-[1.4vh]">🕒</span>
                     <span className="text-[1.4vh] md:text-[1.6vh]">{timeStr}</span>
                 </div>
                 {weather && (
-                    <div className="flex items-center gap-[0.2vw]">
+                    <div className="flex items-center gap-1">
                         <span className="opacity-70 text-[1.4vh]">🌡️</span>
                         <span className="text-[1.4vh] md:text-[1.6vh] whitespace-nowrap">
                             {weather.temp}°C 
@@ -204,7 +204,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                     </div>
                 )}
                 {dolar && (
-                    <div className="flex items-center gap-[0.2vw]">
+                    <div className="flex items-center gap-1">
                         <span className="opacity-70 text-[1.4vh]">💵</span>
                         <span className="text-[1.4vh] md:text-[1.6vh] whitespace-nowrap">R$ {dolar}</span>
                     </div>
