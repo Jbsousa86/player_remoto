@@ -29,8 +29,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                         )}
                                     </div>
                                 );
-                            })()
-                            ) : item.type === 'web' ? (
+                            })() : item.type === 'web' ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-zinc-500">
                                     <span className="text-4xl mb-2">🌐</span>
                                     <span className="text-[10px] font-black uppercase tracking-widest">Website</span>
