@@ -213,7 +213,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             
             {/* Texto Deslizante */}
             <div 
-                className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] mr-32 z-20`}
+                className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] mr-32 relative z-10`}
                 style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}
                 onAnimationIteration={() => setCycleCount(c => c + 1)}
             >
@@ -221,7 +221,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             </div>
 
             {/* Bloco Fixo (Hora, Clima, Dólar) extremamente comprimido */}
-            <div className={`absolute right-0 top-0 h-full flex items-center px-2 md:px-3 bg-black/80 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-tight z-10 gap-2 md:gap-3 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
+            <div className={`absolute right-0 top-0 h-full flex items-center px-2 md:px-3 bg-black/80 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-tight z-30 gap-2 md:gap-3 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
                 <div className="flex items-center gap-1">
                     <span className="opacity-70 text-[1.4vh]">🕒</span>
                     <span className="text-[1.4vh] md:text-[1.6vh]">{timeStr}</span>
