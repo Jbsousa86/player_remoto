@@ -1043,7 +1043,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     const getYoutubeEmbedUrl = (url, muted) => {
         const id = getYoutubeId(url);
         if (!id) return '';
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&enablejsapi=1`;
+
+        // Detecta se a URL contém uma playlist do YouTube e repassa o parâmetro
+        const listMatch = url.match(/[?&]list=([^&#]+)/);
+        const listParam = listMatch ? `&list=${listMatch[1]}&listType=playlist` : '';
+
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&enablejsapi=1${listParam}`;
     };
 
     /* =========================
@@ -1111,6 +1116,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                         if (isPlaying) e.target.playVideo();
                     },
                     onStateChange: (e) => {
+                        // Só avança para o próximo item da playlist LOCAL quando o vídeo/playlist do YouTube terminar.
+                        // Se houver uma playlist do YT carregada (listParam), o próprio YouTube avança entre vídeos.
+                        // O estado ENDED só é atingido ao fim de TODA a playlist do YT.
                         if (e.data === window.YT.PlayerState.ENDED) next();
                     },
                     onError: () => next(true)
