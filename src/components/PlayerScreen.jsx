@@ -166,9 +166,6 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         if (sportsNews) {
             displayText += `⚽ GE ESPORTES: ${sportsNews}  •  `;
         }
-        displayText += `🕒 HORA: ${timeStr}  •  🌡️ CLIMA: ${weather ? `${weather.temp}°C (${weather.city})` : '--°C'}  •  💵 DÓLAR: R$ ${dolar || '--,--'}`;
-    } else {
-        displayText += `🕒 HORA: ${timeStr}`;
     }
 
     const bgColor = ticker?.bgColor || 'rgba(0, 0, 0, 0.8)';
@@ -185,8 +182,33 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                     100% { transform: translateX(-100%); }
                 }
             `}</style>
-            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
+            
+            {/* Texto Deslizante */}
+            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] pr-[30%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
                 {displayText}
+            </div>
+
+            {/* Bloco Fixo (Hora, Clima, Dólar) */}
+            <div className={`absolute right-0 top-0 h-full flex items-center px-[2vw] md:px-[3vw] bg-black/70 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-widest z-10 gap-[2vw] shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
+                <div className="flex items-center gap-[0.5vw]">
+                    <span className="opacity-70 text-[2vh]">🕒</span>
+                    <span className="text-[2vh] md:text-[2.2vh]">{timeStr}</span>
+                </div>
+                {weather && (
+                    <div className="flex items-center gap-[0.5vw]">
+                        <span className="opacity-70 text-[2vh]">🌡️</span>
+                        <span className="text-[2vh] md:text-[2.2vh] whitespace-nowrap">
+                            {weather.temp}°C 
+                            <span className="text-[1.2vh] md:text-[1.5vh] opacity-70 ml-1 hidden md:inline">({weather.city})</span>
+                        </span>
+                    </div>
+                )}
+                {dolar && (
+                    <div className="flex items-center gap-[0.5vw]">
+                        <span className="opacity-70 text-[2vh]">💵</span>
+                        <span className="text-[2vh] md:text-[2.2vh] whitespace-nowrap">R$ {dolar}</span>
+                    </div>
+                )}
             </div>
         </div>
     );
