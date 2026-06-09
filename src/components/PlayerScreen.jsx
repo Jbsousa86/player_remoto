@@ -189,24 +189,24 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             </div>
 
             {/* Bloco Fixo (Hora, Clima, Dólar) */}
-            <div className={`absolute right-0 top-0 h-full flex items-center px-[2vw] md:px-[3vw] bg-black/70 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-widest z-10 gap-[2vw] shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
-                <div className="flex items-center gap-[0.5vw]">
-                    <span className="opacity-70 text-[2vh]">🕒</span>
-                    <span className="text-[2vh] md:text-[2.2vh]">{timeStr}</span>
+            <div className={`absolute right-0 top-0 h-full flex items-center px-[1.5vw] md:px-[2vw] bg-black/70 backdrop-blur-3xl border-l border-white/10 ${textColor} font-bold uppercase tracking-widest z-10 gap-[1.5vw] shadow-[-10px_0_20px_rgba(0,0,0,0.5)]`}>
+                <div className="flex items-center gap-[0.4vw]">
+                    <span className="opacity-70 text-[1.6vh]">🕒</span>
+                    <span className="text-[1.6vh] md:text-[1.8vh]">{timeStr}</span>
                 </div>
                 {weather && (
-                    <div className="flex items-center gap-[0.5vw]">
-                        <span className="opacity-70 text-[2vh]">🌡️</span>
-                        <span className="text-[2vh] md:text-[2.2vh] whitespace-nowrap">
+                    <div className="flex items-center gap-[0.4vw]">
+                        <span className="opacity-70 text-[1.6vh]">🌡️</span>
+                        <span className="text-[1.6vh] md:text-[1.8vh] whitespace-nowrap">
                             {weather.temp}°C 
-                            <span className="text-[1.2vh] md:text-[1.5vh] opacity-70 ml-1 hidden md:inline">({weather.city})</span>
+                            <span className="text-[1vh] md:text-[1.2vh] opacity-70 ml-1 hidden md:inline">({weather.city})</span>
                         </span>
                     </div>
                 )}
                 {dolar && (
-                    <div className="flex items-center gap-[0.5vw]">
-                        <span className="opacity-70 text-[2vh]">💵</span>
-                        <span className="text-[2vh] md:text-[2.2vh] whitespace-nowrap">R$ {dolar}</span>
+                    <div className="flex items-center gap-[0.4vw]">
+                        <span className="opacity-70 text-[1.6vh]">💵</span>
+                        <span className="text-[1.6vh] md:text-[1.8vh] whitespace-nowrap">R$ {dolar}</span>
                     </div>
                 )}
             </div>
