@@ -1074,15 +1074,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     useEffect(() => {
         if (currentType !== 'youtube' || !isPlaying || isStopped) return;
 
-        // Playlist ou stream ao vivo sem duração explícita:
-        // não usamos safety timer — YouTube controla o avanço via onStateChange(ENDED).
-        // Lives nunca disparam ENDED, portanto ficarão indefinidamente sem timer.
-        const isPlaylist = currentUrl && /[?&]list=/.test(currentUrl);
-        const isLive = isYoutubeLive(currentUrl);
-        if ((isPlaylist || isLive) && !(currentDuration && currentDuration > 0)) return;
+        // Se a duração for explicitamente 0 (Ilimitado), não ativamos o timer forçado.
+        // O evento onStateChange(ENDED) natural do YouTube cuidará de avançar o vídeo ou playlist.
+        if (currentDuration === 0) return;
 
-        // Se o usuário definiu uma duração explícita: respeita (limita o tempo).
-        // Se for um vídeo avulso sem duração: 10 minutos de segurança para não travar.
+        // Se houver duração definida pelo usuário, respeitamos. 
+        // Caso a duração seja nula/indefinida (itens antigos), usamos 10 min de segurança.
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 
         const timer = setTimeout(() => {
@@ -1099,7 +1096,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     useEffect(() => {
         if (currentType !== 'video' || !isPlaying || isStopped) return;
 
-        // Se o usuário estipular tempo, ele corta o vídeo na hora definida. Senão, 10 minutos de segurança.
+        // Se a duração for explicitamente 0 (Ilimitado), não ativamos o timer forçado.
+        // O evento onEnded natural da tag <video> cuidará de avançar o item.
+        if (currentDuration === 0) return;
+
+        // Se houver duração definida pelo usuário, respeitamos. 
+        // Caso a duração seja nula/indefinida, usamos 10 min de segurança.
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 
         const timer = setTimeout(() => {
