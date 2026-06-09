@@ -456,40 +456,6 @@ const AdminPanel = ({ isPairing = false }) => {
 
     const handleTickerColorsSave = async (bgColor, textColor) => {
         if (!selectedScreen) return;
-        try {
-            await syncService.updateScreen(selectedScreen.id, { 
-                ticker: { 
-                    ...selectedScreen.ticker, 
-                    bgColor: bgColor !== undefined ? bgColor : tickerBgColor,
-                    textColor: textColor !== undefined ? textColor : tickerTextColor
-                } 
-            });
-            setTickerStatus('Cores salvas');
-            setTimeout(() => setTickerStatus(''), 2500);
-        } catch (error) {
-            console.error("Erro ao salvar cores do letreiro:", error);
-            setTickerStatus('Erro ao salvar');
-        }
-    };
-
-    const handleTickerOptionsSave = async (updates) => {
-        if (!selectedScreen) return;
-        try {
-            await syncService.updateScreen(selectedScreen.id, { 
-                ticker: { ...selectedScreen.ticker, ...updates } 
-            });
-            setTickerStatus('Opções salvas');
-            setTimeout(() => setTickerStatus(''), 2500);
-        } catch (error) {
-            console.error("Erro ao salvar opções do letreiro:", error);
-            setTickerStatus('Erro ao salvar');
-        }
-    };  
-        }
-    };
-
-    const handleTickerColorsSave = async (bgColor, textColor) => {
-        if (!selectedScreen) return;
         setIsSyncing(true);
         try {
             await syncService.updateScreen(selectedScreen.id, { 
@@ -505,6 +471,20 @@ const AdminPanel = ({ isPairing = false }) => {
             alert("Erro ao alterar cores do letreiro.");
         } finally {
             setIsSyncing(false);
+        }
+    };
+
+    const handleTickerOptionsSave = async (updates) => {
+        if (!selectedScreen) return;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { ...selectedScreen.ticker, ...updates } 
+            });
+            setTickerStatus('Opções salvas');
+            setTimeout(() => setTickerStatus(''), 2500);
+        } catch (error) {
+            console.error("Erro ao salvar opções do letreiro:", error);
+            setTickerStatus('Erro ao salvar');
         }
     };
 
