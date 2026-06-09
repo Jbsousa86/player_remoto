@@ -59,7 +59,6 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const [cycleCount, setCycleCount] = useState(0);
 
     useEffect(() => {
-        if (!queueEnabled) return;
         const interval = setInterval(() => setCurrentTime(new Date()), 1000);
         return () => clearInterval(interval);
     }, [ticker?.isActive, queueEnabled]);
@@ -67,7 +66,6 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const weatherLocStr = JSON.stringify(weatherLocation);
 
     useEffect(() => {
-        if (!queueEnabled) return;
 
         const fetchData = async () => {
             try {
@@ -204,7 +202,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     return (
         <div 
             style={{ backgroundColor: bgColor }}
-            className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl"
+            className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl pr-48 z-50 shadow-2xl"
         >
             <style>{`
                 @keyframes marquee-scroll {
@@ -215,7 +213,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             
             {/* Texto Deslizante */}
             <div 
-                className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} 
+                className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] mr-32 z-20`}
                 style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}
                 onAnimationIteration={() => setCycleCount(c => c + 1)}
             >
