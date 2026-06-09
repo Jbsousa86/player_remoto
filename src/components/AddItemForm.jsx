@@ -48,7 +48,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                                 </select>
                             ) : (
                                 <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
-                                    placeholder="Cole a URL da Imagem, Vídeo, Web ou RSS de Notícias"
+                                    placeholder="Cole a URL da Imagem, Vídeo, YouTube, Live ou RSS de Notícias"
                                     className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
                                     required={!isUploading} 
                                     disabled={isUploading} 

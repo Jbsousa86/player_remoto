@@ -154,9 +154,14 @@ const AdminPanel = ({ isPairing = false }) => {
 
     const getYoutubeId = (url) => {
         if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|live\/)([^#\&\?]*).*/;
+        const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
         const match = String(url).match(regExp);
         return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    const isYoutubeLive = (url) => {
+        if (!url) return false;
+        return /youtube\.com\/live\/|[?&]live=1/.test(url);
     };
 
     const isVideoUrl = (url) => {
@@ -168,11 +173,12 @@ const AdminPanel = ({ isPairing = false }) => {
     const handleUrlChange = (url) => {
         const youtubeId = getYoutubeId(url);
         const isVideo = isVideoUrl(url);
+        const isLive = isYoutubeLive(url);
 
         let detectedType = 'image';
         let detectedDuration = 10;
 
-        if (youtubeId) {
+        if (youtubeId || isLive) {
             detectedType = 'youtube';
             detectedDuration = 0;
         } else if (isVideo) {

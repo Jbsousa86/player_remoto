@@ -1035,9 +1035,15 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     ========================== */
     const getYoutubeId = (url) => {
         if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=|live\/)([^#&?]*).*/;
-        const match = url.match(regExp);
-        return match && match[2].length === 11 ? match[2] : null;
+        const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
+        const match = String(url).match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    };
+
+    // Detecta se a URL é um stream ao vivo do YouTube
+    const isYoutubeLive = (url) => {
+        if (!url) return false;
+        return /youtube\.com\/live\/|[?&]live=1/.test(url);
     };
 
     const getYoutubeEmbedUrl = (url, muted) => {
@@ -1068,12 +1074,14 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     useEffect(() => {
         if (currentType !== 'youtube' || !isPlaying || isStopped) return;
 
-        // Se a URL for uma playlist do YouTube e o usuário NÃO definiu uma duração explícita,
-        // não usamos o safety timer — o próprio YouTube avança os vídeos via onStateChange(ENDED).
+        // Playlist ou stream ao vivo sem duração explícita:
+        // não usamos safety timer — YouTube controla o avanço via onStateChange(ENDED).
+        // Lives nunca disparam ENDED, portanto ficarão indefinidamente sem timer.
         const isPlaylist = currentUrl && /[?&]list=/.test(currentUrl);
-        if (isPlaylist && !(currentDuration && currentDuration > 0)) return;
+        const isLive = isYoutubeLive(currentUrl);
+        if ((isPlaylist || isLive) && !(currentDuration && currentDuration > 0)) return;
 
-        // Se o usuário definiu uma duração explícita: respeita (limita o tempo da playlist/vídeo).
+        // Se o usuário definiu uma duração explícita: respeita (limita o tempo).
         // Se for um vídeo avulso sem duração: 10 minutos de segurança para não travar.
         const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
 

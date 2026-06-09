@@ -16,8 +16,20 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                         <div className="aspect-video bg-black relative">
                             {item.type === 'video' ? (
                                 <video src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : (item.fitMode === 'fill' ? 'object-fill' : 'object-contain')}`} muted />
-                            ) : item.type === 'youtube' ? (
-                                <img src={`https://img.youtube.com/vi/${getYoutubeId(item.url)}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
+                            ) : item.type === 'youtube' ? (() => {
+                                const ytId = getYoutubeId(item.url);
+                                const isLive = /youtube\.com\/live\/|[?&]live=1/.test(item.url);
+                                return ytId ? (
+                                    <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900">
+                                        <span className="text-4xl mb-2">📺</span>
+                                        {isLive && (
+                                            <span className="bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">🔴 Ao Vivo</span>
+                                        )}
+                                    </div>
+                                );
+                            })()
                             ) : item.type === 'web' ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-zinc-500">
                                     <span className="text-4xl mb-2">🌐</span>
