@@ -54,9 +54,9 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     const [currentTime, setCurrentTime] = useState(new Date());
     const [weather, setWeather] = useState(null);
     const [dolar, setDolar] = useState(null);
-    const [localNews, setLocalNews] = useState('');
-
-    const [sportsNews, setSportsNews] = useState('');
+    const [localNewsArray, setLocalNewsArray] = useState([]);
+    const [sportsNewsArray, setSportsNewsArray] = useState([]);
+    const [cycleCount, setCycleCount] = useState(0);
 
     useEffect(() => {
         if (!ticker?.isActive && !queueEnabled) return;
@@ -104,7 +104,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                     }
                 }
                 if (newsTitles.length > 0) {
-                    setLocalNews(newsTitles.slice(0, 4).join('  •  '));
+                    setLocalNewsArray(newsTitles.slice(0, 4));
                 }
             } catch (error) {
                 console.error("Erro ao buscar notícias locais para o letreiro:", error);
@@ -116,7 +116,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 const data = await res.json();
                 if (data?.status === 'ok' && data.items?.length > 0) {
                     const sportsTitles = data.items.slice(0, 4).map(item => item.title);
-                    setSportsNews(sportsTitles.join('  •  '));
+                    setSportsNewsArray(sportsTitles);
                 }
             } catch (error) {
                 console.error("Erro ao buscar esportes pro letreiro:", error);
@@ -157,14 +157,44 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     }
     
     if (ticker?.isActive) {
+        let displayBlocks = [];
+
         if (ticker.text && typeof ticker.text === 'string') {
-            displayText += ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) + '  •  ';
+            displayBlocks.push({ type: 'text', text: ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) });
         }
-        if (localNews) {
-            displayText += `📰 ANANÁS NOTÍCIAS: ${localNews}  •  `;
+        if (ticker.showLocalNews !== false && localNewsArray.length > 0) {
+            displayBlocks.push({ type: 'local', items: localNewsArray });
         }
-        if (sportsNews) {
-            displayText += `⚽ GE ESPORTES: ${sportsNews}  •  `;
+        if (ticker.showSports !== false && sportsNewsArray.length > 0) {
+            displayBlocks.push({ type: 'sports', items: sportsNewsArray });
+        }
+
+        const newsMode = ticker.newsMode || 'all';
+
+        if (newsMode === 'all') {
+            displayBlocks.forEach(b => {
+                if (b.type === 'text') displayText += b.text + '  •  ';
+                if (b.type === 'local') displayText += `📰 ANANÁS NOTÍCIAS: ${b.items.join('  •  ')}  •  `;
+                if (b.type === 'sports') displayText += `⚽ GE ESPORTES: ${b.items.join('  •  ')}  •  `;
+            });
+        } else if (newsMode === 'categories') {
+            if (displayBlocks.length > 0) {
+                const b = displayBlocks[cycleCount % displayBlocks.length];
+                if (b.type === 'text') displayText += b.text + '  •  ';
+                if (b.type === 'local') displayText += `📰 ANANÁS NOTÍCIAS: ${b.items.join('  •  ')}  •  `;
+                if (b.type === 'sports') displayText += `⚽ GE ESPORTES: ${b.items.join('  •  ')}  •  `;
+            }
+        } else if (newsMode === 'single') {
+            let singles = [];
+            displayBlocks.forEach(b => {
+                if (b.type === 'text') singles.push({ label: '', text: b.text });
+                if (b.type === 'local') b.items.forEach(i => singles.push({ label: '📰 ANANÁS NOTÍCIAS:', text: i }));
+                if (b.type === 'sports') b.items.forEach(i => singles.push({ label: '⚽ GE ESPORTES:', text: i }));
+            });
+            if (singles.length > 0) {
+                const s = singles[cycleCount % singles.length];
+                displayText += s.label ? `${s.label} ${s.text}  •  ` : `${s.text}  •  `;
+            }
         }
     }
 
@@ -184,7 +214,11 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             `}</style>
             
             {/* Texto Deslizante */}
-            <div className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}>
+            <div 
+                className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%]`} 
+                style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}
+                onAnimationIteration={() => setCycleCount(c => c + 1)}
+            >
                 {displayText}
             </div>
 

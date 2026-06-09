@@ -22,6 +22,9 @@ const AdminPanel = ({ isPairing = false }) => {
     const [tickerSpeed, setTickerSpeed] = useState(25);
     const [tickerBgColor, setTickerBgColor] = useState('rgba(0, 0, 0, 0.8)');
     const [tickerTextColor, setTickerTextColor] = useState('text-white');
+    const [tickerNewsMode, setTickerNewsMode] = useState('all');
+    const [tickerShowLocalNews, setTickerShowLocalNews] = useState(true);
+    const [tickerShowSports, setTickerShowSports] = useState(true);
     const [tickerStatus, setTickerStatus] = useState('');
     const [globalRssUrl, setGlobalRssUrl] = useState(DEFAULT_RSS_URL);
     const [standbyLogo, setStandbyLogo] = useState('');
@@ -116,6 +119,9 @@ const AdminPanel = ({ isPairing = false }) => {
         setTickerSpeed(selectedScreen?.ticker?.speed !== undefined ? selectedScreen.ticker.speed : 25);
         setTickerBgColor(selectedScreen?.ticker?.bgColor || 'rgba(0, 0, 0, 0.8)');
         setTickerTextColor(selectedScreen?.ticker?.textColor || 'text-white');
+        setTickerNewsMode(selectedScreen?.ticker?.newsMode || 'all');
+        setTickerShowLocalNews(selectedScreen?.ticker?.showLocalNews !== false);
+        setTickerShowSports(selectedScreen?.ticker?.showSports !== false);
         setStandbyLogo(selectedScreen?.standbyOptions?.logo || '');
         setStandbyBg(selectedScreen?.standbyOptions?.background || '');
         const newsItem = selectedScreen?.playlist?.find(item => item.type === 'news');
@@ -445,6 +451,40 @@ const AdminPanel = ({ isPairing = false }) => {
             alert("Erro ao alterar velocidade do letreiro.");
         } finally {
             setIsSyncing(false);
+        }
+    };
+
+    const handleTickerColorsSave = async (bgColor, textColor) => {
+        if (!selectedScreen) return;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { 
+                    ...selectedScreen.ticker, 
+                    bgColor: bgColor !== undefined ? bgColor : tickerBgColor,
+                    textColor: textColor !== undefined ? textColor : tickerTextColor
+                } 
+            });
+            setTickerStatus('Cores salvas');
+            setTimeout(() => setTickerStatus(''), 2500);
+        } catch (error) {
+            console.error("Erro ao salvar cores do letreiro:", error);
+            setTickerStatus('Erro ao salvar');
+        }
+    };
+
+    const handleTickerOptionsSave = async (updates) => {
+        if (!selectedScreen) return;
+        try {
+            await syncService.updateScreen(selectedScreen.id, { 
+                ticker: { ...selectedScreen.ticker, ...updates } 
+            });
+            setTickerStatus('Opções salvas');
+            setTimeout(() => setTickerStatus(''), 2500);
+        } catch (error) {
+            console.error("Erro ao salvar opções do letreiro:", error);
+            setTickerStatus('Erro ao salvar');
+        }
+    };  
         }
     };
 
@@ -1092,6 +1132,55 @@ const AdminPanel = ({ isPairing = false }) => {
                                             <option value="text-emerald-400">💚 Verde Neon</option>
                                             <option value="text-red-400">❤️ Vermelho Neon</option>
                                         </select>
+                                    </div>
+                                </div>
+
+                                <div className="mt-6 border-t border-white/5 pt-4">
+                                    <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Modo de Exibição das Notícias</label>
+                                    <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
+                                        <select 
+                                            value={tickerNewsMode} 
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setTickerNewsMode(val);
+                                                handleTickerOptionsSave({ newsMode: val });
+                                            }}
+                                            className="flex-1 w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                        >
+                                            <option value="all">📰 Todas Juntas (Linha contínua)</option>
+                                            <option value="categories">🔄 Alternar por Categoria</option>
+                                            <option value="single">🎯 Manchete por Manchete (Uma por vez isolada)</option>
+                                        </select>
+
+                                        <div className="flex items-center gap-6 p-4 bg-black/20 rounded-2xl border border-white/5 w-full sm:w-auto">
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={tickerShowLocalNews}
+                                                    onChange={(e) => {
+                                                        const val = e.target.checked;
+                                                        setTickerShowLocalNews(val);
+                                                        handleTickerOptionsSave({ showLocalNews: val });
+                                                    }}
+                                                    className="w-5 h-5 accent-orange-500 rounded bg-black/40 border-white/10 cursor-pointer"
+                                                />
+                                                <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors">Notícias Ananás</span>
+                                            </label>
+                                            
+                                            <label className="flex items-center gap-2 cursor-pointer group">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={tickerShowSports}
+                                                    onChange={(e) => {
+                                                        const val = e.target.checked;
+                                                        setTickerShowSports(val);
+                                                        handleTickerOptionsSave({ showSports: val });
+                                                    }}
+                                                    className="w-5 h-5 accent-orange-500 rounded bg-black/40 border-white/10 cursor-pointer"
+                                                />
+                                                <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors">GE Esportes</span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -12,7 +12,10 @@ import {
 
 export const DEFAULT_TICKER = {
     text: 'Bem-vindo ao Totem Digital! {{hora}} • {{data}}',
-    isActive: true
+    isActive: true,
+    newsMode: 'all',
+    showLocalNews: true,
+    showSports: true
 };
 
 export const DEFAULT_RSS_URL = 'https://g1.globo.com/rss/g1/';
