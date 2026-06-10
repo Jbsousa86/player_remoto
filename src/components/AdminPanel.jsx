@@ -1106,11 +1106,11 @@ const AdminPanel = ({ isPairing = false }) => {
                                             }}
                                             className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
                                         >
-                                            <option value="text-white">🤍 Branco (Padrão)</option>
-                                            <option value="text-yellow-400">💛 Amarelo Contraste</option>
-                                            <option value="text-zinc-900">🖤 Preto Slate</option>
-                                            <option value="text-emerald-400">💚 Verde Neon</option>
-                                            <option value="text-red-400">❤️ Vermelho Neon</option>
+                                            <option value="#ffffff">🤍 Branco (Padrão)</option>
+                                            <option value="#facc15">💛 Amarelo Contraste</option>
+                                            <option value="#18181b">🖤 Preto Slate</option>
+                                            <option value="#34d399">💚 Verde Neon</option>
+                                            <option value="#f87171">❤️ Vermelho Neon</option>
                                         </select>
                                     </div>
                                 </div>
