@@ -1520,7 +1520,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 {isTickerShown && (
                     <div className="absolute bottom-0 left-0 w-full h-[12%] bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-40" />
                 )}
-                <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} queueEnabled={queueEnabled} queueState={queueState} />
+                {isTickerShown && (
+                    <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} queueEnabled={queueEnabled} queueState={queueState} />
+                )}
             </div>
 
             {/* Chamada de Senha Overlay */}
