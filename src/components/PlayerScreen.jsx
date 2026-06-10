@@ -1141,7 +1141,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         const listMatch = url.match(/[?&]list=([^&#]+)/);
         const listParam = listMatch ? `&list=${listMatch[1]}&listType=playlist` : '';
 
-        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&enablejsapi=1${listParam}`;
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        return `https://www.youtube.com/embed/${id}?autoplay=1&mute=${muted ? 1 : 0}&controls=0&rel=0&enablejsapi=1&origin=${encodeURIComponent(origin)}${listParam}`;
     };
 
     /* =========================
@@ -1472,7 +1473,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                             height: '100%',
                                                             border: 'none'
                                                         }}
-                                                        allow="autoplay; encrypted-media"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                         title="YouTube Player"
                                                     />
                                                 )}
