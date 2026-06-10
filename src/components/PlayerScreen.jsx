@@ -1162,20 +1162,11 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     useEffect(() => {
         if (currentType !== 'youtube' || !isPlaying || isStopped) return;
 
-        // Se a duração for explicitamente 0 (Ilimitado), não ativamos o timer forçado.
+        // Não vamos forçar o pulo por tempo para YouTube.
         // O evento onStateChange(ENDED) natural do YouTube cuidará de avançar o vídeo ou playlist.
-        if (currentDuration === 0) return;
-
-        // Se houver duração definida pelo usuário, respeitamos. 
-        // Caso a duração seja nula/indefinida (itens antigos), usamos 10 min de segurança.
-        const limit = currentDuration && currentDuration > 0 ? currentDuration * 1000 : 600000;
-
-        const timer = setTimeout(() => {
-            console.warn('YouTube timeout skip');
-            next(true);
-        }, limit);
-
-        return () => clearTimeout(timer);
+        // Se houver erro, a API aciona onError e pula.
+        
+        return () => {};
     }, [currentType, currentUrl, currentDuration, currentItem?.id, isPlaying, isStopped, next]);
 
     /* =========================
@@ -1245,7 +1236,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     }, [currentType, currentUrl, currentItem?.id, isStopped, next]);
 
     /* =========================
-       PLAY/PAUSE & MUTE EFFECTS (DYNAMIC)
+       PLAY/PAUSE & MUTE/VOLUME EFFECTS (DYNAMIC)
     ========================== */
     useEffect(() => {
         if (currentType === 'video' && videoRef.current) {
@@ -1265,24 +1256,23 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             if (isPlaying && !isStopped) ytPlayerRef.current.playVideo();
             else ytPlayerRef.current.pauseVideo();
         }
-        }, [isPlaying, isStopped, currentType, currentUrl, currentItem?.id, next]);
-
-    useEffect(() => {
-        if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.mute === 'function') {
-            if (isMuted) ytPlayerRef.current.mute();
-            else ytPlayerRef.current.unMute();
-        }
-    }, [isMuted, currentType, currentUrl, currentItem?.id]);
+    }, [isPlaying, isStopped, currentType, currentUrl, currentItem?.id, next]);
 
     useEffect(() => {
         if (currentType === 'video' && videoRef.current) {
-            // HTML5 Video aceita volume de 0.0 a 1.0
+            videoRef.current.muted = isMuted;
             videoRef.current.volume = volume / 100;
         } else if (currentType === 'youtube' && ytPlayerRef.current && typeof ytPlayerRef.current.setVolume === 'function') {
-            // YouTube API aceita volume de 0 a 100
             ytPlayerRef.current.setVolume(volume);
+            
+            // Garantir que obedece ao volume do admin desmutando explicitamente
+            if (!isMuted && volume > 0) {
+                ytPlayerRef.current.unMute();
+            } else {
+                ytPlayerRef.current.mute();
+            }
         }
-    }, [volume, currentType, currentUrl, currentItem?.id]);
+    }, [isMuted, volume, currentType, currentUrl, currentItem?.id]);
 
     /* =========================
        IMAGE TIMER
