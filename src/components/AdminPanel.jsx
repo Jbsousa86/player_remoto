@@ -412,7 +412,7 @@ const AdminPanel = ({ isPairing = false }) => {
         const newIsActive = !(selectedScreen.ticker?.isActive);
         try {
             await syncService.updateScreen(selectedScreen.id, { 
-                ticker: { text: tickerText, isActive: newIsActive } 
+                ticker: { ...selectedScreen.ticker, text: tickerText, isActive: newIsActive } 
             });
         } catch (err) {
             alert("Erro ao alterar letreiro.");

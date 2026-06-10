@@ -213,8 +213,9 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             
             {/* Texto Deslizante */}
             <div 
+                key={displayText}
                 className={`whitespace-nowrap font-semibold text-[2.2vh] ${textColor} uppercase tracking-widest pl-[100%] mr-32 relative z-[0]`}
-                style={{ animation: `marquee-scroll ${ticker?.speed || 25}s linear infinite` }}
+                style={{ animation: `marquee-scroll ${Math.max(5, Math.round((displayText.length / 150) * (ticker?.speed || 25)))}s linear infinite` }}
                 onAnimationIteration={() => setCycleCount(c => c + 1)}
             >
                 {displayText}
