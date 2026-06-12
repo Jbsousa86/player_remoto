@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastItem, isSyncing, handleFileUpload, isUploading, uploadProgress }) => {
+const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastItem, isSyncing, handleFileUpload, isUploading, uploadProgress, uploadStatusText }) => {
     const [flash, setFlash] = useState(false);
     // Trigger flash when URL changes (auto-detection)
     useEffect(() => {
@@ -57,8 +57,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             {newItem.type !== 'loterias' && (
                                 <div className="shrink-0 flex">
                                     <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} multiple />
-                                    <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex items-center justify-center px-8 py-5 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
-                                        {isUploading ? `Enviando ${uploadProgress}%` : '📁 Fazer Upload'}
+                                    <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex flex-col items-center justify-center px-8 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                        {isUploading ? (
+                                            <>
+                                                <span>{uploadStatusText || 'Processando...'}</span>
+                                                <span className="text-[10px] mt-1 text-orange-500">{uploadProgress}%</span>
+                                            </>
+                                        ) : '📁 Fazer Upload'}
                                     </label>
                                 </div>
                             )}

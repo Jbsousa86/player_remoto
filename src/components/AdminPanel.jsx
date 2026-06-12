@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { syncService, DEFAULT_RSS_URL, DEFAULT_TICKER } from '../lib/syncService';
 import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile } from '@ffmpeg/util';
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminHeader from './AdminHeader';
@@ -30,6 +32,7 @@ const AdminPanel = ({ isPairing = false }) => {
     const [standbyLogo, setStandbyLogo] = useState('');
     const [standbyBg, setStandbyBg] = useState('');
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [uploadStatusText, setUploadStatusText] = useState('');
     const [isUploadingStandby, setIsUploadingStandby] = useState({ logo: false, background: false });
     const [locationQuery, setLocationQuery] = useState('');
     const [weatherLocation, setWeatherLocation] = useState(null);
@@ -244,25 +247,71 @@ const AdminPanel = ({ isPairing = false }) => {
         if (files.length === 0) return;
 
         setIsUploading(true);
-        setUploadProgress(10);
+        setUploadProgress(0);
+        setUploadStatusText('Iniciando...');
 
         try {
             const newUploadedUrls = [];
-            let currentProgress = 10;
-            const progressStep = 90 / files.length;
+            let currentProgress = 0;
+            const progressStep = 100 / files.length;
 
             for (const file of files) {
-                const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '')}`;
+                let fileToUpload = file;
+                const fileNameBase = file.name.replace(/[^a-zA-Z0-9.]/g, '');
+                let finalFileName = `${Date.now()}_${fileNameBase}`;
+
+                if (file.type.startsWith('video/')) {
+                    setUploadStatusText(`Comprimindo vídeo... (${file.name})`);
+                    try {
+                        const ffmpeg = new FFmpeg();
+                        ffmpeg.on('progress', ({ progress }) => {
+                            setUploadProgress(Math.round(currentProgress + (progress * progressStep * 0.9)));
+                        });
+                        
+                        await ffmpeg.load({
+                            coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
+                            wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm"
+                        });
+                        
+                        const inputName = 'input_' + fileNameBase;
+                        const outputName = 'output.mp4';
+                        
+                        await ffmpeg.writeFile(inputName, await fetchFile(file));
+                        
+                        // O preset ultrafast reduz o uso de cpu, útil para browser
+                        await ffmpeg.exec([
+                            '-i', inputName,
+                            '-vf', 'scale=-2:720',
+                            '-vcodec', 'libx264',
+                            '-crf', '28',
+                            '-preset', 'ultrafast',
+                            '-acodec', 'aac',
+                            '-b:a', '128k',
+                            outputName
+                        ]);
+                        
+                        const data = await ffmpeg.readFile(outputName);
+                        fileToUpload = new File([data.buffer], finalFileName + '.mp4', { type: 'video/mp4' });
+                        finalFileName = finalFileName + '.mp4';
+                        
+                        ffmpeg.terminate();
+                    } catch (err) {
+                        console.error('Erro ao comprimir vídeo', err);
+                        alert(`Erro ao comprimir o vídeo ${file.name}. Enviando o original...`);
+                    }
+                }
+
+                setUploadStatusText(`Enviando para a nuvem...`);
                 const { data, error } = await supabase.storage
                     .from('medias')
-                    .upload(fileName, file, {
+                    .upload(finalFileName, fileToUpload, {
                         cacheControl: '3600',
                         upsert: false
                     });
 
                 if (error) throw error;
 
-                const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(fileName);
+                const { data: publicUrlData } = supabase.storage.from('medias').getPublicUrl(finalFileName);
                 newUploadedUrls.push(publicUrlData.publicUrl);
                 
                 currentProgress += progressStep;
@@ -270,6 +319,7 @@ const AdminPanel = ({ isPairing = false }) => {
             }
 
             setUploadProgress(100);
+            setUploadStatusText('Concluído!');
 
             if (newUploadedUrls.length === 1) {
                 handleUrlChange(newUploadedUrls[0]);
@@ -983,6 +1033,7 @@ const AdminPanel = ({ isPairing = false }) => {
                             handleFileUpload={handleFileUpload}
                             isUploading={isUploading}
                             uploadProgress={uploadProgress}
+                            uploadStatusText={uploadStatusText}
                             addItem={addItem}
                             broadcastItem={broadcastItem}
                             isSyncing={isSyncing}
