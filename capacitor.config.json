@@ -1,0 +1,6 @@
+{
+  "appId": "com.playerremoto.pro",
+  "appName": "Totem Player Remoto",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
