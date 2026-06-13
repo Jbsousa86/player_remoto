@@ -109,9 +109,9 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 console.error("Erro ao buscar notícias locais para o letreiro:", error);
             }
 
-            // Busca notícias de Esportes (Gazeta Esportiva - Globo desligou o RSS)
+            // Busca notícias de Esportes (ESPN Brasil - Mais estável que Gazeta)
             try {
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.gazetaesportiva.com/feed/')}`);
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
                 const data = await res.json();
                 if (data?.status === 'ok' && data.items?.length > 0) {
                     const sportsTitles = data.items.slice(0, 4).map(item => item.title);
