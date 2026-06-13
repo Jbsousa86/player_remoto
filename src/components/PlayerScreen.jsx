@@ -109,13 +109,16 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 console.error("Erro ao buscar notícias locais para o letreiro:", error);
             }
 
-            // Busca notícias de Esportes (ESPN Brasil - Mais estável que Gazeta)
+            // Busca notícias de Esportes (ESPN Brasil - Usando allorigins igual ao Ananás)
             try {
-                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
-                const data = await res.json();
-                if (data?.status === 'ok' && data.items?.length > 0) {
-                    const sportsTitles = data.items.slice(0, 4).map(item => item.title);
-                    setSportsNewsArray(sportsTitles);
+                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
+                const xmlText = await res.text();
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, 4);
+                if (items.length > 0) {
+                    const sportsTitles = items.map(item => item.querySelector("title")?.textContent || '');
+                    setSportsNewsArray(sportsTitles.filter(t => t.length > 0));
                 }
             } catch (error) {
                 console.error("Erro ao buscar esportes pro letreiro:", error);
