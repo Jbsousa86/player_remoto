@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import { Capacitor } from '@capacitor/core';
+import { TextToSpeech } from '@capacitor-community/text-to-speech';
 const fetchWeatherAndLocation = async (manualLocation = null) => {
     let latitude, longitude, city;
     
@@ -911,32 +912,55 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 return;
             }
 
-            // 1. TENTA USAR A VOZ NATIVA DA TV/PC
+            // Identifica Fire TV e Android TV Boxes (como R3, MXQ, MiBox) que não possuem motor nativo
+            const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
+
+            // 1. SUPORTE NATIVO ABSOLUTO PARA CAPACITOR (ANDROID / IOS)
+            // Se for TV Box/Fire TV, pula essa etapa porque eles falham silenciosamente!
+            if (Capacitor.isNativePlatform() && !isTvBox) {
+                console.log("🔊 Usando TTS nativo do Capacitor:", text);
+                TextToSpeech.speak({
+                    text: text,
+                    lang: 'pt-BR',
+                    rate: 0.85,
+                    pitch: 1.0,
+                    volume: volume,
+                }).catch(err => {
+                    console.error("Erro no TTS do Capacitor:", err);
+                    // Se o plugin falhar (ex: aparelho sem motor), toca a nuvem
+                    const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
+                    const audioFallback = new Audio(googleTtsUrl);
+                    audioFallback.volume = volume;
+                    audioFallback.play().catch(e => console.warn(e));
+                });
+                return;
+            }
+
+            // 2. USA A VOZ NATIVA DO SISTEMA WEB (PC/MAC/NAVEGADOR)
             if ('speechSynthesis' in window) {
                 const voices = window.speechSynthesis.getVoices();
-                
-                // Procura especificamente por uma voz em português
                 const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
                 
-                if (ptVoice) {
+                // SÓ usa o nativo se o aparelho realmente tiver um motor de voz respondendo
+                if (ptVoice || voices.length > 0) {
                     window.speechSynthesis.cancel();
                     const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.voice = ptVoice;
                     utterance.lang = 'pt-BR';
                     utterance.rate = 0.85;
                     utterance.pitch = 1.0;
                     utterance.volume = volume;
+                    if (ptVoice) {
+                        utterance.voice = ptVoice;
+                    }
                     window.speechSynthesis.speak(utterance);
-                    return;
-                } else if (voices.length > 0) {
-                    // A TV tem motor de voz, mas NÃO tem o pacote Português instalado.
-                    // Ignora a TV e vai forçar a voz em nuvem do Google abaixo.
-                    console.warn("Voz em português não encontrada na TV. Usando nuvem...");
+                    return; // Sai da função, não usa a nuvem
                 }
+                
+                console.warn("TV não tem vozes instaladas ou carregadas. Pulando para a nuvem...");
             }
 
-            // 2. PLANO B (FALLBACK): Nuvem do Google
-            const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+            // 2. PLANO B (FALLBACK): Nuvem do Google (Essencial para Fire TV e Android TV sem TTS nativo)
+            const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
             const audioFallback = new Audio(googleTtsUrl);
             audioFallback.volume = volume;
             audioFallback.play().catch(err => {
