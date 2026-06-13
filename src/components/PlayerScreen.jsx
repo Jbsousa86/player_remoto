@@ -84,29 +84,16 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 console.error("Erro ao buscar dólar pro letreiro:", error);
             }
 
-            // Busca notícias locais de Ananás para o letreiro
+            // Busca notícias gerais (G1 Globo) para o letreiro
             try {
-                const targetUrl = 'https://www.ananas.to.gov.br/';
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-                const html = await res.text();
-                const newsTitles = [];
-                const cardRegex = /<a href="([^"]*\/blog\/artigo\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
-                let match;
-                while ((match = cardRegex.exec(html)) !== null) {
-                    const cardHtml = match[2];
-                    const titleMatch = cardHtml.match(/<h3[^>]*>([\s\S]*?)<\/h3>/);
-                    if (titleMatch) {
-                        const title = titleMatch[1].replace(/<[^>]+>/g, '').trim();
-                        if (title && !newsTitles.includes(title)) {
-                            newsTitles.push(title);
-                        }
-                    }
-                }
-                if (newsTitles.length > 0) {
-                    setLocalNewsArray(newsTitles.slice(0, 4));
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://g1.globo.com/rss/g1/')}`);
+                const data = await res.json();
+                if (data?.status === 'ok' && data.items?.length > 0) {
+                    const g1Titles = data.items.slice(0, 4).map(item => item.title);
+                    setLocalNewsArray(g1Titles);
                 }
             } catch (error) {
-                console.error("Erro ao buscar notícias locais para o letreiro:", error);
+                console.error("Erro ao buscar notícias gerais para o letreiro:", error);
             }
 
             // Busca notícias de Esportes (Gazeta Esportiva - Globo desligou o RSS)
