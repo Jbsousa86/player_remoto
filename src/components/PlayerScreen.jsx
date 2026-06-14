@@ -213,7 +213,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     return (
         <div 
             style={{ backgroundColor: bgColor }}
-            className="absolute bottom-[1.5%] left-[1.5%] w-[97%] h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden border border-white/10 rounded-2xl z-50 shadow-2xl isolation-isolate"
+            className="absolute bottom-0 left-0 w-full h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden z-50 shadow-2xl isolation-isolate"
         >
             <style>{`
                 @keyframes marquee-scroll {
@@ -1393,7 +1393,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-white bg-zinc-950"
+                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-white bg-zinc-950 ${isTickerShown ? 'h-[95%]' : 'h-full'}`}
                         >
                             <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-70 saturate-150 animate-standby-pan" />
                             <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/70 z-0" />
@@ -1420,7 +1420,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none select-none bg-black"
+                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-black ${isTickerShown ? 'h-[95%]' : 'h-full'}`}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
@@ -1549,9 +1549,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     )}
                 </AnimatePresence>
 
-                {isTickerShown && (
-                    <div className="absolute bottom-0 left-0 w-full h-[12%] bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none z-40" />
-                )}
+
                 {isTickerShown && (
                     <DynamicTicker ticker={ticker} weatherLocation={weatherLocation} queueEnabled={queueEnabled} queueState={queueState} />
                 )}
