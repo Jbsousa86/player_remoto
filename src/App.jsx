@@ -10,6 +10,7 @@ import { syncService } from './lib/syncService';
 import { useScreenSize } from './lib/useScreenSize';
 import { ScreenSizeProvider } from './lib/ScreenSizeContext';
 import { Maximize, WifiOff } from 'lucide-react';
+import { KeepAwake } from '@capacitor-community/keep-awake';
 
 function PlayerContainer() {
   const screenSize = useScreenSize();
@@ -243,15 +244,27 @@ function PlayerContainer() {
 
   // Screen Wake Lock (Prevent Sleep - with TV safety)
   useEffect(() => {
-    if (!isPaired || !('wakeLock' in navigator)) return;
+    if (!isPaired) return;
 
     let wakeLock = null;
 
     const requestWakeLock = async () => {
+      // 1. Try Capacitor KeepAwake
       try {
-        wakeLock = await navigator.wakeLock.request('screen');
+        await KeepAwake.keepOn();
+        console.log('📱 Capacitor KeepAwake enabled');
       } catch (err) {
-        console.warn(`Fail to acquire wake lock: ${err.message}`);
+        console.log('Capacitor KeepAwake not available, falling back to Web API');
+      }
+
+      // 2. Try Browser WakeLock API
+      if ('wakeLock' in navigator) {
+        try {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('💻 Browser WakeLock enabled');
+        } catch (err) {
+          console.warn(`Fail to acquire wake lock: ${err.message}`);
+        }
       }
     };
 
@@ -268,6 +281,11 @@ function PlayerContainer() {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      
+      // Release Capacitor WakeLock
+      KeepAwake.allowSleep().catch(() => {});
+      
+      // Release Browser WakeLock
       if (wakeLock) {
         wakeLock.release().then(() => {
           wakeLock = null;
