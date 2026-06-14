@@ -87,7 +87,8 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             // Busca notícias locais de Ananás para o letreiro
             try {
                 const targetUrl = 'https://www.ananas.to.gov.br/';
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
+                // Tentando usar um proxy CORS alternativo (corsproxy.io ou similar)
+                const res = await fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`);
                 const html = await res.text();
                 const newsTitles = [];
                 const cardRegex = /<a href="([^"]*\/blog\/artigo\/[^"]+)"[^>]*>([\s\S]*?)<\/a>/g;
@@ -109,16 +110,13 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 console.error("Erro ao buscar notícias locais para o letreiro:", error);
             }
 
-            // Busca notícias de Esportes (ESPN Brasil - Usando allorigins igual ao Ananás)
+            // Busca notícias de Esportes (ESPN Brasil)
             try {
-                const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
-                const xmlText = await res.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const items = Array.from(xmlDoc.querySelectorAll("item")).slice(0, 4);
-                if (items.length > 0) {
-                    const sportsTitles = items.map(item => item.querySelector("title")?.textContent || '');
-                    setSportsNewsArray(sportsTitles.filter(t => t.length > 0));
+                const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
+                const data = await res.json();
+                if (data?.status === 'ok' && data.items?.length > 0) {
+                    const sportsTitles = data.items.map(item => item.title || '');
+                    setSportsNewsArray(sportsTitles.filter(t => t.length > 0).slice(0, 4));
                 }
             } catch (error) {
                 console.error("Erro ao buscar esportes pro letreiro:", error);
@@ -275,7 +273,7 @@ const NewsDisplay = ({ url, onError }) => {
 
         if (url && (url.includes('ananas.to.gov.br') || url === 'ananas')) {
             const targetUrl = 'https://www.ananas.to.gov.br/';
-            fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`)
+            fetch(`https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`)
                 .then(res => {
                     if (!res.ok) throw new Error('Erro HTTP na requisição de Ananás');
                     return res.text();
