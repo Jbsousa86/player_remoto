@@ -836,6 +836,10 @@ const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef
                 preload="auto"
                 onEnded={onEnded}
                 onError={onError}
+                onPlay={(e) => {
+                    e.target.muted = isMuted;
+                    e.target.volume = volume / 100;
+                }}
                 style={{
                     width: '100%',
                     height: '100%',
