@@ -161,12 +161,12 @@ function PlayerContainer() {
 
       // Update Ticker
       if (data.ticker) {
-        setTicker(data.ticker);
+        setTicker(prev => JSON.stringify(prev) === JSON.stringify(data.ticker) ? prev : data.ticker);
       }
 
       // Update Standby Options
       if (data.standbyOptions) {
-        setStandbyOptions(data.standbyOptions);
+        setStandbyOptions(prev => JSON.stringify(prev) === JSON.stringify(data.standbyOptions) ? prev : data.standbyOptions);
       }
 
       // Update Queue Configuration

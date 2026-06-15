@@ -783,6 +783,69 @@ const transitionVariants = {
     }
 };
 
+const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef }) => {
+    const bgVideoRef = useRef(null);
+
+    // Efeito para sincronizar volume e mudo dinamicamente
+    useEffect(() => {
+        if (videoRef.current) {
+            videoRef.current.muted = isMuted;
+            videoRef.current.volume = volume / 100;
+        }
+    }, [isMuted, volume, videoRef]);
+
+    // Cleanup completo do decodificador ao desmontar ou trocar de URL
+    useEffect(() => {
+        return () => {
+            console.log("🧹 Liberando decodificadores de hardware...");
+            [videoRef.current, bgVideoRef.current].forEach(el => {
+                if (el) {
+                    try {
+                        el.pause();
+                        el.removeAttribute('src');
+                        el.load();
+                    } catch (e) {
+                        console.warn("Erro ao limpar vídeo:", e);
+                    }
+                }
+            });
+        };
+    }, [url, videoRef]);
+
+    return (
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+            {fitMode === 'smart' && (
+                <video
+                    ref={bgVideoRef}
+                    src={url}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                />
+            )}
+            <video
+                ref={videoRef}
+                src={url}
+                autoPlay
+                defaultMuted={true}
+                playsInline
+                disablePictureInPicture
+                className="pointer-events-none relative z-10"
+                preload="auto"
+                onEnded={onEnded}
+                onError={onError}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: fitMode === 'cover' ? 'cover' : (fitMode === 'fill' ? 'fill' : 'contain')
+                }}
+            />
+        </div>
+    );
+};
+
 const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orientation = 'landscape', isMuted = true, volume = 100, isPlaying = true, isStopped = false, ticker = null, weatherLocation = null, onMediaChange, queueEnabled = false, queueState = null, screenTransition = 'fade-zoom' }) => {
     // 1. FILTRO DE ATIVOS: Evita que o player tente ler mídias inativadas no painel
     const [activePlaylist, setActivePlaylist] = useState([]);
@@ -1047,7 +1110,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 }
                 return true;
             }) || [];
-            setActivePlaylist(playable);
+            setActivePlaylist(prev => JSON.stringify(prev) === JSON.stringify(playable) ? prev : playable);
         };
 
         updatePlayableItems();
@@ -1271,7 +1334,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 if (playPromise !== undefined) {
                     playPromise.catch(e => {
                         console.warn('Erro ao tocar vídeo ou bloqueio de autoplay:', e);
-                        next(true);
+                        // Aguarda 5 segundos antes de pular para não sobrecarregar
+                        setTimeout(() => {
+                            next(true);
+                        }, 5000);
                     });
                 }
             } else {
@@ -1443,38 +1509,21 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                 className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
                                             >
                                                 {currentItem.type === 'video' && (
-                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
-                                                        {currentItem.fitMode === 'smart' && (
-                                                            <video
-                                                                src={currentItem.url}
-                                                                autoPlay
-                                                                muted
-                                                                loop
-                                                                playsInline
-                                                                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
-                                                            />
-                                                        )}
-                                                        <video
-                                                            ref={videoRef}
-                                                            src={currentItem.url}
-                                                            autoPlay
-                                                            muted={isMuted}
-                                                            playsInline
-                                                            disablePictureInPicture
-                                                            className="pointer-events-none relative z-10"
-                                                            preload="auto"
-                                                            onEnded={next}
-                                                            onError={(e) => {
-                                                                console.error('Video playback error, skipping:', e);
+                                                    <VideoPlayer
+                                                        url={currentItem.url}
+                                                        fitMode={currentItem.fitMode}
+                                                        isMuted={isMuted}
+                                                        volume={volume}
+                                                        onEnded={next}
+                                                        onError={(e) => {
+                                                            console.error('Video playback error, waiting before retry/skip:', e);
+                                                            // Em vez de avançar instantaneamente, aguarda 5 segundos para evitar loops síncronos
+                                                            setTimeout(() => {
                                                                 next(true);
-                                                            }}
-                                                            style={{
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                objectFit: currentItem.fitMode === 'cover' ? 'cover' : (currentItem.fitMode === 'fill' ? 'fill' : 'contain')
-                                                            }}
-                                                        />
-                                                    </div>
+                                                            }, 5000);
+                                                        }}
+                                                        videoRef={videoRef}
+                                                    />
                                                 )}
 
                                                 {currentItem.type === 'youtube' && (
