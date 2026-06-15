@@ -1529,7 +1529,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                 {currentItem.type === 'youtube' && (
                                                     <iframe
                                                         id={`yt-player-${currentItem.id}`}
-                                                        src={getYoutubeEmbedUrl(currentItem.url, isMuted)}
+                                                        src={getYoutubeEmbedUrl(currentItem.url, true)}
                                                         style={{
                                                             position: 'absolute',
                                                             inset: 0,
