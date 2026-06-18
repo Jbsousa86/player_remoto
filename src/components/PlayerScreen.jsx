@@ -230,19 +230,19 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     return (
         <div 
             style={{ backgroundColor: bgColor }}
-            className="absolute bottom-0 left-0 w-full h-[10%] min-h-16 backdrop-blur-md flex items-center overflow-hidden z-50 shadow-2xl isolation-isolate"
+            className="absolute bottom-0 left-0 w-full h-[10%] min-h-16 flex items-center overflow-hidden z-50 isolation-isolate"
         >
             <style>{`
                 @keyframes marquee-scroll {
-                    0% { transform: translateX(0%); }
-                    100% { transform: translateX(-100%); }
+                    0% { transform: translate3d(0%, 0, 0); }
+                    100% { transform: translate3d(-100%, 0, 0); }
                 }
             `}</style>
             
             {/* Texto Deslizante */}
             <div 
                 key={displayText}
-                className="whitespace-nowrap font-semibold text-[4.5vh] uppercase tracking-widest pl-[100%] relative z-[0]"
+                className="whitespace-nowrap font-semibold text-[4.5vh] uppercase tracking-widest pl-[100%] relative z-[0] will-change-transform"
                 style={{ 
                     color: colorHex,
                     animation: `marquee-scroll ${Math.max(5, Math.round((displayText.length / 150) * (ticker?.speed || 25)))}s linear infinite` 
