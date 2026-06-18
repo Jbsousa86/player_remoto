@@ -159,20 +159,34 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     if (ticker) {
         let displayBlocks = [];
 
+        let infoStr = `🕒 ${timeStr}`;
+        if (weather) {
+            infoStr += `  •  🌡️ ${weather.temp}°C (${weather.city})`;
+        }
+        if (dolar) {
+            infoStr += `  •  💵 R$ ${dolar}`;
+        }
+        displayBlocks.push({ type: 'info', text: infoStr });
+
         if (ticker.text && typeof ticker.text === 'string') {
             displayBlocks.push({ type: 'text', text: ticker.text.replace(/{{hora}}/gi, timeStr).replace(/{{data}}/gi, dateStr) });
         }
         if (ticker.showLocalNews !== false && localNewsArray.length > 0) {
             displayBlocks.push({ type: 'local', items: localNewsArray });
         }
-        if (ticker.showSports !== false && sportsNewsArray.length > 0) {
-            displayBlocks.push({ type: 'sports', items: sportsNewsArray });
+        if (ticker.showSports !== false) {
+            if (sportsNewsArray.length > 0) {
+                displayBlocks.push({ type: 'sports', items: sportsNewsArray });
+            } else {
+                displayBlocks.push({ type: 'sports', items: ['Atualizando últimas notícias esportivas...'] });
+            }
         }
 
         const newsMode = ticker.newsMode || 'all';
 
         if (newsMode === 'all') {
             displayBlocks.forEach(b => {
+                if (b.type === 'info') displayText += b.text + '  •  ';
                 if (b.type === 'text') displayText += b.text + '  •  ';
                 if (b.type === 'local') displayText += `📰 ANANÁS NOTÍCIAS: ${b.items.join('  •  ')}  •  `;
                 if (b.type === 'sports') displayText += `⚽ GE ESPORTES: ${b.items.join('  •  ')}  •  `;
@@ -180,6 +194,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         } else if (newsMode === 'categories') {
             if (displayBlocks.length > 0) {
                 const b = displayBlocks[cycleCount % displayBlocks.length];
+                if (b.type === 'info') displayText += b.text + '  •  ';
                 if (b.type === 'text') displayText += b.text + '  •  ';
                 if (b.type === 'local') displayText += `📰 ANANÁS NOTÍCIAS: ${b.items.join('  •  ')}  •  `;
                 if (b.type === 'sports') displayText += `⚽ GE ESPORTES: ${b.items.join('  •  ')}  •  `;
@@ -187,6 +202,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
         } else if (newsMode === 'single') {
             let singles = [];
             displayBlocks.forEach(b => {
+                if (b.type === 'info') singles.push({ label: '', text: b.text });
                 if (b.type === 'text') singles.push({ label: '', text: b.text });
                 if (b.type === 'local') b.items.forEach(i => singles.push({ label: '📰 ANANÁS NOTÍCIAS:', text: i }));
                 if (b.type === 'sports') b.items.forEach(i => singles.push({ label: '⚽ GE ESPORTES:', text: i }));
@@ -197,6 +213,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             }
         }
     }
+
 
     const bgColor = ticker?.bgColor || 'rgba(0, 0, 0, 0.8)';
     const rawTextColor = ticker?.textColor || '#ffffff';
@@ -213,7 +230,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     return (
         <div 
             style={{ backgroundColor: bgColor }}
-            className="absolute bottom-0 left-0 w-full h-[5%] min-h-10 backdrop-blur-md flex items-center overflow-hidden z-50 shadow-2xl isolation-isolate"
+            className="absolute bottom-0 left-0 w-full h-[10%] min-h-16 backdrop-blur-md flex items-center overflow-hidden z-50 shadow-2xl isolation-isolate"
         >
             <style>{`
                 @keyframes marquee-scroll {
@@ -225,7 +242,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
             {/* Texto Deslizante */}
             <div 
                 key={displayText}
-                className="whitespace-nowrap font-semibold text-[2.2vh] uppercase tracking-widest pl-[100%] mr-32 relative z-[0]"
+                className="whitespace-nowrap font-semibold text-[4.5vh] uppercase tracking-widest pl-[100%] relative z-[0]"
                 style={{ 
                     color: colorHex,
                     animation: `marquee-scroll ${Math.max(5, Math.round((displayText.length / 150) * (ticker?.speed || 25)))}s linear infinite` 
@@ -233,32 +250,6 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 onAnimationIteration={() => setCycleCount(c => c + 1)}
             >
                 {displayText}
-            </div>
-
-            {/* Bloco Fixo (Hora, Clima, Dólar) extremamente comprimido */}
-            <div 
-                className="absolute right-0 top-0 h-full flex items-center px-2 md:px-3 bg-black/80 backdrop-blur-3xl border-l border-white/10 font-bold uppercase tracking-tight z-[40] gap-2 md:gap-3 shadow-[-10px_0_20px_rgba(0,0,0,0.5)]"
-                style={{ color: colorHex }}
-            >
-                <div className="flex items-center gap-1">
-                    <span className="opacity-70 text-[1.4vh]">🕒</span>
-                    <span className="text-[1.4vh] md:text-[1.6vh]">{timeStr}</span>
-                </div>
-                {weather && (
-                    <div className="flex items-center gap-1">
-                        <span className="opacity-70 text-[1.4vh]">🌡️</span>
-                        <span className="text-[1.4vh] md:text-[1.6vh] whitespace-nowrap">
-                            {weather.temp}°C 
-                            <span className="text-[1vh] opacity-60 ml-1 hidden md:inline">({weather.city})</span>
-                        </span>
-                    </div>
-                )}
-                {dolar && (
-                    <div className="flex items-center gap-1">
-                        <span className="opacity-70 text-[1.4vh]">💵</span>
-                        <span className="text-[1.4vh] md:text-[1.6vh] whitespace-nowrap">R$ {dolar}</span>
-                    </div>
-                )}
             </div>
         </div>
     );
@@ -1463,7 +1454,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-white bg-zinc-950 ${isTickerShown ? 'h-[95%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-white bg-zinc-950 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
                             <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-70 saturate-150 animate-standby-pan" />
                             <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/70 z-0" />
@@ -1490,7 +1481,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-black ${isTickerShown ? 'h-[95%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-black ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
