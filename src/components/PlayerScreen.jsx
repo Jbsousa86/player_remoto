@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
+import { ttsAudioData } from '../lib/ttsAudioData';
 const fetchWeatherAndLocation = async (manualLocation = null) => {
     let latitude, longitude, city;
     
@@ -997,8 +998,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         if (type && !allowedTypes.includes(type)) return false;
 
         const cleanTicket = ticket.toLowerCase().replace(/\s+/g, '');
+        if (!ttsAudioData['senha'] || !ttsAudioData['normal'] || !ttsAudioData['preferencial']) return false;
+
         for (let char of cleanTicket) {
-            if (!/[a-z0-9]/.test(char)) {
+            if (!ttsAudioData[char]) {
                 return false;
             }
         }
@@ -1008,18 +1011,18 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     // Reconstrói a sequência de arquivos locais a tocar
     const buildLocalSequence = (ticket, type) => {
         const sequence = [];
-        sequence.push('/audio/tts/senha.mp3');
+        sequence.push(ttsAudioData['senha']);
         
         const cleanTicket = ticket.toLowerCase().replace(/\s+/g, '');
         for (let char of cleanTicket) {
-            sequence.push(`/audio/tts/${char}.mp3`);
+            sequence.push(ttsAudioData[char]);
         }
 
         const isPref = type === 'Preferencial' || ticket.toUpperCase().startsWith('P');
         if (isPref) {
-            sequence.push('/audio/tts/preferencial.mp3');
+            sequence.push(ttsAudioData['preferencial']);
         } else {
-            sequence.push('/audio/tts/normal.mp3');
+            sequence.push(ttsAudioData['normal']);
         }
         return sequence;
     };
