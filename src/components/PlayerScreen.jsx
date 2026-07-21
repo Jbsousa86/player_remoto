@@ -1000,8 +1000,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
 
             // 1. SUPORTE NATIVO ABSOLUTO PARA CAPACITOR (ANDROID / IOS)
-            // Se for TV Box/Fire TV, pula essa etapa porque eles falham silenciosamente!
-            if (Capacitor.isNativePlatform() && !isTvBox) {
+            // Tenta usar o motor nativo da TV Box ou Celular primeiro. 
+            // Se falhar (dispositivo sem motor), o catch fará o fallback.
+            if (Capacitor.isNativePlatform()) {
                 console.log("🔊 Usando TTS nativo do Capacitor:", text);
                 TextToSpeech.speak({
                     text: text,
@@ -1011,17 +1012,16 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     volume: volume,
                 }).catch(err => {
                     console.error("Erro no TTS do Capacitor:", err);
-                    // Se o plugin falhar (ex: aparelho sem motor), toca a nuvem
-                    const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
-                    const audioFallback = new Audio(googleTtsUrl);
-                    audioFallback.volume = volume;
-                    audioFallback.play().catch(e => console.warn(e));
+                    // Fallback para a nuvem se o plugin nativo não funcionar
+                    const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+                    window.currentTtsAudio = new Audio(googleTtsUrl);
+                    window.currentTtsAudio.volume = volume;
+                    window.currentTtsAudio.play().catch(e => console.warn(e));
                 });
                 return;
             }
 
             // 2. USA A VOZ NATIVA DO SISTEMA WEB (PC/MAC/NAVEGADOR)
-            // IMPORTANTE: TV Boxes costumam reportar que tem vozes mas falham. Se for TV Box, pula direto pra nuvem!
             if ('speechSynthesis' in window && !isTvBox) {
                 const voices = window.speechSynthesis.getVoices();
                 const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
@@ -1044,11 +1044,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 console.warn("TV não tem vozes instaladas ou carregadas. Pulando para a nuvem...");
             }
 
-            // 2. PLANO B (FALLBACK): Nuvem do Google (Essencial para Fire TV e Android TV sem TTS nativo)
-            const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
-            const audioFallback = new Audio(googleTtsUrl);
-            audioFallback.volume = volume;
-            audioFallback.play().catch(err => {
+            // 3. PLANO B (FALLBACK): Nuvem do Google (client=tw-ob é mais estável que gtx para WebViews)
+            console.log("🔊 Usando Google Cloud TTS (Áudio MP3):", text);
+            const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+            window.currentTtsAudio = new Audio(googleTtsUrl);
+            window.currentTtsAudio.volume = volume;
+            window.currentTtsAudio.play().catch(err => {
                 console.warn("Erro ao reproduzir TTS em nuvem no Fire TV:", err);
             });
         } catch (err) {
