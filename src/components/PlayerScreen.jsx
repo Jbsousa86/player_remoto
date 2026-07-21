@@ -369,9 +369,10 @@ const NewsDisplay = ({ url, onError }) => {
             {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20 blur-2xl scale-110" />}
             
             {/* Imagem 100% nítida e encaixada na tela */}
-            {image && <img src={image} alt="" className="absolute top-0 left-0 w-full h-[60%] md:h-full object-contain md:object-cover object-top md:object-center opacity-100" />}
+            {image && <img src={image} alt="" className="absolute top-0 left-0 w-full h-[60%] md:h-full object-contain md:object-cover object-top md:object-center opacity-100 drop-shadow-md" />}
             
-            <div className="absolute inset-0 bg-linear-to-t from-zinc-100 from-15% via-zinc-100/95 via-55% to-transparent" />
+            {/* Degradê que fica 100% transparente a partir do meio da tela, deixando o topo limpo */}
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-100 from-15% via-zinc-100/95 via-50% to-transparent to-60%" />
             <div className="relative z-10 p-[4vw] md:p-[6vw] w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-[3vw]">
                 <div className="flex-1 max-w-[75vw]">
                     <div className="flex items-center gap-[1vw] mb-[2vh]">
