@@ -964,15 +964,15 @@ const AdminPanel = ({ isPairing = false }) => {
     };
 
     if (loading) return (
-        <div className="h-screen w-screen flex items-center justify-center bg-zinc-950">
+        <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
             <Loader2 className="w-8 h-8 text-orange-500 animate-spin" />
         </div>
     );
 
     return (
-        <div className="h-screen bg-zinc-950 text-zinc-100 flex flex-col md:flex-row font-sans selection:bg-orange-500 selection:text-white overflow-hidden">
+        <div className="h-screen bg-slate-50 text-zinc-900 flex flex-col md:flex-row font-sans selection:bg-orange-500 selection:text-white overflow-hidden">
             {/* Mobile Header */}
-            <div className="md:hidden flex items-center justify-between p-4 bg-zinc-950/80 border-b border-white/5 backdrop-blur-xl shrink-0 z-40">
+            <div className="md:hidden flex items-center justify-between p-4 bg-slate-50/80 border-b border-slate-200 backdrop-blur-xl shrink-0 z-40">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
                         <LayoutDashboard className="w-5 h-5 text-white" />
@@ -981,7 +981,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 </div>
                 <button
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                    className="p-3 bg-white/5 rounded-xl text-orange-500 active:scale-95 border border-white/10"
+                    className="p-3 bg-white shadow-sm rounded-xl text-orange-500 active:scale-95 border border-slate-300"
                 >
                     <RefreshCw className={`w-6 h-6 ${isSyncing ? 'animate-spin' : ''}`} />
                 </button>
@@ -992,7 +992,7 @@ const AdminPanel = ({ isPairing = false }) => {
                 {isMobileMenuOpen && (
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="md:hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
+                        className="md:hidden fixed inset-0 bg-slate-200/80 backdrop-blur-sm z-40"
                     />
                 )}
             </AnimatePresence>
@@ -1044,7 +1044,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         />
 
                         {/* Standby Customization Control */}
-                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
                             <div className="flex-1 w-full space-y-4">
                                 <div>
                                     <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">URL da Logo (Tela de Espera)</label>
@@ -1055,11 +1055,11 @@ const AdminPanel = ({ isPairing = false }) => {
                                             onChange={(e) => setStandbyLogo(e.target.value)}
                                             onBlur={() => handleStandbySave('logo', standbyLogo)}
                                             placeholder="Cole a URL ou faça upload..."
-                                            className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                            className="flex-1 min-w-0 bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                         />
                                         <div className="shrink-0 flex">
                                             <input type="file" id="logo-upload" accept="image/*" className="hidden" onChange={(e) => handleStandbyImageUpload(e, 'logo')} disabled={isUploadingStandby.logo} />
-                                            <label htmlFor="logo-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.logo ? 'bg-white/5 border-white/10 text-zinc-500' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                            <label htmlFor="logo-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.logo ? 'bg-white shadow-sm border-slate-300 text-zinc-500' : 'bg-white shadow-sm hover:bg-slate-100 border-slate-300 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
                                                 {isUploadingStandby.logo ? <Loader2 className="w-4 h-4 animate-spin" /> : '📁 Upload'}
                                             </label>
                                         </div>
@@ -1074,24 +1074,24 @@ const AdminPanel = ({ isPairing = false }) => {
                                             onChange={(e) => setStandbyBg(e.target.value)}
                                             onBlur={() => handleStandbySave('background', standbyBg)}
                                             placeholder="Cole a URL ou faça upload..."
-                                            className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                            className="flex-1 min-w-0 bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                         />
                                         <div className="shrink-0 flex">
                                             <input type="file" id="bg-upload" accept="image/*" className="hidden" onChange={(e) => handleStandbyImageUpload(e, 'background')} disabled={isUploadingStandby.background} />
-                                            <label htmlFor="bg-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.background ? 'bg-white/5 border-white/10 text-zinc-500' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                            <label htmlFor="bg-upload" className={`cursor-pointer flex items-center justify-center px-4 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-[10px] border ${isUploadingStandby.background ? 'bg-white shadow-sm border-slate-300 text-zinc-500' : 'bg-white shadow-sm hover:bg-slate-100 border-slate-300 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
                                                 {isUploadingStandby.background ? <Loader2 className="w-4 h-4 animate-spin" /> : '📁 Upload'}
                                             </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="shrink-0 w-full lg:w-48 flex items-center justify-center p-4 bg-black/40 rounded-2xl border border-white/10 h-full min-h-30">
+                            <div className="shrink-0 w-full lg:w-48 flex items-center justify-center p-4 bg-white shadow-sm rounded-2xl border border-slate-300 h-full min-h-30">
                                 {standbyLogo ? <img src={standbyLogo} alt="Logo" className="max-h-20 object-contain drop-shadow-lg" /> : <span className="text-4xl opacity-50 drop-shadow-lg">📺</span>}
                             </div>
                         </div>
 
                         {/* Ticker Control */}
-                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
                             <div className="flex-1 w-full">
                                 <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Letreiro / Ticker (Rodapé)</label>
                                 <input 
@@ -1101,7 +1101,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     onBlur={() => handleTickerTextSave(tickerText)}
                                     onKeyDown={(e) => { if (e.key === 'Enter') handleTickerTextSave(tickerText); }}
                                     placeholder="Digite recados. Use {{hora}} ou {{data}} para exibir tempo real..."
-                                    className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                    className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                 />
                                 <p className="text-[10px] text-zinc-500 mt-2 ml-1">Dica: A Hora, Clima e Cotação do Dólar são adicionados automaticamente ao final do letreiro.</p>
                                 
@@ -1117,9 +1117,9 @@ const AdminPanel = ({ isPairing = false }) => {
                                                 onChange={(e) => setTickerSpeed(parseInt(e.target.value))}
                                                 onMouseUp={() => handleTickerSpeedSave(tickerSpeed)}
                                                 onTouchEnd={() => handleTickerSpeedSave(tickerSpeed)}
-                                                className="flex-1 accent-orange-500 h-2 bg-black/40 rounded-lg appearance-none cursor-pointer"
+                                                className="flex-1 accent-orange-500 h-2 bg-white shadow-sm rounded-lg appearance-none cursor-pointer"
                                             />
-                                            <span className="text-xs font-mono font-bold bg-white/5 px-3 py-1.5 rounded-lg text-white border border-white/5 w-16 text-center">
+                                            <span className="text-xs font-mono font-bold bg-white shadow-sm px-3 py-1.5 rounded-lg text-white border border-slate-200 w-16 text-center">
                                                 {tickerSpeed}s
                                             </span>
                                         </div>
@@ -1129,7 +1129,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 pt-4">
                                     <div>
                                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 ml-1 tracking-[0.2em]">Fundo do Letreiro</label>
                                         <select 
@@ -1139,7 +1139,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                                 setTickerBgColor(val);
                                                 handleTickerColorsSave(val, tickerTextColor);
                                             }}
-                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                            className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
                                         >
                                             <option value="rgba(0, 0, 0, 0.8)">🖤 Preto Escuro (Padrão)</option>
                                             <option value="rgba(15, 23, 42, 0.9)">💙 Azul Escuro Slate</option>
@@ -1159,7 +1159,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                                 setTickerTextColor(val);
                                                 handleTickerColorsSave(tickerBgColor, val);
                                             }}
-                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                            className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
                                         >
                                             <option value="#ffffff">🤍 Branco (Padrão)</option>
                                             <option value="#facc15">💛 Amarelo Contraste</option>
@@ -1170,7 +1170,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     </div>
                                 </div>
 
-                                <div className="mt-6 border-t border-white/5 pt-4">
+                                <div className="mt-6 border-t border-slate-200 pt-4">
                                     <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Modo de Exibição das Notícias</label>
                                     <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
                                         <select 
@@ -1180,14 +1180,14 @@ const AdminPanel = ({ isPairing = false }) => {
                                                 setTickerNewsMode(val);
                                                 handleTickerOptionsSave({ newsMode: val });
                                             }}
-                                            className="flex-1 w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
+                                            className="flex-1 w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-semibold text-sm cursor-pointer appearance-none"
                                         >
                                             <option value="all">📰 Todas Juntas (Linha contínua)</option>
                                             <option value="categories">🔄 Alternar por Categoria</option>
                                             <option value="single">🎯 Manchete por Manchete (Uma por vez isolada)</option>
                                         </select>
 
-                                        <div className="flex items-center gap-6 p-4 bg-black/20 rounded-2xl border border-white/5 w-full sm:w-auto">
+                                        <div className="flex items-center gap-6 p-4 bg-slate-100 rounded-2xl border border-slate-200 w-full sm:w-auto">
                                             <label className="flex items-center gap-2 cursor-pointer group">
                                                 <input 
                                                     type="checkbox" 
@@ -1197,9 +1197,9 @@ const AdminPanel = ({ isPairing = false }) => {
                                                         setTickerShowLocalNews(val);
                                                         handleTickerOptionsSave({ showLocalNews: val });
                                                     }}
-                                                    className="w-5 h-5 accent-orange-500 rounded bg-black/40 border-white/10 cursor-pointer"
+                                                    className="w-5 h-5 accent-orange-500 rounded bg-white shadow-sm border-slate-300 cursor-pointer"
                                                 />
-                                                <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors">Notícias Ananás</span>
+                                                <span className="text-xs font-bold text-zinc-600 group-hover:text-white transition-colors">Notícias Ananás</span>
                                             </label>
                                             
                                             <label className="flex items-center gap-2 cursor-pointer group">
@@ -1211,9 +1211,9 @@ const AdminPanel = ({ isPairing = false }) => {
                                                         setTickerShowSports(val);
                                                         handleTickerOptionsSave({ showSports: val });
                                                     }}
-                                                    className="w-5 h-5 accent-orange-500 rounded bg-black/40 border-white/10 cursor-pointer"
+                                                    className="w-5 h-5 accent-orange-500 rounded bg-white shadow-sm border-slate-300 cursor-pointer"
                                                 />
-                                                <span className="text-xs font-bold text-zinc-300 group-hover:text-white transition-colors">GE Esportes</span>
+                                                <span className="text-xs font-bold text-zinc-600 group-hover:text-white transition-colors">GE Esportes</span>
                                             </label>
                                         </div>
                                     </div>
@@ -1230,7 +1230,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     className={`w-full lg:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
                                         selectedScreen.ticker?.isActive 
                                             ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
-                                            : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
+                                            : 'bg-white shadow-sm border-slate-300 text-zinc-500 hover:bg-slate-100 hover:text-white'
                                     }`}
                                 >
                                     {selectedScreen.ticker?.isActive ? '✅ Letreiro Ativo' : '❌ Letreiro Inativo'}
@@ -1239,7 +1239,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         </div>
 
                         {/* Configurações de Localização (Clima) */}
-                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
+                        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12 flex flex-col lg:flex-row gap-6 items-center">
                             <div className="flex-1 w-full">
                                 <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Localização Fixa para o Clima (Opcional)</label>
                                 <div className="flex gap-2">
@@ -1249,7 +1249,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                         onChange={(e) => setLocationQuery(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === 'Enter') handleSearchAndSaveLocation(); }}
                                         placeholder="Digite a Cidade ou CEP (Ex: São Paulo, SP ou 01000-000)..."
-                                        className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                        className="flex-1 min-w-0 bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                     />
                                     <button
                                         onClick={handleSearchAndSaveLocation}
@@ -1270,9 +1270,9 @@ const AdminPanel = ({ isPairing = false }) => {
                                 </div>
                                 {weatherLocation ? (
                                     <div className="flex flex-wrap gap-4 mt-3 ml-1 opacity-70">
-                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Cidade:</strong> {weatherLocation.city}</div>
-                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lat:</strong> {weatherLocation.lat}</div>
-                                        <div className="bg-white/5 rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lon:</strong> {weatherLocation.lon}</div>
+                                        <div className="bg-white shadow-sm rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Cidade:</strong> {weatherLocation.city}</div>
+                                        <div className="bg-white shadow-sm rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lat:</strong> {weatherLocation.lat}</div>
+                                        <div className="bg-white shadow-sm rounded-lg px-3 py-1.5 text-xs text-emerald-400 font-mono shadow-inner"><strong>Lon:</strong> {weatherLocation.lon}</div>
                                     </div>
                                 ) : (
                                     <p className="text-[10px] text-zinc-500 mt-2 ml-1">Se não definido, o totem tentará usar o GPS ou IP para descobrir onde está.</p>
@@ -1281,7 +1281,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         </div>
 
                         {/* Módulo de Fila de Atendimento */}
-                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
                             <div className="flex flex-col lg:flex-row gap-6 items-center justify-between">
                                 <div className="flex-1 w-full">
                                     <h3 className="text-base font-black text-white mb-1">Módulo de Fila de Atendimento</h3>
@@ -1298,14 +1298,14 @@ const AdminPanel = ({ isPairing = false }) => {
                                                         type="text" 
                                                         readOnly 
                                                         value={`${window.location.origin}/operador/${selectedScreen.id}`}
-                                                        className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-2xl px-5 py-3.5 text-xs text-emerald-400 font-bold select-all focus:outline-none"
+                                                        className="flex-1 min-w-0 bg-white shadow-sm border border-slate-300 rounded-2xl px-5 py-3.5 text-xs text-emerald-400 font-bold select-all focus:outline-none"
                                                     />
                                                     <button
                                                         onClick={() => {
                                                             navigator.clipboard.writeText(`${window.location.origin}/operador/${selectedScreen.id}`);
                                                             alert('Link copiado!');
                                                         }}
-                                                        className="px-5 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] border border-white/5 active:scale-95 transition-all cursor-pointer"
+                                                        className="px-5 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] border border-slate-200 active:scale-95 transition-all cursor-pointer"
                                                     >
                                                         Copiar
                                                     </button>
@@ -1328,7 +1328,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                         className={`w-full lg:w-auto px-8 py-4 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${
                                             selectedScreen.queueEnabled 
                                                 ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20' 
-                                                : 'bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white'
+                                                : 'bg-white shadow-sm border-slate-300 text-zinc-500 hover:bg-slate-100 hover:text-white'
                                         }`}
                                     >
                                         {selectedScreen.queueEnabled ? '✅ Fila Ativa' : '❌ Fila Inativa'}
@@ -1338,7 +1338,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         </div>
 
                         {/* Global RSS and Ticker Defaults */}
-                        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <div className="space-y-4">
                                     <div>
@@ -1348,7 +1348,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                             value={globalRssUrl}
                                             onChange={(e) => setGlobalRssUrl(e.target.value)}
                                             placeholder="Cole a URL do feed RSS padrão..."
-                                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
+                                            className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-4 focus:border-orange-500 transition-all outline-none text-white font-medium text-sm"
                                         />
                                         <p className="text-[10px] text-zinc-500 mt-2 ml-1">Esse RSS será aplicado como item de notícias em todas as telas.</p>
                                     </div>
@@ -1366,7 +1366,7 @@ const AdminPanel = ({ isPairing = false }) => {
 
                         {/* Block Scheduling Control */}
                         {uniqueBlocks.length > 0 && (
-                            <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+                            <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
                                 <h3 className="text-[10px] font-black text-zinc-500 uppercase mb-6 tracking-[0.2em] flex items-center gap-2">
                                     <Clock className="w-4 h-4" /> Agendamento de Blocos
                                 </h3>
@@ -1374,7 +1374,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                     {uniqueBlocks.map(block => {
                                         const schedule = localSchedules[block] || { startTime: '', endTime: '' };
                                         return (
-                                            <div key={block} className="bg-black/40 border border-white/10 p-4 rounded-2xl relative">
+                                            <div key={block} className="bg-white shadow-sm border border-slate-300 p-4 rounded-2xl relative">
                                                 <div className="flex items-center justify-between mb-3">
                                                     <h4 className="font-bold text-white text-sm truncate pr-2" title={block}>📁 {block}</h4>
                                                     <AnimatePresence>
@@ -1398,7 +1398,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                                             type="time" 
                                                             value={schedule.startTime}
                                                             onChange={(e) => handleScheduleChange(block, 'startTime', e.target.value)}
-                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
+                                                            className="w-full bg-white shadow-sm border border-slate-300 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
                                                         />
                                                     </div>
                                                     <div className="flex-1">
@@ -1407,7 +1407,7 @@ const AdminPanel = ({ isPairing = false }) => {
                                                             type="time" 
                                                             value={schedule.endTime}
                                                             onChange={(e) => handleScheduleChange(block, 'endTime', e.target.value)}
-                                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
+                                                            className="w-full bg-white shadow-sm border border-slate-300 rounded-xl px-3 py-2 focus:border-orange-500 transition-all outline-none text-white text-xs"
                                                         />
                                                     </div>
                                                 </div>
@@ -1421,7 +1421,7 @@ const AdminPanel = ({ isPairing = false }) => {
                         {/* Playlist Header */}
                         <div className="flex items-center justify-between mb-8 px-2">
                             <div className="flex items-center gap-4">
-                                <h3 className="font-black text-2xl uppercase tracking-tighter text-zinc-300">Playlist Ativa ({playlist.length})</h3>
+                                <h3 className="font-black text-2xl uppercase tracking-tighter text-zinc-600">Playlist Ativa ({playlist.length})</h3>
                             </div>
                             {playlist.length > 0 && (
                                 <button onClick={handleClearPlaylist} className="text-[10px] font-black text-red-500 hover:text-red-400 uppercase tracking-widest bg-red-500/5 px-4 py-2 rounded-xl border border-red-500/10">
@@ -1441,7 +1441,7 @@ const AdminPanel = ({ isPairing = false }) => {
                     </div>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center text-center p-12">
-                        <div className="w-24 h-24 bg-white/5 border border-white/5 rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
+                        <div className="w-24 h-24 bg-white shadow-sm border border-slate-200 rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
                             <Monitor className="w-10 h-10 text-zinc-700" />
                         </div>
                         <h2 className="text-3xl font-black mb-3 uppercase tracking-tighter leading-none italic">Selecione <span className="text-zinc-700">um Totem</span></h2>

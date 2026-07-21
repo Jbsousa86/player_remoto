@@ -11,9 +11,9 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                     const isPlayingNow = item.id && item.id === currentPlayingId;
                     return (
                     <motion.div layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95 }} key={item.id ? `id-${item.id}-${index}` : `idx-${index}`}
-                        className={`bg-white/5 border ${item.isActive === false ? 'border-white/5 opacity-40 grayscale' : (isPlayingNow ? 'border-orange-500 shadow-2xl shadow-orange-500/20 ring-1 ring-orange-500' : 'border-white/10')} rounded-2xl overflow-hidden group ${!isPlayingNow ? 'shadow-xl' : ''} transition-all`}
+                        className={`bg-white shadow-sm border ${item.isActive === false ? 'border-slate-200 opacity-40 grayscale' : (isPlayingNow ? 'border-orange-500 shadow-2xl shadow-orange-500/20 ring-1 ring-orange-500' : 'border-slate-300')} rounded-2xl overflow-hidden group ${!isPlayingNow ? 'shadow-xl' : ''} transition-all`}
                     >
-                        <div className="aspect-video bg-black relative">
+                        <div className="aspect-video bg-slate-200 relative">
                             {item.type === 'video' ? (
                                 <video src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : (item.fitMode === 'fill' ? 'object-fill' : 'object-contain')}`} muted />
                             ) : item.type === 'youtube' ? (() => {
@@ -22,7 +22,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 return ytId ? (
                                     <img src={`https://img.youtube.com/vi/${ytId}/hqdefault.jpg`} className="w-full h-full object-cover" alt="" />
                                 ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-900">
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
                                         <span className="text-4xl mb-2">📺</span>
                                         {isLive && (
                                             <span className="bg-red-600 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">🔴 Ao Vivo</span>
@@ -37,18 +37,18 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                             ) : item.type === 'news' ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-pink-500">
                                     <span className="text-4xl mb-2">📰</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Notícias</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Notícias</span>
                                 </div>
                             ) : item.type === 'loterias' ? (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-zinc-800 text-emerald-500">
                                     <span className="text-4xl mb-2">🎰</span>
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Loterias Caixa</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Loterias Caixa</span>
                                 </div>
                             ) : (
                                 <img src={item.url} className={`w-full h-full ${item.fitMode === 'cover' ? 'object-cover' : (item.fitMode === 'fill' ? 'object-fill' : 'object-contain')}`} alt="" />
                             )}
                             <div className="absolute top-4 left-4 flex gap-2">
-                                <div className="bg-black/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/10 uppercase tracking-widest">
+                                <div className="bg-slate-200/80 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-slate-300 uppercase tracking-widest">
                                     {item.type}
                                 </div>
                                 <div className="bg-orange-500 px-3 py-1 rounded-full text-[9px] font-black text-white uppercase tracking-widest">
@@ -56,7 +56,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 </div>
                             </div>
                             {item.block && (
-                                <div className="absolute top-4 right-4 bg-purple-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-white/10 text-white uppercase tracking-widest shadow-lg shadow-purple-900/50">
+                                <div className="absolute top-4 right-4 bg-purple-600/90 backdrop-blur-md px-3 py-1 rounded-full text-[9px] font-black border border-slate-300 text-white uppercase tracking-widest shadow-lg shadow-purple-900/50">
                                     📁 {item.block}
                                 </div>
                             )}
@@ -71,7 +71,7 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 <p className="text-[10px] text-zinc-500 font-black uppercase mb-1 tracking-widest">
                                     {item.type === 'loterias' ? 'Jogo da Caixa' : 'Link da Mídia'}
                                 </p>
-                                <p className="text-xs text-zinc-300 truncate font-medium" title={item.url}>
+                                <p className="text-xs text-zinc-600 truncate font-medium" title={item.url}>
                                     {item.type === 'loterias' ? (
                                         item.url === 'todas' ? '🔄 Todas as Loterias' :
                                         item.url === 'megasena' ? '🟢 Mega-Sena' :
@@ -82,31 +82,31 @@ const PlaylistGrid = ({ playlist, deleteItem, moveItem, toggleItemActive, getYou
                                 </p>
                             </div>
                             <div className="flex flex-wrap gap-2 mt-2">
-                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                <span className="text-[9px] font-bold bg-white shadow-sm border border-slate-200 text-zinc-500 px-2.5 py-1 rounded-lg uppercase tracking-wider">
                                     ⏱️ {item.duration === 0 ? 'ILIMITADO' : `${item.duration}s`}
                                 </span>
-                                <span className="text-[9px] font-bold bg-white/5 border border-white/5 text-zinc-400 px-2.5 py-1 rounded-lg uppercase tracking-wider">
+                                <span className="text-[9px] font-bold bg-white shadow-sm border border-slate-200 text-zinc-500 px-2.5 py-1 rounded-lg uppercase tracking-wider">
                                     📐 {item.fitMode === 'cover' ? 'Preencher' : item.fitMode === 'contain' ? 'Ajustar' : item.fitMode === 'smart' ? 'Inteligente' : 'Esticar'}
                                 </span>
                             </div>
-                        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/5">
-                            <div className="flex items-center gap-2 bg-black/20 p-1 rounded-xl border border-white/5">
-                                <button onClick={() => moveItem(index, -1)} disabled={index === 0} className={`p-1.5 rounded-lg transition-all ${index === 0 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-white/10 text-zinc-300 hover:text-white'}`}>
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200">
+                            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+                                <button onClick={() => moveItem(index, -1)} disabled={index === 0} className={`p-1.5 rounded-lg transition-all ${index === 0 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-slate-100 text-zinc-600 hover:text-zinc-900'}`}>
                                         <ChevronLeft className="w-4 h-4" />
                                     </button>
                                     <div className="text-[10px] font-black text-zinc-500 px-1 uppercase tracking-widest">Mover</div>
-                                <button onClick={() => moveItem(index, 1)} disabled={index === playlist.length - 1} className={`p-1.5 rounded-lg transition-all ${index === playlist.length - 1 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-white/10 text-zinc-300 hover:text-white'}`}>
+                                <button onClick={() => moveItem(index, 1)} disabled={index === playlist.length - 1} className={`p-1.5 rounded-lg transition-all ${index === playlist.length - 1 ? 'opacity-30 cursor-not-allowed text-zinc-600' : 'hover:bg-slate-100 text-zinc-600 hover:text-zinc-900'}`}>
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                <button onClick={() => toggleItemActive(item.id, item.isActive)} title={item.isActive === false ? "Ativar Mídia" : "Desativar Mídia"} className={`p-2.5 rounded-xl transition-all shrink-0 ${item.isActive === false ? 'bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white'}`}>
+                                <button onClick={() => toggleItemActive(item.id, item.isActive)} title={item.isActive === false ? "Ativar Mídia" : "Desativar Mídia"} className={`p-2.5 rounded-xl transition-all shrink-0 ${item.isActive === false ? 'bg-white shadow-sm text-zinc-500 hover:bg-slate-100 hover:text-zinc-900' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-zinc-900'}`}>
                                         {item.isActive === false ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                     </button>
                                     <button 
                                         onClick={() => { if (window.confirm('Tem certeza que deseja excluir esta mídia definitivamente da playlist?')) deleteItem(item.id); }} 
                                         title="Excluir Mídia" 
-                                        className="p-2.5 bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white rounded-xl transition-all shrink-0 shadow-lg hover:shadow-red-500/50"
+                                        className="p-2.5 bg-red-500/20 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-zinc-900 rounded-xl transition-all shrink-0 shadow-lg hover:shadow-red-500/50"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

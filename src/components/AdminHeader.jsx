@@ -29,13 +29,13 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                         {selectedScreen.name} • {isScreenOnline(selectedScreen.lastSeen) ? 'ONLINE' : 'OFFLINE'}
                     </div>
                     <div className="inline-flex items-center gap-2 bg-orange-500/10 text-orange-500 border-orange-500/20 text-[10px] font-black px-3 py-1 rounded-full border uppercase tracking-widest" title="Digite este ID em outro totem para espelhá-los">
-                        ID DO TOTEM: <span className="text-white select-all">{selectedScreen.id}</span>
+                        ID DO TOTEM: <span className="text-zinc-900 select-all">{selectedScreen.id}</span>
                     </div>
                 </div>
                 <button
                     onClick={handleForceReload}
                     title="Forçar recarregamento da página no Totem"
-                    className="ml-3 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
+                    className="ml-3 inline-flex items-center gap-2 bg-white shadow-sm hover:bg-slate-100 text-zinc-500 hover:text-zinc-900 text-[9px] font-black px-3 py-1 rounded-full border border-slate-300 transition-all uppercase tracking-widest active:scale-95"
                 >
                     <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
                     Reiniciar Player
@@ -43,7 +43,7 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 <button
                     onClick={handleClearCache}
                     title="Limpar cache de mídias e recarregar o Totem"
-                    className="ml-2 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
+                    className="ml-2 inline-flex items-center gap-2 bg-white shadow-sm hover:bg-slate-100 text-zinc-500 hover:text-zinc-900 text-[9px] font-black px-3 py-1 rounded-full border border-slate-300 transition-all uppercase tracking-widest active:scale-95"
                 >
                     <Trash2 className="w-3 h-3" />
                     Limpar Cache
@@ -51,18 +51,18 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 <button
                     onClick={handleToggleOrientation}
                     title="Alternar entre Horizontal e Vertical"
-                    className="ml-2 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border border-white/10 transition-all uppercase tracking-widest active:scale-95"
+                    className="ml-2 inline-flex items-center gap-2 bg-white shadow-sm hover:bg-slate-100 text-zinc-500 hover:text-zinc-900 text-[9px] font-black px-3 py-1 rounded-full border border-slate-300 transition-all uppercase tracking-widest active:scale-95"
                 >
                     {selectedScreen.orientation === 'portrait' ? <Smartphone className="w-3 h-3" /> : <Monitor className="w-3 h-3" />}
                     {selectedScreen.orientation === 'portrait' ? 'MODO VERTICAL' : 'MODO HORIZONTAL'}
                 </button>
-                <div className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 text-zinc-400 text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest ${
-                    selectedScreen.isMuted === false ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-white/10'
+                <div className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white shadow-sm text-zinc-500 text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest ${
+                    selectedScreen.isMuted === false ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/5' : 'border-slate-300'
                 }`}>
                     <button
                         onClick={handleToggleSound}
                         title="Alternar entre Com Som e Sem Som"
-                        className="hover:text-white active:scale-95 flex items-center gap-2"
+                        className="hover:text-zinc-900 active:scale-95 flex items-center gap-2"
                     >
                         {selectedScreen.isMuted === false ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
                         <span className="hidden sm:inline">{selectedScreen.isMuted === false ? 'SOM' : 'MUDO'}</span>
@@ -75,15 +75,15 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                         onChange={onVolumeSliderChange} 
                         onMouseUp={onVolumeSliderRelease} 
                         onTouchEnd={onVolumeSliderRelease}
-                        className={`w-16 md:w-20 h-1 bg-black/40 rounded-lg appearance-none cursor-pointer ${selectedScreen.isMuted === false ? 'accent-emerald-500' : 'accent-zinc-500'}`}
+                        className={`w-16 md:w-20 h-1 bg-white shadow-sm rounded-lg appearance-none cursor-pointer ${selectedScreen.isMuted === false ? 'accent-emerald-500' : 'accent-zinc-500'}`}
                         title={`Volume: ${localVolume}%`}
                     />
                 </div>
                 <button
                     onClick={handleTogglePlayPause}
                     title="Pausar ou Reproduzir Totem"
-                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
-                        selectedScreen.isPlaying === false ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 'border-white/10'
+                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white shadow-sm hover:bg-slate-100 text-zinc-500 hover:text-zinc-900 text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
+                        selectedScreen.isPlaying === false ? 'border-amber-500/50 text-amber-400 bg-amber-500/5' : 'border-slate-300'
                     }`}
                 >
                     {selectedScreen.isPlaying === false ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
@@ -92,30 +92,30 @@ const AdminHeader = ({ selectedScreen, isScreenOnline, handleForceReload, handle
                 <button
                     onClick={handleToggleStop}
                     title="Parar ou Iniciar Totem"
-                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
-                        selectedScreen.isStopped ? 'border-red-500/50 text-red-400 bg-red-500/5' : 'border-white/10'
+                    className={`ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white shadow-sm hover:bg-slate-100 text-zinc-500 hover:text-zinc-900 text-[9px] font-black px-3 py-1 rounded-full border transition-all uppercase tracking-widest active:scale-95 ${
+                        selectedScreen.isStopped ? 'border-red-500/50 text-red-400 bg-red-500/5' : 'border-slate-300'
                     }`}
                 >
                     <Square className="w-3 h-3" />
                     {selectedScreen.isStopped ? 'INICIAR' : 'PARAR'}
                 </button>
-                <div className="ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white/5 border border-white/10 text-zinc-400 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
+                <div className="ml-2 mt-2 md:mt-0 inline-flex items-center gap-2 bg-white shadow-sm border border-slate-300 text-zinc-500 text-[9px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest">
                     <span className="text-zinc-500">🎬 Transição Global:</span>
                     <select 
                         value={selectedScreen.transition || 'fade-zoom'} 
                         onChange={(e) => handleTransitionChange && handleTransitionChange(e.target.value)}
-                        className="bg-transparent text-white outline-none cursor-pointer font-black border-none py-0 pr-6 uppercase"
+                        className="bg-transparent text-zinc-900 outline-none cursor-pointer font-black border-none py-0 pr-6 uppercase"
                     >
-                        <option value="fade-zoom" className="bg-zinc-950 text-white">Cinematic Zoom</option>
-                        <option value="fade" className="bg-zinc-950 text-white">Dissolver Suave</option>
-                        <option value="slide-left" className="bg-zinc-950 text-white">Slide Esquerda</option>
-                        <option value="slide-right" className="bg-zinc-950 text-white">Slide Direita</option>
-                        <option value="slide-up" className="bg-zinc-950 text-white">Slide Cima</option>
-                        <option value="slide-down" className="bg-zinc-950 text-white">Slide Baixo</option>
-                        <option value="none" className="bg-zinc-950 text-white">Sem Efeito</option>
+                        <option value="fade-zoom" className="bg-slate-50 text-zinc-900">Cinematic Zoom</option>
+                        <option value="fade" className="bg-slate-50 text-zinc-900">Dissolver Suave</option>
+                        <option value="slide-left" className="bg-slate-50 text-zinc-900">Slide Esquerda</option>
+                        <option value="slide-right" className="bg-slate-50 text-zinc-900">Slide Direita</option>
+                        <option value="slide-up" className="bg-slate-50 text-zinc-900">Slide Cima</option>
+                        <option value="slide-down" className="bg-slate-50 text-zinc-900">Slide Baixo</option>
+                        <option value="none" className="bg-slate-50 text-zinc-900">Sem Efeito</option>
                     </select>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-black text-white uppercase italic tracking-tighter leading-none">
+                <h2 className="text-4xl md:text-6xl font-black text-zinc-900 uppercase italic tracking-tighter leading-none">
                     Gerenciar <span className="text-orange-500">Mídias</span>
                 </h2>
             </div>

@@ -18,10 +18,10 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
         newItem.type === 'web' ? 'border-teal-500/50' :
         newItem.type === 'news' ? 'border-pink-500/50' :
         newItem.type === 'loterias' ? 'border-emerald-500/50' :
-        'border-white/10'
+        'border-slate-300'
     );
     return (
-        <div className="bg-white/5 border border-white/5 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
+        <div className="bg-white shadow-sm border border-slate-200 p-6 lg:p-8 rounded-3xl shadow-2xl mb-12">
             <form onSubmit={addItem} className="space-y-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
                     <div className="lg:col-span-12">
@@ -37,7 +37,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                                         const dur = selectedUrl === 'todas' ? 32 : 10;
                                         setNewItem({ ...newItem, url: selectedUrl, duration: dur });
                                     }}
-                                    className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-bold appearance-none cursor-pointer`}
+                                    className={`flex-1 w-full bg-white shadow-sm ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-zinc-900 font-bold appearance-none cursor-pointer`}
                                     required
                                 >
                                     <option value="todas">🔄 Todas (Mega-Sena, Lotofácil, Quina, Lotomania)</option>
@@ -49,7 +49,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             ) : (
                                 <input type="text" value={newItem.url} onChange={(e) => handleUrlChange(e.target.value)}
                                     placeholder="Cole a URL da Imagem, Vídeo, YouTube, Live ou RSS de Notícias"
-                                    className={`flex-1 w-full bg-black/40 ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-white font-medium disabled:opacity-50`} 
+                                    className={`flex-1 w-full bg-white shadow-sm ${borderColor} border rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none text-zinc-900 font-medium disabled:opacity-50`} 
                                     required={!isUploading} 
                                     disabled={isUploading} 
                                 />
@@ -57,7 +57,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             {newItem.type !== 'loterias' && (
                                 <div className="shrink-0 flex">
                                     <input type="file" id="media-upload" accept="video/*,image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} multiple />
-                                    <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex flex-col items-center justify-center px-8 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white/5 border-white/10 text-zinc-400' : 'bg-white/5 hover:bg-white/10 border-white/10 text-white shadow-xl hover:scale-105 active:scale-95'}`}>
+                                    <label htmlFor="media-upload" className={`w-full sm:w-auto cursor-pointer flex flex-col items-center justify-center px-8 py-3 rounded-2xl font-black uppercase tracking-widest transition-all text-xs border ${isUploading ? 'bg-white shadow-sm border-slate-300 text-zinc-500' : 'bg-white shadow-sm hover:bg-slate-100 border-slate-300 text-zinc-900 shadow-xl hover:scale-105 active:scale-95'}`}>
                                         {isUploading ? (
                                             <>
                                                 <span>{uploadStatusText || 'Processando...'}</span>
@@ -91,7 +91,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                             const defaultUrl = val === 'loterias' ? 'todas' : '';
                             const defaultDuration = val === 'loterias' ? 32 : ((val === 'video' || val === 'youtube') ? 0 : 10);
                             setNewItem({ ...newItem, type: val, url: defaultUrl, duration: defaultDuration });
-                        }} className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white appearance-none cursor-pointer">
+                        }} className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-zinc-900 appearance-none cursor-pointer">
                             <option value="image">🖼️ Imagem</option>
                             <option value="video">🎥 Vídeo Direto</option>
                             <option value="youtube">📺 YouTube</option>
@@ -104,13 +104,13 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                     <div className="lg:col-span-3">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Exibição (Seg)</label>
                         <input type="number" value={newItem.duration} onChange={(e) => setNewItem({ ...newItem, duration: parseInt(e.target.value) || 0 })}
-                             className={`w-full bg-black/40 border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-white/10 text-white'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
+                             className={`w-full bg-white shadow-sm border ${newItem.duration === 0 ? 'border-emerald-500/50 text-emerald-500 bg-emerald-500/5' : 'border-slate-300 text-zinc-900'} rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-black`} min="0" />
                     </div>
 
                     <div className="lg:col-span-3">
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Encaixe</label>
                         <select value={newItem.fitMode} onChange={(e) => setNewItem({ ...newItem, fitMode: e.target.value })}
-                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white cursor-pointer appearance-none"
+                            className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-zinc-900 cursor-pointer appearance-none"
                         >
                             <option value="cover">✂️ Preencher (Cortar)</option>
                             <option value="contain">🖼️ Ajustar (Inteira)</option>
@@ -123,7 +123,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Grupo / Bloco (Opcional)</label>
                         <input type="text" value={newItem.block || ''} onChange={(e) => setNewItem({ ...newItem, block: e.target.value })}
                             placeholder="Ex: Promoções..."
-                            className="w-full bg-black/40 border border-white/10 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-white" />
+                            className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-zinc-900" />
                     </div>
 
                     <div className="lg:col-span-12 flex flex-col sm:flex-row gap-4 mt-2">
