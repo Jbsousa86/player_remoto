@@ -413,7 +413,14 @@ const LoteriasDisplay = ({ url, onError }) => {
     // Sub-rotation effect inside the slide
     useEffect(() => {
         if (!isRotating) return;
+        let count = 0;
         const interval = setInterval(() => {
+            count++;
+            // Stop rotating if we reached the last lottery in the list to prevent flicker at the end of the 32s parent timer
+            if (count >= gamesList.length) {
+                clearInterval(interval);
+                return;
+            }
             setGameIndex((prev) => (prev + 1) % gamesList.length);
         }, 8000); // Change game every 8 seconds
         return () => clearInterval(interval);
