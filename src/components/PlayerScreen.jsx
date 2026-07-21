@@ -115,7 +115,13 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
                 const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://www.espn.com.br/espn/rss/news')}`);
                 const data = await res.json();
                 if (data?.status === 'ok' && data.items?.length > 0) {
-                    const sportsTitles = data.items.map(item => item.title || '');
+                    const sanitizeHTML = (str) => {
+                        if (!str) return '';
+                        let s = str;
+                        try { s = decodeURIComponent(escape(s)); } catch (e) { /* ignore */ }
+                        return s.replace(/\uFFFD/g, ''); // Remove losangos pretos de falha de codificação
+                    };
+                    const sportsTitles = data.items.map(item => sanitizeHTML(item.title) || '');
                     setSportsNewsArray(sportsTitles.filter(t => t.length > 0).slice(0, 4));
                 }
             } catch (error) {
@@ -320,8 +326,17 @@ const NewsDisplay = ({ url, onError }) => {
                 .then(data => {
                     if (!isMounted) return;
                     if (data?.status === 'ok' && data.items?.length > 0) {
+                        const sanitizeHTML = (str) => {
+                            if (!str) return '';
+                            let s = str;
+                            try { s = decodeURIComponent(escape(s)); } catch (e) { /* ignore */ }
+                            return s.replace(/\uFFFD/g, ''); // Remove losangos pretos de falha de codificação
+                        };
+                        
                         // Sorteia aleatoriamente uma das 5 últimas notícias recentes
-                        const item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
+                        let item = data.items[Math.floor(Math.random() * Math.min(5, data.items.length))];
+                        item.title = sanitizeHTML(item.title);
+                        item.description = sanitizeHTML(item.description);
                         setNews(item);
                     } else {
                         console.warn('RSS Feed sem itens', data);
