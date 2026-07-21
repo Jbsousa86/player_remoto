@@ -364,9 +364,9 @@ const NewsDisplay = ({ url, onError }) => {
     const newsUrl = news.link || news.guid;
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-zinc-300 animate-fade">
-            {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />}
-            <div className="absolute inset-0 bg-linear-to-t from-white via-white/90 to-transparent" />
+        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-zinc-200 animate-fade">
+            {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-100 via-zinc-100/80 to-transparent" />
             <div className="relative z-10 p-[4vw] md:p-[6vw] w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-[3vw]">
                 <div className="flex-1 max-w-[75vw]">
                     <div className="flex items-center gap-[1vw] mb-[2vh]">
