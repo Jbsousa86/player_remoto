@@ -1021,7 +1021,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             }
 
             // 2. USA A VOZ NATIVA DO SISTEMA WEB (PC/MAC/NAVEGADOR)
-            if ('speechSynthesis' in window) {
+            // IMPORTANTE: TV Boxes costumam reportar que tem vozes mas falham. Se for TV Box, pula direto pra nuvem!
+            if ('speechSynthesis' in window && !isTvBox) {
                 const voices = window.speechSynthesis.getVoices();
                 const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
                 
