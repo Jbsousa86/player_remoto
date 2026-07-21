@@ -1011,14 +1011,13 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     volume: volume,
                 }).catch(err => {
                     console.error("Erro no TTS do Capacitor:", err);
-                    const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+                    const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
                     const audioEl = document.getElementById('global-tts-player');
                     if (audioEl) {
                         audioEl.src = googleTtsUrl;
                         audioEl.volume = volume;
                         audioEl.play().catch(e => {
                             console.warn("Erro ao tocar áudio no DOM:", e);
-                            alert("Falha no Áudio da TV Box: " + e.message + " | Nome: " + e.name);
                         });
                     }
                 });
@@ -1048,16 +1047,15 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 console.warn("TV não tem vozes instaladas ou carregadas. Pulando para a nuvem...");
             }
 
-            // 3. PLANO B (FALLBACK): Nuvem do Google (client=tw-ob é mais estável que gtx para WebViews)
+            // 3. PLANO B (FALLBACK): Nuvem do Google (client=gtx é mais estável para WebViews antigos)
             console.log("🔊 Usando Google Cloud TTS (Áudio MP3):", text);
-            const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+            const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
             const audioEl = document.getElementById('global-tts-player');
             if (audioEl) {
                 audioEl.src = googleTtsUrl;
                 audioEl.volume = volume;
                 audioEl.play().catch(e => {
                     console.warn("Erro ao tocar áudio no DOM (Fallback):", e);
-                    alert("Falha no Áudio da Nuvem: " + e.message + " | Nome: " + e.name);
                 });
             }
         } catch (err) {
