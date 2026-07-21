@@ -1011,11 +1011,13 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     volume: volume,
                 }).catch(err => {
                     console.error("Erro no TTS do Capacitor:", err);
-                    // Fallback para a nuvem se o plugin nativo não funcionar
                     const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
-                    window.currentTtsAudio = new Audio(googleTtsUrl);
-                    window.currentTtsAudio.volume = volume;
-                    window.currentTtsAudio.play().catch(e => console.warn(e));
+                    const audioEl = document.getElementById('global-tts-player');
+                    if (audioEl) {
+                        audioEl.src = googleTtsUrl;
+                        audioEl.volume = volume;
+                        audioEl.play().catch(e => console.warn("Erro ao tocar áudio no DOM:", e));
+                    }
                 });
                 return;
             }
@@ -1046,11 +1048,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             // 3. PLANO B (FALLBACK): Nuvem do Google (client=tw-ob é mais estável que gtx para WebViews)
             console.log("🔊 Usando Google Cloud TTS (Áudio MP3):", text);
             const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
-            window.currentTtsAudio = new Audio(googleTtsUrl);
-            window.currentTtsAudio.volume = volume;
-            window.currentTtsAudio.play().catch(err => {
-                console.warn("Erro ao reproduzir TTS em nuvem no Fire TV:", err);
-            });
+            const audioEl = document.getElementById('global-tts-player');
+            if (audioEl) {
+                audioEl.src = googleTtsUrl;
+                audioEl.volume = volume;
+                audioEl.play().catch(e => console.warn("Erro ao tocar áudio no DOM (Fallback):", e));
+            }
         } catch (err) {
             console.warn('Erro na síntese de voz:', err);
         }
@@ -1696,6 +1699,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     <span>⚠️ Toque na tela para ativar o som das senhas</span>
                 </div>
             )}
+            
+            {/* Elemento de áudio no DOM para evitar bloqueios de autoplay sem interação em headless Audio() */}
+            <audio id="global-tts-player" className="hidden" />
         </div>
     );
 };
