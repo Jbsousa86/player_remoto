@@ -1448,7 +1448,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
     // O link agora é puxado direto das configurações do painel Admin!
     const companyLogo = standbyOptions?.logo || "";
 
-    const isTickerShown = !!(ticker?.isActive || queueEnabled);
+    // Ticker deve respeitar estritamente a chave isActive, mesmo com a Fila ligada.
+    const isTickerShown = !!(ticker?.isActive);
 
     return (
         <div className="absolute inset-0 bg-black overflow-hidden">
