@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Capacitor } from '@capacitor/core';
+import { Capacitor, CapacitorHttp } from '@capacitor/core';
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 const fetchWeatherAndLocation = async (manualLocation = null) => {
     let latitude, longitude, city;
@@ -981,56 +981,78 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         }
     };
 
-    // Text to speech generator using Web Speech API
+    // Auxiliar para reproduzir áudio via URL direta
+    const playDirectUrlAudio = (url, volume) => {
+        const audioEl = document.getElementById('global-tts-player');
+        if (audioEl) {
+            audioEl.src = url;
+            audioEl.volume = volume;
+            audioEl.play().catch(e => console.warn("Erro ao tocar áudio via URL direta:", e));
+        }
+    };
+
+    // Auxiliar para o Fallback usando Google Translate TTS
+    const playFallbackTts = (text, volume) => {
+        console.log("🔊 Usando Google Cloud TTS (Áudio MP3) como fallback:", text);
+        const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
+        
+        if (Capacitor.isNativePlatform()) {
+            CapacitorHttp.get({ url: googleTtsUrl, responseType: 'blob' }).then(response => {
+                const audioUrl = `data:audio/mp3;base64,${response.data}`;
+                const audioEl = document.getElementById('global-tts-player');
+                if (audioEl) {
+                    audioEl.src = audioUrl;
+                    audioEl.volume = volume;
+                    audioEl.play().catch(e => console.warn("Erro ao tocar áudio via base64 (Fallback):", e));
+                }
+            }).catch(err => {
+                console.error("Erro no CapacitorHttp (Fallback):", err);
+                // Se falhar o download base64, tenta tocar a URL direta como último recurso
+                playDirectUrlAudio(googleTtsUrl, volume);
+            });
+        } else {
+            playDirectUrlAudio(googleTtsUrl, volume);
+        }
+    };
+
+    // Text to speech generator
     const speakTicket = (ticket, type, volPercent) => {
         try {
             const isPref = type === 'Preferencial' || ticket.toUpperCase().startsWith('P');
             const typeText = isPref ? 'Atendimento Preferencial' : 'Atendimento Normal';
             const text = `Senha ${ticket.split('').join(' ')}, ${typeText}`;
             const volume = volPercent / 100;
-
-            // 0. SUPORTE PARA FULLY KIOSK BROWSER (DIRETO NO ANDROID)
+    
+            // 0. SUPORTE NATIVO PARA FULLY KIOSK BROWSER (MELHOR OPÇÃO PARA NAVEGADORES KIOSK)
             if (typeof fully !== 'undefined' && typeof fully.textToSpeech === 'function') {
                 console.log("🔊 Usando TTS nativo do Fully Kiosk Browser:", text);
                 fully.textToSpeech(text, 'pt_BR');
                 return;
             }
-
-            // Identifica Fire TV e Android TV Boxes (como R3, MXQ, MiBox) que não possuem motor nativo
-            const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
-
-            // 1. SUPORTE NATIVO ABSOLUTO PARA CAPACITOR (ANDROID / IOS)
-            // Se for TV Box, o plugin nativo costuma fingir que funcionou mas não sai som (falha silenciosa).
-            if (Capacitor.isNativePlatform() && !isTvBox) {
+    
+            // 1. SE FOR APP NATIVO (CAPACITOR): Tenta o plugin nativo primeiro!
+            if (Capacitor.isNativePlatform()) {
                 console.log("🔊 Usando TTS nativo do Capacitor:", text);
-                TextToSpeech.speak({
-                    text: text,
-                    lang: 'pt-BR',
-                    rate: 0.85,
-                    pitch: 1.0,
-                    volume: volume,
-                }).catch(err => {
-                    console.error("Erro no TTS do Capacitor:", err);
-                    const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
-                    const audioEl = document.getElementById('global-tts-player');
-                    if (audioEl) {
-                        audioEl.src = googleTtsUrl;
-                        audioEl.volume = volume;
-                        audioEl.play().catch(e => {
-                            console.warn("Erro ao tocar áudio no DOM:", e);
-                        });
-                    }
-                });
+                TextToSpeech.speak({ text, lang: 'pt-BR', rate: 0.85, pitch: 1.0, volume })
+                    .then(() => {
+                        console.log("🔊 TTS nativo do Capacitor executado com sucesso");
+                    })
+                    .catch(err => {
+                        console.warn("⚠️ Falha no TTS nativo do Capacitor, tentando fallback...", err);
+                        playFallbackTts(text, volume);
+                    });
                 return;
             }
-
-            // 2. USA A VOZ NATIVA DO SISTEMA WEB (PC/MAC/NAVEGADOR)
+    
+            // Identifica TV Boxes para fins de Web Speech API
+            const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
+    
+            // 2. NAVEGADOR COMUM: Tenta usar a API Web Speech se disponível e não for uma TV Box
             if ('speechSynthesis' in window && !isTvBox) {
                 const voices = window.speechSynthesis.getVoices();
                 const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
-                
-                // SÓ usa o nativo se o aparelho realmente tiver um motor de voz respondendo
                 if (ptVoice || voices.length > 0) {
+                    console.log("🔊 Usando TTS nativo do Navegador (Web Speech API):", text);
                     window.speechSynthesis.cancel();
                     const utterance = new SpeechSynthesisUtterance(text);
                     utterance.lang = 'pt-BR';
@@ -1041,23 +1063,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                         utterance.voice = ptVoice;
                     }
                     window.speechSynthesis.speak(utterance);
-                    return; // Sai da função, não usa a nuvem
+                    return;
                 }
-                
-                console.warn("TV não tem vozes instaladas ou carregadas. Pulando para a nuvem...");
             }
-
-            // 3. PLANO B (FALLBACK): Nuvem do Google (client=gtx é mais estável para WebViews antigos)
-            console.log("🔊 Usando Google Cloud TTS (Áudio MP3):", text);
-            const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
-            const audioEl = document.getElementById('global-tts-player');
-            if (audioEl) {
-                audioEl.src = googleTtsUrl;
-                audioEl.volume = volume;
-                audioEl.play().catch(e => {
-                    console.warn("Erro ao tocar áudio no DOM (Fallback):", e);
-                });
-            }
+    
+            // 3. FALLBACK PARA WEB BROWSER SEM SUPORTE OU TV BOX EM MODO WEB
+            playFallbackTts(text, volume);
         } catch (err) {
             console.warn('Erro na síntese de voz:', err);
         }
