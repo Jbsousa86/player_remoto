@@ -37,7 +37,7 @@ export default defineConfig({
         ]
       },
       workbox: {
-        maximumFileSizeToCacheInBytes: 100000000, // 100 MB limit to allow ffmpeg.wasm caching
+        globIgnores: ['**/node_modules/**/*', '**/ffmpeg/**'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
