@@ -993,26 +993,9 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
 
     // Auxiliar para o Fallback usando Google Translate TTS
     const playFallbackTts = (text, volume) => {
-        console.log("🔊 Usando Google Cloud TTS (Áudio MP3) como fallback:", text);
-        const googleTtsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=pt-BR&client=gtx&q=${encodeURIComponent(text)}`;
-        
-        if (Capacitor.isNativePlatform()) {
-            CapacitorHttp.get({ url: googleTtsUrl, responseType: 'blob' }).then(response => {
-                const audioUrl = `data:audio/mp3;base64,${response.data}`;
-                const audioEl = document.getElementById('global-tts-player');
-                if (audioEl) {
-                    audioEl.src = audioUrl;
-                    audioEl.volume = volume;
-                    audioEl.play().catch(e => console.warn("Erro ao tocar áudio via base64 (Fallback):", e));
-                }
-            }).catch(err => {
-                console.error("Erro no CapacitorHttp (Fallback):", err);
-                // Se falhar o download base64, tenta tocar a URL direta como último recurso
-                playDirectUrlAudio(googleTtsUrl, volume);
-            });
-        } else {
-            playDirectUrlAudio(googleTtsUrl, volume);
-        }
+        console.log("🔊 Usando Google Translate TTS como fallback:", text);
+        const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=pt-BR&client=tw-ob&q=${encodeURIComponent(text)}`;
+        playDirectUrlAudio(googleTtsUrl, volume);
     };
 
     // Text to speech generator
