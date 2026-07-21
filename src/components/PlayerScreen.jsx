@@ -364,7 +364,7 @@ const NewsDisplay = ({ url, onError }) => {
     const newsUrl = news.link || news.guid;
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-slate-100 animate-fade">
+        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-zinc-300 animate-fade">
             {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />}
             <div className="absolute inset-0 bg-linear-to-t from-white via-white/90 to-transparent" />
             <div className="relative z-10 p-[4vw] md:p-[6vw] w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-[3vw]">
@@ -578,7 +578,7 @@ const LoteriasDisplay = ({ url, onError }) => {
     const loteriasUrl = 'https://loterias.caixa.gov.br';
 
     return (
-        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-linear-to-b from-slate-50 via-slate-100 to-slate-200 animate-fade p-[4vw] md:p-[5vw]`}>
+        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-linear-to-b from-zinc-200 via-zinc-300 to-zinc-400 animate-fade p-[4vw] md:p-[5vw]`}>
             {/* Header */}
             <div className="flex items-center justify-between border-b border-black/10 pb-[2vh] z-10 shrink-0">
                 <div className="flex items-center gap-[2vw]">
@@ -804,7 +804,7 @@ const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef
     }, [url, videoRef]);
 
     return (
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-100">
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-zinc-300">
             <style>{`
                 video::-webkit-media-controls { display: none !important; }
                 video::-webkit-media-controls-enclosure { display: none !important; }
@@ -1462,10 +1462,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-zinc-900 bg-slate-100 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-zinc-900 bg-zinc-300 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
                             <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-20 saturate-100 animate-standby-pan" />
-                            <div className="absolute inset-0 bg-linear-to-b from-white/30 via-white/70 to-white/90 z-0" />
+                            <div className="absolute inset-0 bg-linear-to-b from-zinc-200/50 via-zinc-300/80 to-zinc-300 z-0" />
                             <div className="z-10 flex flex-col items-center text-center px-4 w-full max-w-4xl">
                                 {companyLogo ? (
                                     <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-lg" />
@@ -1489,7 +1489,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-slate-100 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-zinc-300 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
@@ -1509,7 +1509,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                     duration: isNone ? 0 : 0.8, 
                                                     ease: isNone ? "linear" : [0.25, 0.1, 0.25, 1] 
                                                 }}
-                                                className="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-100"
+                                                className="absolute inset-0 w-full h-full flex items-center justify-center bg-zinc-300"
                                             >
                                                 {currentItem.type === 'video' && (
                                                     <VideoPlayer
@@ -1546,7 +1546,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                 )}
 
                                                 {currentItem.type === 'image' && (
-                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-100">
+                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-zinc-300">
                                                         {currentItem.fitMode === 'smart' && (
                                                             <img
                                                                 src={currentItem.url}
