@@ -991,6 +991,94 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
         }
     };
 
+    // Verifica se a senha pode ser reproduzida usando arquivos de áudio locais
+    const canPlayLocally = (ticket, type) => {
+        const allowedTypes = ['Normal', 'Preferencial'];
+        if (type && !allowedTypes.includes(type)) return false;
+
+        const cleanTicket = ticket.toLowerCase().replace(/\s+/g, '');
+        for (let char of cleanTicket) {
+            if (!/[a-z0-9]/.test(char)) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    // Reconstrói a sequência de arquivos locais a tocar
+    const buildLocalSequence = (ticket, type) => {
+        const sequence = [];
+        sequence.push('/audio/tts/senha.mp3');
+        
+        const cleanTicket = ticket.toLowerCase().replace(/\s+/g, '');
+        for (let char of cleanTicket) {
+            sequence.push(`/audio/tts/${char}.mp3`);
+        }
+
+        const isPref = type === 'Preferencial' || ticket.toUpperCase().startsWith('P');
+        if (isPref) {
+            sequence.push('/audio/tts/preferencial.mp3');
+        } else {
+            sequence.push('/audio/tts/normal.mp3');
+        }
+        return sequence;
+    };
+
+    // Toca uma lista de arquivos de áudio em sequência
+    const playAudioSequence = (files, volume) => {
+        return new Promise((resolve) => {
+            if (!files || files.length === 0) {
+                resolve();
+                return;
+            }
+
+            let currentIndex = 0;
+            const audioEl = document.getElementById('global-tts-player');
+            if (!audioEl) {
+                resolve();
+                return;
+            }
+
+            // Cancela áudio anterior tocando
+            try {
+                audioEl.pause();
+                audioEl.currentTime = 0;
+            } catch (e) {}
+
+            audioEl.volume = volume;
+
+            const playNext = () => {
+                if (currentIndex >= files.length) {
+                    audioEl.onended = null;
+                    audioEl.onerror = null;
+                    resolve();
+                    return;
+                }
+
+                const fileUrl = files[currentIndex];
+                audioEl.src = fileUrl;
+                audioEl.play()
+                    .then(() => {
+                        currentIndex++;
+                    })
+                    .catch(e => {
+                        console.warn("Erro ao tocar áudio local da senha:", fileUrl, e);
+                        currentIndex++;
+                        playNext();
+                    });
+            };
+
+            audioEl.onended = playNext;
+            audioEl.onerror = (e) => {
+                console.error("Erro no player de sequência local:", e);
+                currentIndex++;
+                playNext();
+            };
+
+            playNext();
+        });
+    };
+
     // Auxiliar para o Fallback usando Google Translate TTS
     const playFallbackTts = (text, volume) => {
         console.log("🔊 Usando Google Translate TTS como fallback:", text);
@@ -1013,7 +1101,15 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 return;
             }
     
-            // 1. SE FOR APP NATIVO (CAPACITOR): Tenta o plugin nativo primeiro!
+            // 1. TENTA REPRODUÇÃO LOCAL (OFFLINE / TV BOX SEM TTS NATIVO) - EXTREMAMENTE ROBUSTO
+            if (canPlayLocally(ticket, type)) {
+                console.log("🔊 Reproduzindo áudio da senha localmente (arquivos de som empacotados)...");
+                const sequence = buildLocalSequence(ticket, type);
+                playAudioSequence(sequence, volume);
+                return;
+            }
+
+            // 2. SE FOR APP NATIVO (CAPACITOR): Tenta o plugin nativo (caso a senha não possa ser tocada localmente)
             if (Capacitor.isNativePlatform()) {
                 console.log("🔊 Usando TTS nativo do Capacitor:", text);
                 TextToSpeech.speak({ text, lang: 'pt-BR', rate: 0.85, pitch: 1.0, volume })
@@ -1030,7 +1126,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             // Identifica TV Boxes para fins de Web Speech API
             const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
     
-            // 2. NAVEGADOR COMUM: Tenta usar a API Web Speech se disponível e não for uma TV Box
+            // 3. NAVEGADOR COMUM: Tenta usar a API Web Speech se disponível e não for uma TV Box
             if ('speechSynthesis' in window && !isTvBox) {
                 const voices = window.speechSynthesis.getVoices();
                 const ptVoice = voices.find(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.includes('pt'));
@@ -1041,7 +1137,6 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     utterance.lang = 'pt-BR';
                     utterance.rate = 0.85;
                     utterance.pitch = 1.0;
-                    utterance.volume = volume;
                     if (ptVoice) {
                         utterance.voice = ptVoice;
                     }
@@ -1050,7 +1145,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                 }
             }
     
-            // 3. FALLBACK PARA WEB BROWSER SEM SUPORTE OU TV BOX EM MODO WEB
+            // 4. FALLBACK PARA WEB BROWSER SEM SUPORTE OU TV BOX EM MODO WEB
             playFallbackTts(text, volume);
         } catch (err) {
             console.warn('Erro na síntese de voz:', err);
