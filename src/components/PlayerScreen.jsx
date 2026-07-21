@@ -1000,9 +1000,8 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             const isTvBox = /AFT|Amazon|AFTMM|R3|TV|Box|STB|MiTV|Chromecast/i.test(navigator.userAgent);
 
             // 1. SUPORTE NATIVO ABSOLUTO PARA CAPACITOR (ANDROID / IOS)
-            // Tenta usar o motor nativo da TV Box ou Celular primeiro. 
-            // Se falhar (dispositivo sem motor), o catch fará o fallback.
-            if (Capacitor.isNativePlatform()) {
+            // Se for TV Box, o plugin nativo costuma fingir que funcionou mas não sai som (falha silenciosa).
+            if (Capacitor.isNativePlatform() && !isTvBox) {
                 console.log("🔊 Usando TTS nativo do Capacitor:", text);
                 TextToSpeech.speak({
                     text: text,
