@@ -88,7 +88,7 @@ const AddItemForm = ({ newItem, setNewItem, handleUrlChange, addItem, broadcastI
                         <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 ml-1 tracking-[0.2em]">Tipo</label>
                         <select value={newItem.type} onChange={(e) => {
                             const val = e.target.value;
-                            const defaultUrl = val === 'loterias' ? 'todas' : '';
+                            const defaultUrl = val === 'loterias' ? 'todas' : (val === 'news' ? 'https://g1.globo.com/rss/g1/to/tocantins/' : '');
                             const defaultDuration = val === 'loterias' ? 32 : ((val === 'video' || val === 'youtube') ? 0 : 10);
                             setNewItem({ ...newItem, type: val, url: defaultUrl, duration: defaultDuration });
                         }} className="w-full bg-white shadow-sm border border-slate-300 rounded-2xl px-6 py-5 focus:border-orange-500 transition-all outline-none font-bold text-zinc-900 appearance-none cursor-pointer">

@@ -185,23 +185,30 @@ const AdminPanel = ({ isPairing = false }) => {
         const isVideo = isVideoUrl(url);
         const isLive = isYoutubeLive(url);
 
-        let detectedType = 'image';
-        let detectedDuration = 10;
+        setNewItem(prev => {
+            let nextType = prev.type;
+            let nextDuration = prev.duration;
 
-        if (youtubeId || isLive) {
-            detectedType = 'youtube';
-            detectedDuration = 0;
-        } else if (isVideo) {
-            detectedType = 'video';
-            detectedDuration = 0;
-        }
+            if (youtubeId || isLive) {
+                nextType = 'youtube';
+                nextDuration = 0;
+            } else if (isVideo) {
+                nextType = 'video';
+                nextDuration = 0;
+            } else if (nextType === 'youtube' || nextType === 'video') {
+                // Se apagou o video/youtube, volta pro padrao
+                nextType = 'image';
+                nextDuration = 10;
+            }
+            // Se já era news, web ou loterias, não faz fallback pra image a menos que detecte um video
 
-        setNewItem(prev => ({
-            ...prev,
-            url: url,
-            type: detectedType,
-            duration: detectedDuration
-        }));
+            return {
+                ...prev,
+                url: url,
+                type: nextType,
+                duration: nextDuration
+            };
+        });
     };
 
     const isScreenOnline = (lastSeen) => {
