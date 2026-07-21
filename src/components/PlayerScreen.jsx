@@ -379,7 +379,7 @@ const NewsDisplay = ({ url, onError }) => {
                         <span className="bg-pink-600 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.8vh] md:text-[2vh] shadow-lg shadow-pink-500/50">📰 Notícias</span>
                         <span className="text-zinc-500 font-bold text-[1.8vh] md:text-[2vh] uppercase tracking-widest">{news.author || 'Última Hora'}</span>
                     </div>
-                    <h1 className="text-zinc-900 font-black text-[4vh] md:text-[6vh] leading-tight mb-[2vh]">{news.title}</h1>
+                    <h1 className="text-zinc-900 font-black text-[4vh] md:text-[6vh] leading-tight mb-[2vh]" dangerouslySetInnerHTML={{ __html: news.title }} />
                     {typeof news.description === 'string' && <p className="text-zinc-700 font-medium text-[2.5vh] md:text-[3vh] line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
 
