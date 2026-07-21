@@ -1016,7 +1016,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                     if (audioEl) {
                         audioEl.src = googleTtsUrl;
                         audioEl.volume = volume;
-                        audioEl.play().catch(e => console.warn("Erro ao tocar áudio no DOM:", e));
+                        audioEl.play().catch(e => {
+                            console.warn("Erro ao tocar áudio no DOM:", e);
+                            alert("Falha no Áudio da TV Box: " + e.message + " | Nome: " + e.name);
+                        });
                     }
                 });
                 return;
@@ -1052,7 +1055,10 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
             if (audioEl) {
                 audioEl.src = googleTtsUrl;
                 audioEl.volume = volume;
-                audioEl.play().catch(e => console.warn("Erro ao tocar áudio no DOM (Fallback):", e));
+                audioEl.play().catch(e => {
+                    console.warn("Erro ao tocar áudio no DOM (Fallback):", e);
+                    alert("Falha no Áudio da Nuvem: " + e.message + " | Nome: " + e.name);
+                });
             }
         } catch (err) {
             console.warn('Erro na síntese de voz:', err);
