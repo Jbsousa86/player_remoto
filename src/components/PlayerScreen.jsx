@@ -624,37 +624,26 @@ const LoteriasDisplay = ({ url, onError }) => {
             </div>
 
             {/* Bottom Panel */}
-            <div className="flex flex-row items-center justify-between gap-[3vw] bg-white/50 backdrop-blur-md p-[2vw] rounded-[2.5vw] border border-black/5 shadow-xl z-10 shrink-0">
-                <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-[2vw]">
-                    <div className="flex flex-col justify-center">
-                        <div className="flex items-center gap-[1vw] mb-[0.5vh]">
-                            <span className="text-zinc-500 font-bold text-[1.4vh] md:text-[1.8vh] uppercase tracking-wider">
-                                Próximo Concurso {data.numeroConcursoProximo} ({data.dataProximoConcurso})
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-[3vw] bg-white/50 backdrop-blur-md p-[3vw] sm:p-[2vw] rounded-[2.5vw] sm:rounded-[2vw] border border-black/5 shadow-xl z-10 shrink-0 text-center sm:text-left w-full">
+                <div className="flex-1 flex flex-col justify-center min-w-0 w-full">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-[1vw] mb-[0.5vh]">
+                        <span className="text-zinc-500 font-bold text-[1.4vh] md:text-[1.8vh] uppercase tracking-wider">
+                            Próximo Concurso {data.numeroConcursoProximo} ({data.dataProximoConcurso})
+                        </span>
+                        {data.acumulado && (
+                            <span className="bg-amber-500 text-zinc-950 font-black px-[1vw] py-[0.2vh] rounded-[0.5vw] uppercase text-[1.2vh] md:text-[1.5vh] animate-bounce">
+                                Acumulou!
                             </span>
-                            {data.acumulado && (
-                                <span className="bg-amber-500 text-zinc-950 font-black px-[1vw] py-[0.2vh] rounded-[0.5vw] uppercase text-[1.2vh] md:text-[1.5vh] animate-bounce">
-                                    Acumulou!
-                                </span>
-                            )}
-                        </div>
-                        <h2 className="text-orange-500 font-black text-[3.5vh] md:text-[5vh] leading-none tracking-tight drop-shadow-sm">
-                            {formatCurrency(data.valorEstimadoProximoConcurso)}
-                        </h2>
+                        )}
                     </div>
-                    
-                    <div className="hidden sm:block text-right shrink-0">
-                        <span className="text-zinc-400 font-semibold text-[1.4vh] md:text-[1.8vh] block uppercase tracking-widest">
-                            Espaço da Sorte
-                        </span>
-                        <span className="text-zinc-600 font-bold text-[1.6vh] md:text-[2vh] block uppercase">
-                            {data.nomeMunicipioUFSorteio}
-                        </span>
-                    </div>
+                    <h2 className="text-orange-500 font-black text-[3.5vh] md:text-[5vh] leading-none tracking-tight drop-shadow-sm truncate">
+                        {formatCurrency(data.valorEstimadoProximoConcurso)}
+                    </h2>
                 </div>
-
+                
                 {/* QR Code */}
-                <div className="flex flex-col items-center bg-white p-[1vw] rounded-[1.5vw] shadow-lg shrink-0">
-                    <QRCodeSVG value={loteriasUrl} size={100} level="Q" className="w-[8vw] h-[8vw] max-w-20 max-h-20" />
+                <div className="flex flex-col items-center bg-white p-[1.5vw] sm:p-[1vw] rounded-[2vw] sm:rounded-[1.5vw] shadow-lg shrink-0 mt-[2vh] sm:mt-0">
+                    <QRCodeSVG value={loteriasUrl} size={100} level="Q" className="w-[12vw] h-[12vw] sm:w-[8vw] sm:h-[8vw] max-w-24 max-h-24 sm:max-w-20 sm:max-h-20" />
                 </div>
             </div>
         </div>
