@@ -3,6 +3,7 @@ import { syncService, DEFAULT_RSS_URL, DEFAULT_TICKER } from '../lib/syncService
 import { supabase } from '../lib/supabase'; // Certifique-se de que o caminho para o seu cliente Supabase está correto
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { fetchFile } from '@ffmpeg/util';
+import { Capacitor } from '@capacitor/core';
 import { LayoutDashboard, LogOut, RefreshCw, Monitor, Loader2, Smartphone, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AdminHeader from './AdminHeader';
@@ -269,8 +270,8 @@ const AdminPanel = ({ isPairing = false }) => {
                         });
                         
                         await ffmpeg.load({
-                            coreURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js",
-                            wasmURL: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm"
+                            coreURL: "/ffmpeg/ffmpeg-core.js",
+                            wasmURL: "/ffmpeg/ffmpeg-core.wasm"
                         });
                         
                         const inputName = 'input_' + fileNameBase;
@@ -278,10 +279,13 @@ const AdminPanel = ({ isPairing = false }) => {
                         
                         await ffmpeg.writeFile(inputName, await fetchFile(file));
                         
+                        const isMobile = Capacitor.isNativePlatform();
+                        const scaleStr = isMobile ? 'scale=-2:480' : 'scale=-2:720';
+
                         // O preset ultrafast reduz o uso de cpu, útil para browser
                         await ffmpeg.exec([
                             '-i', inputName,
-                            '-vf', 'scale=-2:720',
+                            '-vf', scaleStr,
                             '-vcodec', 'libx264',
                             '-crf', '28',
                             '-preset', 'ultrafast',

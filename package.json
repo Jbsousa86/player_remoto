@@ -21,6 +21,7 @@
     "@ffmpeg/util": "^0.12.2",
     "@supabase/supabase-js": "^2.106.2",
     "@tailwindcss/vite": "^4.1.18",
+    "@whiteguru/capacitor-plugin-video-editor": "^7.1.1",
     "firebase": "^12.8.0",
     "framer-motion": "^12.26.2",
     "lucide-react": "^0.562.0",

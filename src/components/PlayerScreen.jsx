@@ -215,8 +215,8 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     }
 
 
-    const bgColor = ticker?.bgColor || 'rgba(0, 0, 0, 0.8)';
-    const rawTextColor = ticker?.textColor || '#ffffff';
+    const bgColor = ticker?.bgColor || 'rgba(255, 255, 255, 0.95)';
+    const rawTextColor = ticker?.textColor || '#18181b';
     
     // Converter classes Tailwind antigas para HEX (Compatibilidade com TVs antigas / Fully Kiosk)
     let colorHex = rawTextColor;
@@ -225,7 +225,7 @@ const DynamicTicker = ({ ticker, weatherLocation, queueEnabled = false, queueSta
     else if (rawTextColor === 'text-zinc-900') colorHex = '#18181b';
     else if (rawTextColor === 'text-emerald-400') colorHex = '#34d399';
     else if (rawTextColor === 'text-red-400') colorHex = '#f87171';
-    else if (rawTextColor.startsWith('text-')) colorHex = '#ffffff';
+    else if (rawTextColor.startsWith('text-')) colorHex = '#18181b';
 
     return (
         <div 
@@ -364,25 +364,25 @@ const NewsDisplay = ({ url, onError }) => {
     const newsUrl = news.link || news.guid;
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-black animate-fade">
-            {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-50" />}
-            <div className="absolute inset-0 bg-linear-to-t from-black via-black/90 to-transparent" />
+        <div className="absolute inset-0 w-full h-full flex flex-col justify-end bg-slate-100 animate-fade">
+            {image && <img src={image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" />}
+            <div className="absolute inset-0 bg-linear-to-t from-white via-white/90 to-transparent" />
             <div className="relative z-10 p-[4vw] md:p-[6vw] w-full mx-auto flex flex-col sm:flex-row items-start sm:items-end justify-between gap-[3vw]">
                 <div className="flex-1 max-w-[75vw]">
                     <div className="flex items-center gap-[1vw] mb-[2vh]">
                         <span className="bg-pink-600 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.8vh] md:text-[2vh] shadow-lg shadow-pink-500/50">📰 Notícias</span>
-                        <span className="text-white/50 font-bold text-[1.8vh] md:text-[2vh] uppercase tracking-widest">{news.author || 'Última Hora'}</span>
+                        <span className="text-zinc-500 font-bold text-[1.8vh] md:text-[2vh] uppercase tracking-widest">{news.author || 'Última Hora'}</span>
                     </div>
-                    <h1 className="text-white font-black text-[4vh] md:text-[6vh] leading-tight drop-shadow-2xl mb-[2vh]">{news.title}</h1>
-                    {typeof news.description === 'string' && <p className="text-zinc-300 font-medium text-[2.5vh] md:text-[3vh] line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
+                    <h1 className="text-zinc-900 font-black text-[4vh] md:text-[6vh] leading-tight mb-[2vh]">{news.title}</h1>
+                    {typeof news.description === 'string' && <p className="text-zinc-700 font-medium text-[2.5vh] md:text-[3vh] line-clamp-3 leading-relaxed" dangerouslySetInnerHTML={{ __html: news.description.replace(/<[^>]+>/g, '') }} />}
                 </div>
 
                 {newsUrl && (
-                    <div className="flex flex-col items-center bg-white/10 backdrop-blur-md p-[1.5vw] rounded-[2vw] border border-white/20 shadow-2xl shrink-0 animate-fade">
-                        <div className="bg-white p-[1vw] rounded-[1vw] mb-[1.5vh] shadow-inner flex items-center justify-center">
+                    <div className="flex flex-col items-center bg-black/5 backdrop-blur-md p-[1.5vw] rounded-[2vw] border border-black/10 shadow-lg shrink-0 animate-fade">
+                        <div className="bg-white p-[1vw] rounded-[1vw] mb-[1.5vh] shadow flex items-center justify-center">
                             <QRCodeSVG value={newsUrl} size={150} level="Q" className="w-[12vw] h-[12vw] max-w-37.5 max-h-37.5" />
                         </div>
-                        <span className="text-[1.5vh] md:text-[1.8vh] font-black uppercase tracking-widest text-white text-center leading-tight">
+                        <span className="text-[1.5vh] md:text-[1.8vh] font-black uppercase tracking-widest text-zinc-900 text-center leading-tight">
                             Leia a matéria<br/>no celular
                         </span>
                     </div>
@@ -578,9 +578,9 @@ const LoteriasDisplay = ({ url, onError }) => {
     const loteriasUrl = 'https://loterias.caixa.gov.br';
 
     return (
-        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-linear-to-b ${config.bg} animate-fade p-[4vw] md:p-[5vw]`}>
+        <div className={`absolute inset-0 w-full h-full flex flex-col justify-between bg-linear-to-b from-slate-50 via-slate-100 to-slate-200 animate-fade p-[4vw] md:p-[5vw]`}>
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-[2vh] z-10 shrink-0">
+            <div className="flex items-center justify-between border-b border-black/10 pb-[2vh] z-10 shrink-0">
                 <div className="flex items-center gap-[2vw]">
                     <span className="bg-linear-to-r from-orange-500 to-yellow-500 text-white font-black px-[1.5vw] py-[0.5vh] rounded-[1vw] uppercase tracking-widest text-[1.6vh] md:text-[2vh] shadow-lg shadow-orange-500/20">
                         🎰 Loterias Caixa
@@ -589,14 +589,14 @@ const LoteriasDisplay = ({ url, onError }) => {
                         {config.name}
                     </span>
                 </div>
-                <span className="text-white/60 font-bold text-[1.8vh] md:text-[2.2vh] uppercase tracking-widest">
+                <span className="text-zinc-600 font-bold text-[1.8vh] md:text-[2.2vh] uppercase tracking-widest">
                     Concurso {data.numero} • {data.dataApuracao}
                 </span>
             </div>
 
             {/* Ball area */}
             <div className="flex-1 flex flex-col justify-center items-center gap-[2vh] z-10 min-h-0">
-                <p className="text-zinc-400 font-bold text-[1.5vh] md:text-[1.8vh] uppercase tracking-[0.2em] mb-[1vh] shrink-0">
+                <p className="text-zinc-500 font-bold text-[1.5vh] md:text-[1.8vh] uppercase tracking-[0.2em] mb-[1vh] shrink-0">
                     Números Sorteados
                 </p>
                 <div className="w-full flex flex-wrap justify-center items-center gap-[1.5vw] max-w-[90%] overflow-y-auto py-2">
@@ -610,7 +610,7 @@ const LoteriasDisplay = ({ url, onError }) => {
                         return (
                             <div
                                 key={idx}
-                                className={`${sizeClass} rounded-full flex items-center justify-center font-black shadow-lg relative border border-white/20 shrink-0`}
+                                className={`${sizeClass} rounded-full flex items-center justify-center font-black shadow-lg relative border border-black/5 shrink-0`}
                                 style={getBallStyle(activeGameKey)}
                             >
                                 <div className="absolute top-[10%] left-[15%] w-[30%] h-[30%] bg-white/30 rounded-full blur-[1px]" />
@@ -624,11 +624,11 @@ const LoteriasDisplay = ({ url, onError }) => {
             </div>
 
             {/* Bottom Panel */}
-            <div className="flex flex-row items-center justify-between gap-[3vw] bg-white/5 backdrop-blur-md p-[2vw] rounded-[2.5vw] border border-white/10 shadow-2xl z-10 shrink-0">
+            <div className="flex flex-row items-center justify-between gap-[3vw] bg-white/50 backdrop-blur-md p-[2vw] rounded-[2.5vw] border border-black/5 shadow-xl z-10 shrink-0">
                 <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-[2vw]">
                     <div className="flex flex-col justify-center">
                         <div className="flex items-center gap-[1vw] mb-[0.5vh]">
-                            <span className="text-zinc-400 font-bold text-[1.4vh] md:text-[1.8vh] uppercase tracking-wider">
+                            <span className="text-zinc-500 font-bold text-[1.4vh] md:text-[1.8vh] uppercase tracking-wider">
                                 Próximo Concurso {data.numeroConcursoProximo} ({data.dataProximoConcurso})
                             </span>
                             {data.acumulado && (
@@ -637,16 +637,16 @@ const LoteriasDisplay = ({ url, onError }) => {
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-yellow-400 font-black text-[3.5vh] md:text-[5vh] leading-none tracking-tight drop-shadow-[0_2px_5px_rgba(234,179,8,0.2)]">
+                        <h2 className="text-orange-500 font-black text-[3.5vh] md:text-[5vh] leading-none tracking-tight drop-shadow-sm">
                             {formatCurrency(data.valorEstimadoProximoConcurso)}
                         </h2>
                     </div>
                     
                     <div className="hidden sm:block text-right shrink-0">
-                        <span className="text-zinc-500 font-semibold text-[1.4vh] md:text-[1.8vh] block uppercase tracking-widest">
+                        <span className="text-zinc-400 font-semibold text-[1.4vh] md:text-[1.8vh] block uppercase tracking-widest">
                             Espaço da Sorte
                         </span>
-                        <span className="text-zinc-400 font-bold text-[1.6vh] md:text-[2vh] block uppercase">
+                        <span className="text-zinc-600 font-bold text-[1.6vh] md:text-[2vh] block uppercase">
                             {data.nomeMunicipioUFSorteio}
                         </span>
                     </div>
@@ -675,17 +675,17 @@ const StandbyWeather = ({ weather }) => {
     };
 
     if (!weather) return (
-        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-white/10 opacity-30 animate-pulse min-w-25">
-            <span className="text-4xl md:text-5xl drop-shadow-lg">☁️</span>
+        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-black/10 opacity-30 animate-pulse min-w-25 text-zinc-900">
+            <span className="text-4xl md:text-5xl drop-shadow-sm">☁️</span>
             <span className="text-2xl md:text-3xl font-black mt-2">--°C</span>
         </div>
     );
 
     return (
-        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-white/10 min-w-25">
-            <span className="text-4xl md:text-5xl drop-shadow-lg">{getWeatherEmoji(weather.code)}</span>
+        <div className="flex flex-col items-center justify-center pl-8 md:pl-12 ml-8 md:ml-12 border-l border-black/10 min-w-25 text-zinc-900">
+            <span className="text-4xl md:text-5xl drop-shadow-sm">{getWeatherEmoji(weather.code)}</span>
             <span className="text-2xl md:text-3xl font-black mt-2">{weather.temp}°C</span>
-            <span className="text-[10px] md:text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1 max-w-25 truncate text-center" title={weather.city}>
+            <span className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1 max-w-25 truncate text-center" title={weather.city}>
                 {weather.city}
             </span>
         </div>
@@ -721,12 +721,12 @@ const StandbyClock = ({ weatherLocation }) => {
     const tz = weather?.timezone || window.playerTimeZone || 'America/Sao_Paulo';
 
     return (
-        <div className="mt-12 flex flex-row items-center justify-center bg-white/5 px-10 md:px-16 py-8 rounded-[3rem] backdrop-blur-xl border border-white/10 shadow-2xl">
+        <div className="mt-12 flex flex-row items-center justify-center bg-white/60 px-10 md:px-16 py-8 rounded-[3rem] backdrop-blur-md border border-black/5 shadow-xl text-zinc-900">
             <div className="flex flex-col items-center">
-                <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-white drop-shadow-lg">
+                <span className="text-6xl md:text-8xl font-black tracking-tighter tabular-nums text-zinc-900 drop-shadow-sm">
                     {time.toLocaleTimeString('pt-BR', { timeZone: tz, hour: '2-digit', minute: '2-digit' })}
                 </span>
-                <span className="text-[10px] md:text-sm font-bold text-orange-500 uppercase tracking-[0.3em] mt-4 text-center">
+                <span className="text-[10px] md:text-sm font-bold text-orange-600 uppercase tracking-[0.3em] mt-4 text-center">
                     {time.toLocaleDateString('pt-BR', { timeZone: tz, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                 </span>
             </div>
@@ -804,7 +804,13 @@ const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef
     }, [url, videoRef]);
 
     return (
-        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+        <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-100">
+            <style>{`
+                video::-webkit-media-controls { display: none !important; }
+                video::-webkit-media-controls-enclosure { display: none !important; }
+                video::-webkit-media-controls-start-playback-button { display: none !important; }
+                video::-webkit-media-controls-panel { display: none !important; }
+            `}</style>
             {fitMode === 'smart' && (
                 <video
                     ref={bgVideoRef}
@@ -813,7 +819,8 @@ const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef
                     muted
                     loop
                     playsInline
-                    className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                    poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                    className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 select-none pointer-events-none"
                 />
             )}
             <video
@@ -823,6 +830,7 @@ const VideoPlayer = ({ url, fitMode, isMuted, volume, onEnded, onError, videoRef
                 defaultMuted={true}
                 playsInline
                 disablePictureInPicture
+                poster="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                 className="pointer-events-none relative z-10"
                 preload="auto"
                 onEnded={onEnded}
@@ -1454,21 +1462,21 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-white bg-zinc-950 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full flex flex-col items-center justify-center text-zinc-900 bg-slate-100 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
-                            <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-70 saturate-150 animate-standby-pan" />
-                            <div className="absolute inset-0 bg-linear-to-b from-black/10 via-black/40 to-black/70 z-0" />
+                            <img src={standbyImage} alt="Standby" className="absolute inset-0 w-full h-full object-cover opacity-20 saturate-100 animate-standby-pan" />
+                            <div className="absolute inset-0 bg-linear-to-b from-white/30 via-white/70 to-white/90 z-0" />
                             <div className="z-10 flex flex-col items-center text-center px-4 w-full max-w-4xl">
                                 {companyLogo ? (
-                                    <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-2xl" />
+                                    <img src={companyLogo} alt="Logo da Empresa" className="h-28 md:h-40 mb-8 object-contain drop-shadow-lg" />
                                ) : (
-                                    <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/10 shadow-2xl">
-                                        <span className="text-5xl drop-shadow-lg">📺</span>
+                                    <div className="w-24 h-24 bg-black/5 rounded-3xl flex items-center justify-center mb-8 backdrop-blur-md border border-black/10 shadow-xl">
+                                        <span className="text-5xl drop-shadow-sm">📺</span>
                                     </div>
                                 )}
                                 
-                                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-widest mb-4 drop-shadow-xl">Totem em Espera</h1>
-                                <p className="text-zinc-400 text-sm md:text-base font-bold uppercase tracking-[0.2em] max-w-lg mb-4">
+                                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-widest mb-4 drop-shadow-sm text-zinc-900">Totem em Espera</h1>
+                                <p className="text-zinc-500 text-sm md:text-base font-bold uppercase tracking-[0.2em] max-w-lg mb-4">
                                     {!activePlaylist?.length ? 'Aguardando novas mídias na playlist...' : 'Exibição interrompida pelo administrador.'}
                                 </p>
                                 <StandbyClock weatherLocation={weatherLocation} />
@@ -1481,7 +1489,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             transition={{ duration: 1 }}
-                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-black ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
+                            className={`absolute top-0 left-0 w-full overflow-hidden pointer-events-none select-none bg-slate-100 ${isTickerShown ? 'h-[90%]' : 'h-full'}`}
                         >
                             <div className="relative w-full h-full flex items-center justify-center">
                                 <AnimatePresence>
@@ -1501,7 +1509,7 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                     duration: isNone ? 0 : 0.8, 
                                                     ease: isNone ? "linear" : [0.25, 0.1, 0.25, 1] 
                                                 }}
-                                                className="absolute inset-0 w-full h-full flex items-center justify-center bg-black"
+                                                className="absolute inset-0 w-full h-full flex items-center justify-center bg-slate-100"
                                             >
                                                 {currentItem.type === 'video' && (
                                                     <VideoPlayer
@@ -1538,12 +1546,12 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                 )}
 
                                                 {currentItem.type === 'image' && (
-                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                                                    <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-100">
                                                         {currentItem.fitMode === 'smart' && (
                                                             <img
                                                                 src={currentItem.url}
                                                                 alt=""
-                                                                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40 select-none pointer-events-none"
+                                                                className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-30 select-none pointer-events-none"
                                                             />
                                                         )}
                                                         <motion.img
