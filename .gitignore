@@ -27,3 +27,6 @@ dist-ssr
 *.sw?
 
 ffmpeg.exe
+
+*.apk
+Jbs_Player*.apk
