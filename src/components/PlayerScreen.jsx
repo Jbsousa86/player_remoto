@@ -1690,18 +1690,37 @@ const PlayerScreen = ({ playlist, standbyOptions = {}, blockSchedules = {}, orie
                                                     </div>
                                                 )}
 
-                                                {currentItem.type === 'web' && (
-                                                    <iframe
-                                                        src={currentItem.url}
-                                                        style={{
-                                                            position: 'absolute',
-                                                            inset: 0,
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            border: 'none'
-                                                        }}
-                                                    />
-                                                )}
+                                                {currentItem.type === 'web' && (() => {
+                                                    let finalUrl = currentItem.url;
+                                                    if (finalUrl) {
+                                                        try {
+                                                            const urlObj = new URL(finalUrl);
+                                                            if (isMuted) {
+                                                                urlObj.searchParams.set('muted', 'true');
+                                                                urlObj.searchParams.set('mute', '1');
+                                                            }
+                                                            finalUrl = urlObj.toString();
+                                                        } catch(e) {
+                                                            if (isMuted) {
+                                                                const sep = finalUrl.includes('?') ? '&' : '?';
+                                                                finalUrl = `${finalUrl}${sep}muted=true&mute=1`;
+                                                            }
+                                                        }
+                                                    }
+                                                    return (
+                                                        <iframe
+                                                            src={finalUrl}
+                                                            style={{
+                                                                position: 'absolute',
+                                                                inset: 0,
+                                                                width: '100%',
+                                                                height: '100%',
+                                                                border: 'none'
+                                                            }}
+                                                            allow={isMuted ? "autoplay; encrypted-media; picture-in-picture" : "autoplay; encrypted-media; picture-in-picture; microphone; camera"}
+                                                        />
+                                                    );
+                                                })()}
 
                                                 {currentItem.type === 'news' && (
                                                     <NewsDisplay url={currentItem.url} onError={() => next(true)} />
